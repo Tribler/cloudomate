@@ -1,14 +1,12 @@
 import logging
 import sys
 
-
 import util.config
-from vps.scrapy_hoster import ScrapyHoster
-from vps.ramnode import RamnodeOptions, RamnodeSpider
+from vps.ramnode import Ramnode
 
 commands = ["options", "purchase", "list"]
 providers = {
-    "ramnode": ScrapyHoster('ramnode', RamnodeOptions, RamnodeSpider),
+    "ramnode": Ramnode(),
 }
 
 
@@ -61,7 +59,7 @@ def _list_providers():
     _print_header()
     print("Providers:")
     for provider in providers:
-        print("  " + provider)
+        print("  %s     %s" % (provider, providers[provider].website_name))
 
 
 def _options(provider):
@@ -70,6 +68,7 @@ def _options(provider):
     p = providers[provider]
     p.options()
     print(p.get_configurations())
+
 
 def _print_unknown_command(command):
     _print_header()
