@@ -1,14 +1,14 @@
 import logging
 import sys
 
-from scrapy.crawler import CrawlerProcess
 
 import util.config
+from vps.scrapy_hoster import ScrapyHoster
 from vps.ramnode import RamnodeOptions, RamnodeSpider
 
 commands = ["options", "purchase", "list"]
 providers = {
-    "ramnode": {"options": RamnodeOptions, "spider": RamnodeSpider}
+    "ramnode": ScrapyHoster('ramnode', RamnodeOptions, RamnodeSpider),
 }
 
 
@@ -67,21 +67,9 @@ def _list_providers():
 def _options(provider):
     _print_header()
     print("Options for %s:\n" % provider)
-    spider = providers[provider].get("options")()
-    process = CrawlerProcess({
-        'ITEM_PIPELINES': {'cmdline.MyPipeline': 1},
-    })
-    process.crawl(spider)
-    process.start()
-
-
-class MyPipeline(object):
-    def process_item(self, item, spider):
-        self._print(item)
-
-    def _print(self, item):
-        print("%s, %s, %s, %s" % (item["name"], item["cpu"], item["ram"], item["storage"]))
-
+    p = providers[provider]
+    p.options()
+    print(p.get_configurations())
 
 def _print_unknown_command(command):
     _print_header()
