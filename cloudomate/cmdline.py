@@ -8,7 +8,7 @@ from vps.ramnode import RamnodeOptions, RamnodeSpider
 
 commands = ["options", "purchase", "list"]
 providers = {
-    "ramnode": ScrapyHoster(RamnodeOptions, RamnodeSpider),
+    "ramnode": ScrapyHoster('ramnode', RamnodeOptions, RamnodeSpider),
 }
 
 
@@ -67,8 +67,9 @@ def _list_providers():
 def _options(provider):
     _print_header()
     print("Options for %s:\n" % provider)
-    providers[provider].options()
-
+    p = providers[provider]
+    p.options()
+    print(p.get_configurations())
 
 def _print_unknown_command(command):
     _print_header()
