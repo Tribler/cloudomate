@@ -1,10 +1,9 @@
 import logging
 import sys
+from argparse import ArgumentParser
 
-
-import util.config
-from vps.scrapy_hoster import ScrapyHoster
 from vps.ramnode import RamnodeOptions, RamnodeSpider
+from vps.scrapy_hoster import ScrapyHoster
 
 commands = ["options", "purchase", "list"]
 providers = {
@@ -16,32 +15,35 @@ def execute(argv=None, settings=None):
     logging.disable(logging.DEBUG)
     logging.disable(logging.WARNING)
     logging.disable(logging.INFO)
-    if argv is None:
-        argv = sys.argv
-    if settings is None:
-        settings = util.config.read_config()
 
-    provider = None
-    cmdname = None
+    parser = ArgumentParser(description="Cloudomate")
+    parser.add_argument("command", help="The specified command", nargs='?', choices=commands)
+    parser.add_argument("provider", help="The specified provider", nargs='?', choices=providers)
+    parser.add_argument("--email", help="email")
+    parser.add_argument("--firstName", help="firstName")
+    parser.add_argument("--lastName", help="lastName")
+    parser.add_argument("--companyName", help="companyName")
+    parser.add_argument("--phoneNumber", help="phoneNumber")
+    parser.add_argument("--password", help="password")
+    parser.add_argument("--address", help="address")
+    parser.add_argument("--city", help="city")
+    parser.add_argument("--state", help="state")
+    parser.add_argument("--countryCode", help="countryCode")
+    parser.add_argument("--zipcode", help="zipcode")
+    parser.add_argument("--rootPassword", help="rootPassword")
+    parser.add_argument("--ns1", help="ns1")
+    parser.add_argument("--ns2", help="ns2")
+    parser.add_argument("--hostname", help="hostname")
 
-    c = _pop_command_names(argv)
-    if len(c) >= 1:
-        cmdname = c[0]
-    if len(c) >= 2:
-        provider = c[1]
-    if not cmdname:
-        _print_commands()
-        sys.exit(0)
-
-    if cmdname not in commands:
-        _print_unknown_command(cmdname)
-        sys.exit(2)
+    args = parser.parse_args()
+    cmdname = args.command
+    provider = args.provider
 
     if cmdname == "list":
         _list_providers()
         sys.exit(0)
 
-    if not provider or not provider in providers:
+    if not provider or provider not in providers:
         _print_unknown_provider(commands, provider)
         sys.exit(2)
 
@@ -70,6 +72,7 @@ def _options(provider):
     p = providers[provider]
     p.options()
     print(p.get_configurations())
+
 
 def _print_unknown_command(command):
     _print_header()
