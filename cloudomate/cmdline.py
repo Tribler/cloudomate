@@ -2,12 +2,12 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-from vps.ramnode import RamnodeOptions, RamnodeSpider
-from vps.scrapy_hoster import ScrapyHoster
+import util.config
+from vps.ramnode import Ramnode
 
 commands = ["options", "purchase", "list"]
 providers = {
-    "ramnode": ScrapyHoster('ramnode', RamnodeOptions, RamnodeSpider),
+    "ramnode": Ramnode(),
 }
 
 
@@ -63,7 +63,7 @@ def _list_providers():
     _print_header()
     print("Providers:")
     for provider in providers:
-        print("  " + provider)
+        print("  %s     %s" % (provider, providers[provider].website_name))
 
 
 def _options(provider):

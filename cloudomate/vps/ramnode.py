@@ -7,6 +7,7 @@ from scrapy.loader.processors import TakeFirst
 from scrapy.utils.response import open_in_browser
 
 from util.config import read_config
+from vps.scrapy_hoster import ScrapyHoster
 from vps.vpsoption import VpsOption
 
 
@@ -116,3 +117,12 @@ class RamnodeOptions(scrapy.Spider):
 
 class OptionLoader(ItemLoader):
     default_output_processor = TakeFirst()
+
+
+class Ramnode(ScrapyHoster):
+    website_name = "https://ramnode.com"
+    purchase_spider = RamnodeSpider
+    options_spider = RamnodeOptions
+
+    def __init__(self):
+        super(Ramnode, self).__init__('ramnode', self.options_spider, self.purchase_spider)
