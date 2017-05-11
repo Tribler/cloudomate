@@ -1,12 +1,16 @@
-from hoster import Hoster
-from scrapy.crawler import CrawlerProcess
+"""
+ScrapyHoster provides a common implementation for all hosts accessible through scrapy only.
+"""
 import json
 
-'''
-ScrapyHoster provides a common implementation for all hosts accessible through scrapy only.
-'''
+from scrapy import signals
+from scrapy.crawler import CrawlerProcess
+from scrapy.exporters import JsonItemExporter
+
+from hoster import Hoster
 
 CONFIG_PATH_STRING = '.vpsconfigs/{0}.json'
+
 
 class ScrapyHoster(Hoster):
     def __init__(self, name, options_spider, spider):
@@ -32,17 +36,12 @@ class ScrapyHoster(Hoster):
     def get_configurations(self):
         return self.configurations
 
-    def add_configuration(self, configuration):
-        if not self.configurations_crawled:
-            self.configurations.append(configuration)
-
-from scrapy import signals
-from scrapy.exporters import JsonItemExporter
 
 class MyPipeline(object):
     def __init__(self, hoster_name):
         self.hoster_name = hoster_name
         self.files = {}
+        self.exporter = None
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -52,17 +51,16 @@ class MyPipeline(object):
         return pipeline
 
     def spider_opened(self, spider):
-        file = open(CONFIG_PATH_STRING.format(self.hoster_name), 'wb')
-        self.files[spider] = file
-        self.exporter = JsonItemExporter(file)
+        spider_file = open(CONFIG_PATH_STRING.format(self.hoster_name), 'wb')
+        self.files[spider] = spider_file
+        self.exporter = JsonItemExporter(spider_file)
         self.exporter.start_exporting()
 
     def spider_closed(self, spider):
         self.exporter.finish_exporting()
-        file = self.files.pop(spider)
-        file.close()
+        spider_file = self.files.pop(spider)
+        spider_file.close()
 
     def process_item(self, item, spider):
         self.exporter.export_item(item)
         return item
-
