@@ -36,6 +36,16 @@ class ScrapyHoster(Hoster):
     def get_configurations(self):
         return self.configurations
 
+    def print_configurations(self):
+        row_format = "{:<5}" + "{:15}" * 6
+        print(row_format.format("#", "Name", "CPU", "RAM", "Storage", "Bandwidth", "Price"))
+
+        i = 0
+        for item in self.configurations:
+            print(row_format.format(str(i) + ":", item["name"], item["cpu"], item["ram"], item["storage"],
+                                    item["bandwidth"], item["price"]))
+            i = i + 1
+
 
 class MyPipeline(object):
     def __init__(self, hoster_name):

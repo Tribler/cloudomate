@@ -2,7 +2,6 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-import util.config
 from vps.ramnode import Ramnode
 
 commands = ["options", "purchase", "list"]
@@ -11,48 +10,119 @@ providers = {
 }
 
 
-def execute(argv=None, settings=None):
+def execute():
     logging.disable(logging.DEBUG)
     logging.disable(logging.WARNING)
     logging.disable(logging.INFO)
 
     parser = ArgumentParser(description="Cloudomate")
-    parser.add_argument("command", help="The specified command", nargs='?', choices=commands)
-    parser.add_argument("provider", help="The specified provider", nargs='?', choices=providers)
-    parser.add_argument("--email", help="email")
-    parser.add_argument("--firstName", help="firstName")
-    parser.add_argument("--lastName", help="lastName")
-    parser.add_argument("--companyName", help="companyName")
-    parser.add_argument("--phoneNumber", help="phoneNumber")
-    parser.add_argument("--password", help="password")
-    parser.add_argument("--address", help="address")
-    parser.add_argument("--city", help="city")
-    parser.add_argument("--state", help="state")
-    parser.add_argument("--countryCode", help="countryCode")
-    parser.add_argument("--zipcode", help="zipcode")
-    parser.add_argument("--rootPassword", help="rootPassword")
-    parser.add_argument("--ns1", help="ns1")
-    parser.add_argument("--ns2", help="ns2")
-    parser.add_argument("--hostname", help="hostname")
+
+    subparsers = parser.add_subparsers(dest="command")
+    add_parser_list(subparsers)
+    add_parser_options(subparsers)
+    add_parser_purchase(subparsers)
 
     args = parser.parse_args()
-    cmdname = args.command
+    args.func(args)
+
+
+def add_parser_list(subparsers):
+    parser_list = subparsers.add_parser("list", help="List providers")
+    parser_list.set_defaults(func=list_providers)
+
+
+def add_parser_options(subparsers):
+    parser_options = subparsers.add_parser("options", help="List provider configurations")
+    parser_options.add_argument("provider", help="The specified provider", nargs="?", choices=providers)
+    parser_options.set_defaults(func=options)
+
+
+def add_parser_purchase(subparsers):
+    parser_purchase = subparsers.add_parser("purchase", help="Purchase VPS")
+    parser_purchase.set_defaults(func=purchase)
+    parser_purchase.add_argument("provider", help="The specified provider", choices=providers)
+    parser_purchase.add_argument("configuration", help="The configuration number (see options)", type=int)
+    parser_purchase.add_argument("--email", help="email")
+    parser_purchase.add_argument("--firstName", help="firstName")
+    parser_purchase.add_argument("--lastName", help="lastName")
+    parser_purchase.add_argument("--companyName", help="companyName")
+    parser_purchase.add_argument("--phoneNumber", help="phoneNumber")
+    parser_purchase.add_argument("--password", help="password")
+    parser_purchase.add_argument("--address", help="address")
+    parser_purchase.add_argument("--city", help="city")
+    parser_purchase.add_argument("--state", help="state")
+    parser_purchase.add_argument("--countryCode", help="countryCode")
+    parser_purchase.add_argument("--zipcode", help="zipcode")
+    parser_purchase.add_argument("--rootPassword", help="rootPassword")
+    parser_purchase.add_argument("--ns1", help="ns1")
+    parser_purchase.add_argument("--ns2", help="ns2")
+    parser_purchase.add_argument("--hostname", help="hostname")
+
+
+def options(args):
     provider = args.provider
-
-    if cmdname == "list":
-        _list_providers()
-        sys.exit(0)
-
     if not provider or provider not in providers:
-        _print_unknown_provider(commands, provider)
+        _print_unknown_provider(provider)
+        _list_providers()
         sys.exit(2)
-
-    if cmdname == "options":
-        _options(provider)
+    _options(args.provider)
 
 
-def _print_unknown_provider(command, provider):
-    _print_header()
+def purchase(args):
+    provider = args.provider
+    if not provider or provider not in providers:
+        _print_unknown_provider(provider)
+        _list_providers()
+        sys.exit(2)
+    print("Purchasing %s VPS" % args.provider)
+    _purchase(provider, args.configuration)
+
+
+def _purchase(provider, cid):
+    p = providers[provider]
+    configurations = p.options()
+    if not 0 <= cid < len(configurations):
+        print('Specified configuration %s is not in range 0-%s' % (cid, len(configurations)))
+        sys.exit(1)
+    configuration = configurations[cid]
+    row_format = "{:15}" * 6
+    print("Selected configuration:")
+    print(row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Price"))
+    print(row_format.format(configuration["name"], configuration["cpu"], configuration["ram"], configuration["storage"],
+                            configuration["bandwidth"], configuration["price"]))
+    choice = _confirmation("Are you sure?", default="no")
+    if choice:
+        print("Purchasing VPS...")
+    else:
+        print("Installing malware...")
+
+
+def _confirmation(message, default="y"):
+    valid_options = {"yes": True, "ye": True, "y": True, "no": False, "n": False}
+    if default in valid_options and valid_options[default] is True:
+        prompt = "Y/n"
+    elif default in valid_options and valid_options[default] is False:
+        prompt = "y/N"
+    else:
+        prompt = "y/n"
+
+    while True:
+        try:
+            choice = raw_input("%s (%s) " % (message, prompt)).lower()
+        except EOFError:
+            sys.exit(2)
+        if default is not None and choice == '':
+            return valid_options[default]
+        elif choice in valid_options:
+            return valid_options[choice]
+        print("Please respond with y[es] or n[o]")
+
+
+def list_providers(args):
+    _list_providers()
+
+
+def _print_unknown_provider(provider):
     if provider:
         print("Unknown provider: %s\n" % provider)
     else:
@@ -60,7 +130,6 @@ def _print_unknown_provider(command, provider):
 
 
 def _list_providers():
-    _print_header()
     print("Providers:")
     for provider in providers:
         print("  %s     %s" % (provider, providers[provider].website_name))
@@ -71,7 +140,7 @@ def _options(provider):
     print("Options for %s:\n" % provider)
     p = providers[provider]
     p.options()
-    print(p.get_configurations())
+    p.print_configurations()
 
 
 def _print_unknown_command(command):
