@@ -2,6 +2,7 @@ import logging
 import sys
 from argparse import ArgumentParser
 
+from util.config import Config
 from vps.ramnode import Ramnode
 
 commands = ["options", "purchase", "list"]
@@ -42,20 +43,20 @@ def add_parser_purchase(subparsers):
     parser_purchase.set_defaults(func=purchase)
     parser_purchase.add_argument("provider", help="The specified provider", choices=providers)
     parser_purchase.add_argument("configuration", help="The configuration number (see options)", type=int)
-    parser_purchase.add_argument("--email", help="email")
-    parser_purchase.add_argument("--firstName", help="firstName")
-    parser_purchase.add_argument("--lastName", help="lastName")
-    parser_purchase.add_argument("--companyName", help="companyName")
-    parser_purchase.add_argument("--phoneNumber", help="phoneNumber")
-    parser_purchase.add_argument("--password", help="password")
-    parser_purchase.add_argument("--address", help="address")
-    parser_purchase.add_argument("--city", help="city")
-    parser_purchase.add_argument("--state", help="state")
-    parser_purchase.add_argument("--countryCode", help="countryCode")
-    parser_purchase.add_argument("--zipcode", help="zipcode")
-    parser_purchase.add_argument("--rootPassword", help="rootPassword")
-    parser_purchase.add_argument("--ns1", help="ns1")
-    parser_purchase.add_argument("--ns2", help="ns2")
+    parser_purchase.add_argument("-e", "--email", help="email")
+    parser_purchase.add_argument("-fn", "--firstname", help="first name")
+    parser_purchase.add_argument("-ln", "--lastname", help="last name")
+    parser_purchase.add_argument("-cn", "--companyname", help="company name")
+    parser_purchase.add_argument("-pn", "--phone", help="phone number", metavar="phonenumber")
+    parser_purchase.add_argument("-pw", "--password", help="password")
+    parser_purchase.add_argument("-a", "--address", help="address")
+    parser_purchase.add_argument("-c", "--city", help="city")
+    parser_purchase.add_argument("-s", "--state", help="state")
+    parser_purchase.add_argument("-cc", "--countrycode", help="country code")
+    parser_purchase.add_argument("-z", "--zipcode", help="zipcode")
+    parser_purchase.add_argument("-rp", "--rootpw", help="root password")
+    parser_purchase.add_argument("-ns1", "--ns1", help="ns1")
+    parser_purchase.add_argument("-ns2", "--ns2", help="ns2")
     parser_purchase.add_argument("--hostname", help="hostname")
 
 
@@ -74,11 +75,33 @@ def purchase(args):
         _print_unknown_provider(provider)
         _list_providers()
         sys.exit(2)
-    print("Purchasing %s VPS" % args.provider)
-    _purchase(provider, args.configuration)
+    config = _get_config(args)
+    print(args)
+    if not _check_provider(provider, config):
+        print("Missing option")
+        sys.exit(2)
+    _purchase(provider, args.configuration, config)
 
 
-def _purchase(provider, cid):
+def _check_provider(provider, config):
+    p = providers[provider]
+    return config.verify_config(p.required_settings)
+
+
+def _get_config(args):
+    config = Config()
+    config.read_config()
+    _merge_arguments(config, vars(args))
+    return config
+
+
+def _merge_arguments(config, args):
+    for key in args:
+        if args[key] is not None:
+            config.put(key, args[key])
+
+
+def _purchase(provider, cid, config):
     p = providers[provider]
     configurations = p.options()
     if not 0 <= cid < len(configurations):

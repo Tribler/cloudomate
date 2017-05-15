@@ -1,24 +1,38 @@
 import unittest
 
-from cloudomate.util.config import read_config
+from cloudomate.util.config import Config
 
 
 class TestConfig(unittest.TestCase):
-    def test_has_user(self):
-        config = read_config("cloudomate.cfg")
-        self.assertIsNotNone("User" in config.sections())
+    def setUp(self):
+        self.config = Config()
+        self.config.read_config("config_test.cfg")
+
+    def test_read_config(self):
+        self.assertIsNotNone(self.config)
 
     def test_has_first_name(self):
-        config = read_config("cloudomate.cfg")
-        self.assertIsNotNone(config.get('User', 'firstName'))
+        self.assertIsNotNone(self.config.get('firstname'))
 
     def test_has_email(self):
-        config = read_config("cloudomate.cfg")
-        self.assertTrue("@" in config.get('User', 'email'))
+        self.assertTrue("@" in self.config.get('email'))
 
-    def test_has_address(self):
-        config = read_config("cloudomate.cfg")
-        self.assertTrue("User" in config.sections())
+    def test_verify_config(self):
+        verification = [
+            "email",
+            "firstname",
+            "lastname"
+        ]
+        self.assertTrue(self.config.verify_config(verification))
+
+    def test_verify_bad_config(self):
+        verification = [
+            "email",
+            "firstname",
+            "lastname"
+            "randomattribute"
+        ]
+        self.assertFalse(self.config.verify_config(verification))
 
 
 if __name__ == '__main__':
