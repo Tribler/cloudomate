@@ -6,7 +6,6 @@ from scrapy.loader import ItemLoader
 from scrapy.loader.processors import TakeFirst
 from scrapy.utils.response import open_in_browser
 
-from util.config import read_config
 from vps.scrapy_hoster import ScrapyHoster
 from vps.vpsoption import VpsOption
 
@@ -16,10 +15,11 @@ class RamnodeSpider(scrapy.Spider):
     start_urls = [
         'https://ramnode.com/vps.php',
     ]
-    config = read_config()
+    config = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, config, **kwargs):
         super(RamnodeSpider, self).__init__(**kwargs)
+        self.config = config
 
     def parse(self, response):
         yield scrapy.Request('https://clientarea.ramnode.com/cart.php?a=add&pid=206', callback=self.checkout)
@@ -36,7 +36,7 @@ class RamnodeSpider(scrapy.Spider):
                                   'hostname': 'asdf',
                                   'ns1prefix': self.config.get("server", "ns1"),
                                   'ns2prefix': self.config.get("server", "ns2"),
-                                  'rootpw': 'auto-generated',
+                                  'rootpw': self.config.get("rootpw"),
                                   'configoption[135]': '1370',
                                   'configoption[136]': '1377', },
                                  callback=self.after_post)
@@ -63,7 +63,7 @@ class RamnodeSpider(scrapy.Spider):
                                   'state': 'Alabama',
                                   'password': self.config.get("user", "password"),
                                   'postcode': self.config.get("address", "zipcode"),
-                                  'password2': self.config.get("user", "passwrod"),
+                                  'password2': self.config.get("user", "password"),
                                   'country': self.config.get("user", "countryCode"),
                                   'phonenumber': self.config.get("user", "phoneNumber"),
                                   'securityqid': '1',
@@ -94,7 +94,6 @@ class RamnodeOptions(scrapy.Spider):
     ]
 
     def parse(self, response):
-        # il = ItemLoader(item=VpsOption, response=response)
         rows = response.xpath(
             "//table[@class='table table-striped table-centered']/tbody/tr")
         for t in rows:
@@ -123,6 +122,22 @@ class Ramnode(ScrapyHoster):
     website_name = "https://ramnode.com"
     purchase_spider = RamnodeSpider
     options_spider = RamnodeOptions
+    required_settings = [
+        "firstname",
+        "address",
+        "lastname",
+        "companyname",
+        "city",
+        "email",
+        "password",
+        "zipcode",
+        "countrycode",
+        "phonenumber",
+        "password",
+        "rootpw",
+        "ns1",
+        "ns2",
+    ]
 
     def __init__(self):
         super(Ramnode, self).__init__('ramnode', self.options_spider, self.purchase_spider)
