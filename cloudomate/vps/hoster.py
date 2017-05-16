@@ -6,4 +6,4 @@ At this time there is no abstract implementation for any functionality.
 
 class Hoster(object):
     def options(self):
-        raise NotImplemented('Abstract method implementation')
+        raise NotImplementedError('Abstract method implementation')

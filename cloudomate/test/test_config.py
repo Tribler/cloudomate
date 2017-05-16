@@ -34,6 +34,12 @@ class TestConfig(unittest.TestCase):
         ]
         self.assertFalse(self.config.verify_config(verification))
 
+    def test_put(self):
+        key = "putkey"
+        value = "putvalue"
+        self.config.put(key, value)
+        self.assertEqual(self.config.get(key), value)
+
 
 if __name__ == '__main__':
     unittest.main()

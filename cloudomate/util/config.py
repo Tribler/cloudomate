@@ -19,7 +19,7 @@ class Config(object):
     def verify_config(self, options):
         valid = True
         for option in options:
-            if option not in self.config:
+            if option not in self.config or not self.config.get(option):
                 print("%s is not in config" % option)
                 valid = False
         return valid

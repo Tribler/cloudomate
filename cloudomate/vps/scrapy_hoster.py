@@ -7,7 +7,7 @@ from scrapy import signals
 from scrapy.crawler import CrawlerProcess
 from scrapy.exporters import JsonItemExporter
 
-from hoster import Hoster
+from cloudomate.vps.hoster import Hoster
 
 CONFIG_PATH_STRING = '.vpsconfigs/{0}.json'
 
@@ -22,7 +22,7 @@ class ScrapyHoster(Hoster):
     def options(self):
         if not self.configurations:
             process = CrawlerProcess({
-                'ITEM_PIPELINES': {'vps.scrapy_hoster.MyPipeline': 1},
+                'ITEM_PIPELINES': {'cloudomate.vps.scrapy_hoster.MyPipeline': 1},
                 'hoster_name': self.name
             })
             process.crawl(self.options_spider)
@@ -45,6 +45,15 @@ class ScrapyHoster(Hoster):
             print(row_format.format(str(i) + ":", item["name"], item["cpu"], item["ram"], item["storage"],
                                     item["bandwidth"], item["price"]))
             i = i + 1
+
+    def register(self, configuration):
+        process = CrawlerProcess({
+            'ITEM_PIPELINES': {'cloudomate.vps.scrapy_hoster.MyPipeline': 1},
+            'hoster_name': self.name,
+            'configuration': configuration
+        })
+        process.crawl(self.spider)
+        process.start()
 
 
 class MyPipeline(object):
