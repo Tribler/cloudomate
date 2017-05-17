@@ -35,7 +35,7 @@ class TestCmdLine(unittest.TestCase):
     def test_execute_purchase(self):
         self._mock_options([self._create_option()])
         with patch.object(ScrapyHoster, 'register', return_value=None) as mock_method:
-            command = ["purchase", "ramnode", "-rp", "asdf", "0"]
+            command = ["purchase", "ramnode", "-c", "config_test.cfg", "-rp", "asdf", "0"]
             cmdline.execute(command)
             mock_method.assert_called_once()
 
@@ -91,12 +91,12 @@ class TestCmdLine(unittest.TestCase):
 
     def test_execute_purchase_high_id(self):
         self._mock_options()
-        command = ["purchase", "ramnode", "-rp", "asdf", "1000"]
+        command = ["purchase", "ramnode", "-c", "config_test.cfg", "-rp", "asdf", "1000"]
         self._check_exit_code(1, cmdline.execute, command)
 
     def test_execute_purchase_low_id(self):
         mock = self._mock_options()
-        command = ["purchase", "ramnode", "-rp", "asdf", "-1"]
+        command = ["purchase", "ramnode", "-c", "config_test.cfg", "-rp", "asdf", "-1"]
         self._check_exit_code(1, cmdline.execute, command)
         mock.assert_called_once()
 

@@ -43,6 +43,7 @@ def add_parser_purchase(subparsers):
     parser_purchase.set_defaults(func=purchase)
     parser_purchase.add_argument("provider", help="The specified provider", choices=providers)
     parser_purchase.add_argument("configuration", help="The configuration number (see options)", type=int)
+    parser_purchase.add_argument("-c", "--config", help="Set custom config file")
     parser_purchase.add_argument("-f", help="Don't prompt for user confirmation", dest="noconfirm", action="store_true")
     parser_purchase.add_argument("-e", "--email", help="email")
     parser_purchase.add_argument("-fn", "--firstname", help="first name")
@@ -51,7 +52,7 @@ def add_parser_purchase(subparsers):
     parser_purchase.add_argument("-pn", "--phone", help="phone number", metavar="phonenumber")
     parser_purchase.add_argument("-pw", "--password", help="password")
     parser_purchase.add_argument("-a", "--address", help="address")
-    parser_purchase.add_argument("-c", "--city", help="city")
+    parser_purchase.add_argument("-ct", "--city", help="city")
     parser_purchase.add_argument("-s", "--state", help="state")
     parser_purchase.add_argument("-cc", "--countrycode", help="country code")
     parser_purchase.add_argument("-z", "--zipcode", help="zipcode")
@@ -92,7 +93,10 @@ def _check_provider(provider, config):
 
 def _get_config(args):
     config = Config()
-    config.read_config()
+    if args.config is not None:
+        config.read_config(filename=args.config)
+    else:
+        config.read_config()
     _merge_arguments(config, vars(args))
     return config
 
