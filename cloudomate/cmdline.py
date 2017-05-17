@@ -2,8 +2,8 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-from util.config import Config
-from vps.ramnode import Ramnode
+from cloudomate.util.config import Config
+from cloudomate.vps.ramnode import Ramnode
 
 commands = ["options", "purchase", "list"]
 providers = {
@@ -11,7 +11,7 @@ providers = {
 }
 
 
-def execute():
+def execute(cmd=sys.argv[1:]):
     logging.disable(logging.DEBUG)
     logging.disable(logging.WARNING)
     logging.disable(logging.INFO)
@@ -23,7 +23,7 @@ def execute():
     add_parser_options(subparsers)
     add_parser_purchase(subparsers)
 
-    args = parser.parse_args()
+    args = parser.parse_args(cmd)
     args.func(args)
 
 
@@ -43,6 +43,7 @@ def add_parser_purchase(subparsers):
     parser_purchase.set_defaults(func=purchase)
     parser_purchase.add_argument("provider", help="The specified provider", choices=providers)
     parser_purchase.add_argument("configuration", help="The configuration number (see options)", type=int)
+    parser_purchase.add_argument("-f", help="Don't prompt for user confirmation", dest="noconfirm", action="store_true")
     parser_purchase.add_argument("-e", "--email", help="email")
     parser_purchase.add_argument("-fn", "--firstname", help="first name")
     parser_purchase.add_argument("-ln", "--lastname", help="last name")
@@ -70,13 +71,14 @@ def options(args):
 
 
 def purchase(args):
+    if "provider" not in vars(args):
+        sys.exit(2)
     provider = args.provider
     if not provider or provider not in providers:
         _print_unknown_provider(provider)
         _list_providers()
         sys.exit(2)
     config = _get_config(args)
-    print(args)
     if not _check_provider(provider, config):
         print("Missing option")
         sys.exit(2)
@@ -113,11 +115,14 @@ def _purchase(provider, cid, config):
     print(row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Price"))
     print(row_format.format(configuration["name"], configuration["cpu"], configuration["ram"], configuration["storage"],
                             configuration["bandwidth"], configuration["price"]))
-    choice = _confirmation("Are you sure?", default="no")
-    if choice:
-        print("Purchasing VPS...")
+    if config.get("noconfirm") is not None:
+        choice = True
     else:
-        print("Installing malware...")
+        choice = _confirmation("Are you sure?", default="no")
+    if choice:
+        _register(provider, configuration)
+    else:
+        return False
 
 
 def _confirmation(message, default="y"):
@@ -159,43 +164,16 @@ def _list_providers():
 
 
 def _options(provider):
-    _print_header()
     print("Options for %s:\n" % provider)
     p = providers[provider]
     p.options()
     p.print_configurations()
 
 
-def _print_unknown_command(command):
-    _print_header()
-    print("Unknown command: %s\n" % command)
-    print('Use "cloudomate" to see available commands')
-
-
-def _print_commands():
-    _print_header()
-    print("Usage:")
-    print("  cloudomate list")
-    print("  cloudomate <command> <provider> [options] [args]\n")
-    print("Available commands:")
-    print("  purchase       Purchase a specified VPS")
-    print("  options        List options")
-    print("  list           List providers")
-
-
-def _print_header():
-    print("Cloudomate\n")
-
-
-def _pop_command_names(argv):
-    c = []
-    i = 0
-    for arg in argv[1:]:
-        if not arg.startswith('-'):
-            del argv[i]
-            c.append(arg)
-        i += 1
-    return c
+def _register(provider, configuration):
+    print("Register for %s:\n" % provider)
+    p = providers[provider]
+    p.register(configuration)
 
 
 if __name__ == '__main__':

@@ -6,8 +6,8 @@ from scrapy.loader import ItemLoader
 from scrapy.loader.processors import TakeFirst
 from scrapy.utils.response import open_in_browser
 
-from vps.scrapy_hoster import ScrapyHoster
-from vps.vpsoption import VpsOption
+from cloudomate.vps.scrapy_hoster import ScrapyHoster
+from cloudomate.vps.vpsoption import VpsOption
 
 
 class RamnodeSpider(scrapy.Spider):
