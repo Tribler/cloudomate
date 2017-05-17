@@ -7,9 +7,12 @@ from scrapy import signals
 from scrapy.crawler import CrawlerProcess
 from scrapy.exporters import JsonItemExporter
 
+from appdirs import *
+
 from cloudomate.vps.hoster import Hoster
 
-CONFIG_PATH_STRING = '.vpsconfigs/{0}.json'
+CACHE_DIRECTORY = user_cache_dir('cloudomate')
+CONFIG_PATH_STRING = os.path.join(CACHE_DIRECTORY, '{0}.json')
 
 
 class ScrapyHoster(Hoster):
@@ -70,6 +73,8 @@ class MyPipeline(object):
         return pipeline
 
     def spider_opened(self, spider):
+        if not os.path.exists(CACHE_DIRECTORY):
+            os.makedirs(CACHE_DIRECTORY)
         spider_file = open(CONFIG_PATH_STRING.format(self.hoster_name), 'wb')
         self.files[spider] = spider_file
         self.exporter = JsonItemExporter(spider_file)

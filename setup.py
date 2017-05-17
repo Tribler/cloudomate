@@ -40,7 +40,7 @@ setup(
     packages=find_packages(exclude=['docs', 'test']),
 
 
-    install_requires=['scrapy', 'mock', ],
+    install_requires=['scrapy', 'mock', 'appdirs'],
 
     extras_require={
         'dev': [],
