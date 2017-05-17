@@ -49,7 +49,7 @@ def add_parser_purchase(subparsers):
     parser_purchase.add_argument("-fn", "--firstname", help="first name")
     parser_purchase.add_argument("-ln", "--lastname", help="last name")
     parser_purchase.add_argument("-cn", "--companyname", help="company name")
-    parser_purchase.add_argument("-pn", "--phone", help="phone number", metavar="phonenumber")
+    parser_purchase.add_argument("-pn", "--phonenumber", help="phone number", metavar="phonenumber")
     parser_purchase.add_argument("-pw", "--password", help="password")
     parser_purchase.add_argument("-a", "--address", help="address")
     parser_purchase.add_argument("-ct", "--city", help="city")
