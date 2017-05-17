@@ -1,2 +1,26 @@
-Cloudomate is an unpermissioned open compute API which provides an automated way to buy VPS instances from
-multiple providers.
+==========
+Cloudomate
+==========
+
+.. image:: https://jenkins.tribler.org/buildStatus/icon?job=pers/Cloudomate_test
+   :target: https://jenkins.tribler.org/job/pers/job/Cloudomate_test/
+   :alt: Build Status
+
+
+Overview
+========
+
+Cloudomate is an unpermissioned open compute API which provides an automated way to buy VPS instances from multiple providers.
+
+Requirements
+============
+
+* Python 2.7
+* Works on Linux, Windows, Mac OSX, BSD
+
+Tests
+=======
+
+To run the project's tests   ::
+    
+    python -m unittest discover
