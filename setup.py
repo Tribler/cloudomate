@@ -40,11 +40,11 @@ setup(
     packages=find_packages(exclude=['docs', 'test']),
 
 
-    install_requires=['scrapy', 'mock', 'appdirs'],
+    install_requires=['scrapy', 'appdirs'],
 
     extras_require={
         'dev': [],
-        'test': [],
+        'test': ['mock'],
     },
 
     package_data={
@@ -53,7 +53,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'cloudomate=cloudomate:main',
+            'cloudomate=cloudomate:cmdline',
         ],
     },
 )
