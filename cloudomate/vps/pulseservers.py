@@ -1,4 +1,3 @@
-from mechanize import Browser
 from bs4 import BeautifulSoup as soup
 
 from cloudomate.vps.hoster import Hoster
@@ -15,15 +14,20 @@ class Pulseservers(Hoster):
         response = br.open('https://pulseservers.com/vps-linux.html')
         site = soup(response.read(), 'lxml')
         pricingboxes = site.findAll('div', {'class': 'pricing-box'})
-        vps_options = [self._parse_box(box) for box in pricingboxes]
-        return vps_options
+        self.configurations = [self._parse_box(box) for box in pricingboxes]
+        return self.configurations
 
     def _parse_box(self, box):
         details = box.findAll('li')
         return VpsOption(
             name = details[0].h4.text,
-            price = details[1].h4.text + details[1].span.text,
-            cpu = self._beautify_cpu(details[2].h4.text, details[2].find(text=True, recursive=False))
+            price = details[1].h1.text + details[1].span.text,
+            cpu = self._beautify_cpu(details[2].strong.text, details[2].find(text=True, recursive=False)),
+            ram = details[3].strong.text,
+            storage = details[4].strong.text,
+            connection = details[5].strong.text,
+            bandwidth = details[6].strong.text,
+            purchase_url = details[9].a['href']
         )
 
     def _beautify_cpu(self, cores, speed):
