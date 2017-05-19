@@ -1,5 +1,4 @@
 import mechanize
-import re
 from bs4 import BeautifulSoup
 
 from cloudomate.vps.hoster import Hoster
