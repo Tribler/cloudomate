@@ -7,12 +7,12 @@ from parameterized import parameterized
 from cloudomate.vps.rockhoster import RockHoster
 
 providers = [
-    (cloudomate.vps.rockhoster.RockHoster,),
+    (RockHoster,),
 ]
 
 
 class TestHosters(unittest.TestCase):
-    @parameterized.expand(providers2)
+    @parameterized.expand(providers)
     def testHosterImplementsInterface(self, hoster):
         self.assertTrue('options' in dir(hoster), msg='options is not implemented in {0}'.format(hoster.name))
         self.assertTrue('purchase' in dir(hoster), msg='purchase is not implemented in {0}'.format(hoster.name))
