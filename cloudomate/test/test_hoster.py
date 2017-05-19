@@ -10,6 +10,7 @@ providers = [
     (cloudomate.vps.rockhoster.RockHoster,),
 ]
 
+
 class TestHosters(unittest.TestCase):
     @parameterized.expand(providers2)
     def testHosterImplementsInterface(self, hoster):
