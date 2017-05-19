@@ -1,11 +1,11 @@
 import ConfigParser
 
 
-class Config(object):
+class UserOptions(object):
     def __init__(self):
         self.config = {}
 
-    def read_config(self, filename="./cloudomate.cfg"):
+    def read_settings(self, filename="./cloudomate.cfg"):
         cp = ConfigParser.ConfigParser()
         cp.read(filename)
         self._merge(cp.items("User"))
@@ -16,7 +16,7 @@ class Config(object):
         for key, value in items:
             self.config[key] = value
 
-    def verify_config(self, options):
+    def verify_options(self, options):
         valid = True
         for option in options:
             if option not in self.config or not self.config.get(option):

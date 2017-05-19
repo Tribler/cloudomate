@@ -2,12 +2,13 @@
 ScrapyHoster provides a common implementation for all hosts accessible through scrapy only.
 """
 import json
+from collections import OrderedDict
 
+from appdirs import *
 from scrapy import signals
 from scrapy.crawler import CrawlerProcess
 from scrapy.exporters import JsonItemExporter
-
-from appdirs import *
+from twisted.internet import reactor
 
 from cloudomate.vps.hoster import Hoster
 
@@ -29,25 +30,55 @@ class ScrapyHoster(Hoster):
                 'hoster_name': self.name
             })
             process.crawl(self.options_spider)
-            process.start()
+            d = process.join()
+            d.addBoth(self.stop)
+            process.start(stop_after_crawl=False)
 
         with open(CONFIG_PATH_STRING.format(self.name), 'rb') as f:
             self.configurations = json.load(f)
 
         return self.configurations
 
+    def stop(self, a):
+        reactor.stop()
+        pass
+        # reactor.stop()
+
     def get_configurations(self):
         return self.configurations
 
     def print_configurations(self):
-        row_format = "{:<5}" + "{:15}" * 6
-        print(row_format.format("#", "Name", "CPU", "RAM", "Storage", "Bandwidth", "Price"))
+        """
+        Print parsed VPS configurations.
+        """
+        item_names = OrderedDict([
+            ("name", "Name"),
+            ("cpu", "CPU"),
+            ("ram", "RAM"),
+            ("storage", "Storage"),
+            ("bandwidth", "Bandwidth"),
+            ("connection", "Connection"),
+            ("price", "Price"),
+        ])
+        row_format = "{:<5}" + "{:15}" * len(item_names)
+        values = ["#"] + item_names.values()
+        print(row_format.format(*values))
 
         i = 0
         for item in self.configurations:
-            print(row_format.format(str(i) + ":", item["name"], item["cpu"], item["ram"], item["storage"],
-                                    item["bandwidth"], item["price"]))
+            self._print_row(i, item, item_names)
             i = i + 1
+
+    @staticmethod
+    def _print_row(i, item, item_names):
+        row_format = "{:<5}" + "{:15}" * len(item_names)
+        values = [i]
+        for key in item_names.keys():
+            if key in item:
+                values.append(item[key])
+            else:
+                values.append("")
+        print(row_format.format(*values))
 
     def register(self, configuration):
         process = CrawlerProcess({

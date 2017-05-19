@@ -1,14 +1,18 @@
-import scrapy
-
-
-class VpsOption(scrapy.Item):
-    name = scrapy.Field()
-    virtualization = scrapy.Field()
-    ram = scrapy.Field()
-    cpu = scrapy.Field()
-    ipv4 = scrapy.Field()
-    storage = scrapy.Field()
-    storage_type = scrapy.Field()
-    bandwidth = scrapy.Field()
-    price = scrapy.Field()
-    location = scrapy.Field()
+class VpsOption(object):
+    def __init__(self,
+                 name=None,
+                 price=None,
+                 cpu=None,
+                 ram=None,
+                 storage=None,
+                 bandwidth=None,
+                 connection=None,
+                 purchase_url=None):
+        self.name = name
+        self.ram = ram
+        self.cpu = cpu
+        self.storage = storage
+        self.bandwidth = bandwidth
+        self.connection = connection
+        self.price = price
+        self.purchase_url = purchase_url

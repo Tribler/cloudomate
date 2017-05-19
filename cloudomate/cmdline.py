@@ -2,12 +2,12 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-from cloudomate.util.config import Config
-from cloudomate.vps.ramnode import Ramnode
+from cloudomate.util.config import UserOptions
+from vps.rockhoster import RockHoster
 
 commands = ["options", "purchase", "list"]
 providers = {
-    "ramnode": Ramnode(),
+    "rockhoster": RockHoster(),
 }
 
 
@@ -79,26 +79,26 @@ def purchase(args):
         _print_unknown_provider(provider)
         _list_providers()
         sys.exit(2)
-    config = _get_config(args)
-    if not _check_provider(provider, config):
+    user_settings = _get_user_settings(args)
+    if not _check_provider(provider, user_settings):
         print("Missing option")
         sys.exit(2)
-    _purchase(provider, args.configuration, config)
+    _purchase(provider, args.configuration, user_settings)
 
 
 def _check_provider(provider, config):
     p = providers[provider]
-    return config.verify_config(p.required_settings)
+    return config.verify_options(p.required_settings)
 
 
-def _get_config(args):
-    config = Config()
+def _get_user_settings(args):
+    user_settings = UserOptions()
     if args.config is not None:
-        config.read_config(filename=args.config)
+        user_settings.read_settings(filename=args.config)
     else:
-        config.read_config()
-    _merge_arguments(config, vars(args))
-    return config
+        user_settings.read_settings()
+    _merge_arguments(user_settings, vars(args))
+    return user_settings
 
 
 def _merge_arguments(config, args):
@@ -107,24 +107,29 @@ def _merge_arguments(config, args):
             config.put(key, args[key])
 
 
-def _purchase(provider, cid, config):
+def _purchase(provider, cid, user_settings):
     p = providers[provider]
     configurations = p.options()
     if not 0 <= cid < len(configurations):
         print('Specified configuration %s is not in range 0-%s' % (cid, len(configurations)))
         sys.exit(1)
-    configuration = configurations[cid]
+    vps_option = configurations[cid]
     row_format = "{:15}" * 6
     print("Selected configuration:")
     print(row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Price"))
-    print(row_format.format(configuration["name"], configuration["cpu"], configuration["ram"], configuration["storage"],
-                            configuration["bandwidth"], configuration["price"]))
-    if config.get("noconfirm") is not None:
+    print(row_format.format(
+        vps_option.name,
+        vps_option.cpu,
+        vps_option.ram,
+        vps_option.storage,
+        vps_option.bandwidth,
+        vps_option.price))
+    if user_settings.get("noconfirm") is not None:
         choice = True
     else:
         choice = _confirmation("Are you sure?", default="no")
     if choice:
-        _register(provider, configuration)
+        _register(provider, vps_option, user_settings)
     else:
         return False
 
@@ -164,7 +169,7 @@ def _print_unknown_provider(provider):
 def _list_providers():
     print("Providers:")
     for provider in providers:
-        print("  %s     %s" % (provider, providers[provider].website_name))
+        print("   {:15}{:30}".format(provider, providers[provider].website))
 
 
 def _options(provider):
@@ -174,10 +179,10 @@ def _options(provider):
     p.print_configurations()
 
 
-def _register(provider, configuration):
+def _register(provider, vps_option, user_settings):
     print("Register for %s:\n" % provider)
     p = providers[provider]
-    p.register(configuration)
+    p.purchase(user_settings=user_settings, vps_option=vps_option)
 
 
 if __name__ == '__main__':
