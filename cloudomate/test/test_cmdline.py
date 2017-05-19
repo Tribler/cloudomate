@@ -1,19 +1,18 @@
 import unittest
 from argparse import Namespace
 
-from mock import patch
 from mock.mock import MagicMock
 
 import cloudomate.cmdline as cmdline
-from cloudomate.util.config import Config
-from cloudomate.vps.scrapy_hoster import ScrapyHoster
+from cloudomate.util.config import UserOptions
+from cloudomate.vps.rockhoster import RockHoster
 from cloudomate.vps.vpsoption import VpsOption
 
 
 class TestCmdLine(unittest.TestCase):
     def setUp(self):
-        self.config = Config()
-        self.config.read_config("config_test.cfg")
+        self.config = UserOptions()
+        self.config.read_settings("config_test.cfg")
 
     def test_put(self):
         key = "putkey"
@@ -27,34 +26,31 @@ class TestCmdLine(unittest.TestCase):
 
     def test_execute_options(self):
         mock_method = self._mock_options()
-        command = ["options", "ramnode"]
-        cmdline.providers["ramnode"].configurations = []
+        command = ["options", "rockhoster"]
+        cmdline.providers["rockhoster"].configurations = []
         cmdline.execute(command)
         mock_method.assert_called_once()
 
     def test_execute_purchase(self):
         self._mock_options([self._create_option()])
-        with patch.object(ScrapyHoster, 'register', return_value=None) as mock_method:
-            command = ["purchase", "ramnode", "-c", "config_test.cfg", "-rp", "asdf", "0"]
-            cmdline.execute(command)
-            mock_method.assert_called_once()
+        RockHoster.purchase = MagicMock()
+        command = ["purchase", "rockhoster", "-c", "config_test.cfg", "-rp", "asdf", "0"]
+        cmdline.execute(command)
+        RockHoster.purchase.assert_called_once()
 
     def _create_option(self):
         option = VpsOption()
-        option['name'] = "Option name"
-        option['virtualization'] = "Option virtualization"
-        option['ram'] = "Option ram"
-        option['cpu'] = "Option cpu"
-        option['ipv4'] = "Option ipv4"
-        option['storage'] = "Option storage"
-        option['storage_type'] = "Option storage_type"
-        option['bandwidth'] = "Option bandwidth"
-        option['price'] = "Option price"
-        option['location'] = "Option location"
+        option.name = "Option name"
+        option.ram = "Option ram"
+        option.cpu = "Option cpu"
+        option.storage = "Option storage"
+        option.bandwidth = "Option bandwidth"
+        option.price = "Option price"
+        option.connection = "Option connection"
         return option
 
     def test_execute_purchase_verify_options_failure(self):
-        command = ["purchase", "ramnode", "1"]
+        command = ["purchase", "rockhoster", "-c", "config_test.cfg", "1"]
         self._check_exit_code(2, cmdline.execute, command)
 
     def test_execute_purchase_unknown_provider(self):
@@ -91,20 +87,20 @@ class TestCmdLine(unittest.TestCase):
 
     def test_execute_purchase_high_id(self):
         self._mock_options()
-        command = ["purchase", "ramnode", "-c", "config_test.cfg", "-rp", "asdf", "1000"]
+        command = ["purchase", "rockhoster", "-c", "config_test.cfg", "-rp", "asdf", "1000"]
         self._check_exit_code(1, cmdline.execute, command)
 
     def test_execute_purchase_low_id(self):
         mock = self._mock_options()
-        command = ["purchase", "ramnode", "-c", "config_test.cfg", "-rp", "asdf", "-1"]
+        command = ["purchase", "rockhoster", "-c", "config_test.cfg", "-rp", "asdf", "-1"]
         self._check_exit_code(1, cmdline.execute, command)
         mock.assert_called_once()
 
     def _mock_options(self, items=None):
         if items is None:
             items = []
-        ScrapyHoster.options = MagicMock(return_value=items)
-        return ScrapyHoster.options
+        RockHoster.options = MagicMock(return_value=items)
+        return RockHoster.options
 
 
 if __name__ == '__main__':

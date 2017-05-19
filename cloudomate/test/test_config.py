@@ -1,12 +1,12 @@
 import unittest
 
-from cloudomate.util.config import Config
+from cloudomate.util.config import UserOptions
 
 
 class TestConfig(unittest.TestCase):
     def setUp(self):
-        self.config = Config()
-        self.config.read_config("config_test.cfg")
+        self.config = UserOptions()
+        self.config.read_settings("config_test.cfg")
 
     def test_read_config(self):
         self.assertIsNotNone(self.config)
@@ -23,7 +23,7 @@ class TestConfig(unittest.TestCase):
             "firstname",
             "lastname"
         ]
-        self.assertTrue(self.config.verify_config(verification))
+        self.assertTrue(self.config.verify_options(verification))
 
     def test_verify_bad_config(self):
         verification = [
@@ -32,7 +32,7 @@ class TestConfig(unittest.TestCase):
             "lastname"
             "randomattribute"
         ]
-        self.assertFalse(self.config.verify_config(verification))
+        self.assertFalse(self.config.verify_options(verification))
 
     def test_put(self):
         key = "putkey"

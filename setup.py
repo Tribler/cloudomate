@@ -40,7 +40,7 @@ setup(
     packages=find_packages(exclude=['docs', 'test']),
 
 
-    install_requires=['scrapy', 'appdirs'],
+    install_requires=['appdirs', 'mechanize', 'bs4', 'mock'],
 
     extras_require={
         'dev': [],
