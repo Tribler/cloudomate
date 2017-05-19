@@ -5,9 +5,11 @@ import cloudomate.vps.hoster
 from parameterized import parameterized
 
 from cloudomate.vps.rockhoster import RockHoster
+from cloudomate.vps.pulseservers import Pulseservers
 
 providers = [
     (RockHoster,),
+    (Pulseservers,),
 ]
 
 
