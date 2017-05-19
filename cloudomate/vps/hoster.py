@@ -39,3 +39,9 @@ class Hoster(object):
             else:
                 values.append("")
         print(row_format.format(*values))
+
+    def _create_browser(self):
+        br = Browser()
+        br.set_handle_robots(False)
+        br.addheaders = [('User-agent', 'Chromium')]
+        return br
