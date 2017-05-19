@@ -12,10 +12,6 @@ providers = {
 
 
 def execute(cmd=sys.argv[1:]):
-    logging.disable(logging.DEBUG)
-    logging.disable(logging.WARNING)
-    logging.disable(logging.INFO)
-
     parser = ArgumentParser(description="Cloudomate")
 
     subparsers = parser.add_subparsers(dest="command")
