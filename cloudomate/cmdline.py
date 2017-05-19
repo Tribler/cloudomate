@@ -3,11 +3,13 @@ import sys
 from argparse import ArgumentParser
 
 from cloudomate.util.config import UserOptions
+from cloudomate.vps.clowncloud import ClownCloud
 from cloudomate.vps.rockhoster import RockHoster
 
 commands = ["options", "purchase", "list"]
 providers = {
     "rockhoster": RockHoster(),
+    "clowncloud": ClownCloud(),
 }
 
 
