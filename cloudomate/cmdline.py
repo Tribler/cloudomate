@@ -4,10 +4,12 @@ from argparse import ArgumentParser
 
 from cloudomate.util.config import UserOptions
 from cloudomate.vps.rockhoster import RockHoster
+from cloudomate.vps.pulseservers import Pulseservers
 
 commands = ["options", "purchase", "list"]
 providers = {
     "rockhoster": RockHoster(),
+    'pulseservers': Pulseservers(),
 }
 
 
