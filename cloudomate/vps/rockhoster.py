@@ -10,8 +10,10 @@ class RockHoster(Hoster):
     name = "rockhoster"
     website = "https://rockhoster.com/"
     required_settings = ["rootpw"]
+    br = None
 
     def __init__(self):
+        self.br = self._create_browser()
         pass
 
     def purchase(self, user_settings, vps_option):
@@ -32,62 +34,73 @@ class RockHoster(Hoster):
         :param vps_option: 
         :return: 
         """
-        br = self._create_browser()
+        self.br.open(vps_option.purchase_url)
+        self.br.select_form(nr=4)
+        self.fill_in_server_form(self.br, user_settings)
+        self.br.submit()
+        self.br.open('https://rockhoster.com/cloud/cart.php?a=view')
+        self.br.follow_link(text_regex=r"Checkout")
+        self.br.select_form(nr=4)
+        self.fill_in_user_form(self.br, user_settings)
+        self.br.submit()
+        self.br.follow_link(url_regex="coinbase")
 
-        br.open(vps_option.purchase_url)
-        br.select_form(nr=4)
-        self.fill_in_server_form(br, user_settings)
-        br.submit()
-        br.open('https://rockhoster.com/cloud/cart.php?a=view')
-        br.follow_link(text_regex=r"Checkout")
-        br.select_form(nr=4)
-        self.fill_in_user_form(br, user_settings)
-        br.submit()
-        br.follow_link(url_regex="coinbase")
+    def login(self, user_settings):
+        """
+        Login into the RockHoster clientarea.
+        :return: 
+        """
+        self.br.open("https://rockhoster.com/cloud/clientarea.php")
+        self.br.select_form(nr=0)
+        self.br.form['username'] = user_settings.get('email')
+        self.br.form['password'] = user_settings.get('password')
+        page = self.br.submit()
 
-    @staticmethod
-    def fill_in_server_form(br, user_settings):
+    def number_of_services(self):
+        page = self.br.open("https://rockhoster.com/cloud/clientarea.php")
+        soup = BeautifulSoup(page.get_data(), 'lxml')
+        stat = soup.find('div', {'class': 'col-sm-3 col-xs-6 tile'}).a.find('div', {'class': 'stat'})
+        return stat.text
+
+    def fill_in_server_form(self, user_settings):
         """
         Fills in the form containing server configuration.
-        :param br: browser
         :param user_settings: settings
         :return: 
         """
-        br.form['hostname'] = user_settings.get("hostname")
-        br.form['rootpw'] = user_settings.get("rootpw")
-        br.form['ns1prefix'] = user_settings.get("ns1")
-        br.form['ns2prefix'] = user_settings.get("ns2")
-        br.form['configoption[20]'] = ['53']  # Paris
-        br.form['configoption[2]'] = ['13']
-        br.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
-        br.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
-        br.form.method = "POST"
+        self.br.form['hostname'] = user_settings.get("hostname")
+        self.br.form['rootpw'] = user_settings.get("rootpw")
+        self.br.form['ns1prefix'] = user_settings.get("ns1")
+        self.br.form['ns2prefix'] = user_settings.get("ns2")
+        self.br.form['configoption[20]'] = ['53']  # Paris
+        self.br.form['configoption[2]'] = ['13']
+        self.br.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
+        self.br.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
+        self.br.form.method = "POST"
 
-    @staticmethod
-    def fill_in_user_form(br, user_settings):
+    def fill_in_user_form(self, user_settings):
         """
         Fills in the form with user information.
-        :param br: browser
         :param user_settings: settings
         :return: 
         """
-        br.form['firstname'] = user_settings.get("firstname")
-        br.form['lastname'] = user_settings.get("lastname")
-        br.form['email'] = user_settings.get("email")
-        br.form['phonenumber'] = user_settings.get("phonenumber")
-        br.form['companyname'] = user_settings.get("companyname")
-        br.form['address1'] = user_settings.get("address")
-        br.form['city'] = user_settings.get("city")
+        self.br.form['firstname'] = user_settings.get("firstname")
+        self.br.form['lastname'] = user_settings.get("lastname")
+        self.br.form['email'] = user_settings.get("email")
+        self.br.form['phonenumber'] = user_settings.get("phonenumber")
+        self.br.form['companyname'] = user_settings.get("companyname")
+        self.br.form['address1'] = user_settings.get("address")
+        self.br.form['city'] = user_settings.get("city")
         countrycode = user_settings.get("countrycode")
 
         # State input changes based on country: USA (default) -> Select, Other -> Text
-        br.form['state'] = user_settings.get("state")
-        br.form['postcode'] = user_settings.get("zipcode")
-        br.form['country'] = [countrycode]
-        br.form['password'] = user_settings.get("password")
-        br.form['password2'] = user_settings.get("password")
-        br.form['paymentmethod'] = ['coinbase']
-        br.find_control('accepttos').items[0].selected = True
+        self.br.form['state'] = user_settings.get("state")
+        self.br.form['postcode'] = user_settings.get("zipcode")
+        self.br.form['country'] = [countrycode]
+        self.br.form['password'] = user_settings.get("password")
+        self.br.form['password2'] = user_settings.get("password")
+        self.br.form['paymentmethod'] = ['coinbase']
+        self.br.find_control('accepttos').items[0].selected = True
 
     def options(self):
         return self.crawl_options()
@@ -147,7 +160,3 @@ class RockHoster(Hoster):
         option.price = column.div.strong.text
         option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
         return option
-
-
-if __name__ == "__main__":
-    RockHoster().crawl_options()
