@@ -14,7 +14,7 @@ countryCode =
 zipcode = 
 
 [Server]
-rootPassword = 
+rootpw = 
 ns1 = 
 ns2 = 
 hostname = 
