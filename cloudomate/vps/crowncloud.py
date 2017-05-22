@@ -5,8 +5,8 @@ from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 
 
-class ClownCloud(Hoster):
-    name = "clowncloud"
+class CrownCloud(Hoster):
+    name = "crowncloud"
     website = "http://crowncloud.net/"
     required_settings = ["rootpw"]
     browser = None
@@ -58,4 +58,4 @@ class ClownCloud(Hoster):
 
 
 if __name__ == "__main__":
-    ClownCloud.start()
+    CrownCloud.start()

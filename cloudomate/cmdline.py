@@ -5,13 +5,13 @@ from argparse import ArgumentParser
 from cloudomate.util.config import UserOptions
 from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
-from cloudomate.vps.clowncloud import ClownCloud
+from cloudomate.vps.crowncloud import CrownCloud
 from cloudomate.vps.rockhoster import RockHoster
 
 commands = ["options", "purchase", "list"]
 providers = {
     "rockhoster": RockHoster(),
-    "clowncloud": ClownCloud(),
+    "crowncloud": CrownCloud(),
     "blueangelhost": BlueAngelHost(),
     "ccihosting": CCIHosting(),
 }
