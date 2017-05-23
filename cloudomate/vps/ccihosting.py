@@ -9,8 +9,20 @@ from cloudomate.vps.vpsoption import VpsOption
 class CCIHosting(Hoster):
     name = "ccihosting"
     website = "http://www.ccihosting.com/"
-    required_settings = ["rootpw"]
-    browser = None
+    required_settings = [
+        'firstname',
+        'lastname',
+        'email',
+        'phonenumber',
+        'address',
+        'city',
+        'countrycode',
+        'state',
+        'zipcode',
+        'password',
+        'hostname',
+        'rootpw'
+    ]
 
     def purchase(self, user_settings, vps_option):
         """
