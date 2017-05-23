@@ -22,14 +22,17 @@ class Wallet:
         print addresses
 
     def payautofee(self, address, amount):
+        subprocess.call(['electrum', 'daemon', 'start'])
+        subprocess.call(['electrum', 'daemon', 'load_wallet'])
         if self.getbalance() < amount:
             print 'NotEnoughFunds'
         else:
-            output = subprocess.check_output(['electrum', 'payto', address, str(amount)])
+            output = subprocess.check_output(['electrum', 'payto', str(address), str(amount)])
             temp = json.loads(output)
             hextransaction = temp['hex']
             subprocess.call(['electrum', 'broadcast', hextransaction])
             print 'payment succeeded'
+        subprocess.call(['electrum', 'daemon', 'stop'])
 
     def pay(self, address, amount, fee):
         if self.getbalance() < amount:
