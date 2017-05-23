@@ -3,6 +3,9 @@ import sys
 from argparse import ArgumentParser
 
 from cloudomate.util.config import UserOptions
+from cloudomate.vps.blueangelhost import BlueAngelHost
+from cloudomate.vps.ccihosting import CCIHosting
+from cloudomate.vps.crowncloud import CrownCloud
 from cloudomate.vps.rockhoster import RockHoster
 from cloudomate.vps.pulseservers import Pulseservers
 
@@ -10,14 +13,13 @@ commands = ["options", "purchase", "list"]
 providers = {
     "rockhoster": RockHoster(),
     'pulseservers': Pulseservers(),
+    "crowncloud": CrownCloud(),
+    "blueangelhost": BlueAngelHost(),
+    "ccihosting": CCIHosting(),
 }
 
 
 def execute(cmd=sys.argv[1:]):
-    logging.disable(logging.DEBUG)
-    logging.disable(logging.WARNING)
-    logging.disable(logging.INFO)
-
     parser = ArgumentParser(description="Cloudomate")
 
     subparsers = parser.add_subparsers(dest="command")

@@ -2,7 +2,12 @@
 Hoster provides abstract implementations for common functionality
 At this time there is no abstract implementation for any functionality.
 """
+import os
 import random
+import re
+import webbrowser
+from tempfile import mkstemp
+from urlparse import urlparse
 
 from mechanize import Browser
 
@@ -74,3 +79,18 @@ class Hoster(object):
         br.set_handle_robots(False)
         br.addheaders = [('User-agent', random.choice(user_agents))]
         return br
+
+    @staticmethod
+    def _open_in_browser(page):
+        html = page.get_data()
+        url = urlparse(page.geturl())
+        html = html.replace('href="/', 'href="' + url.scheme + '://' + url.netloc + '/')
+        html = html.replace('src="/', 'href="' + url.scheme + '://' + url.netloc + '/')
+        fd, path = mkstemp()
+
+        with open(path, 'w') as f:
+            f.write(html)
+
+        os.close(fd)
+
+        webbrowser.open(path)
