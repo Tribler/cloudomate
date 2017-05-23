@@ -9,7 +9,19 @@ from cloudomate.vps.vpsoption import VpsOption
 class RockHoster(Hoster):
     name = "rockhoster"
     website = "https://rockhoster.com/"
-    required_settings = ["rootpw"]
+    required_settings = [
+        'firstname',
+        'lastname',
+        'email',
+        'phonenumber',
+        'address',
+        'city',
+        'state',
+        'zipcode',
+        'phonenumber',
+        'password',
+        'hostname',
+        'rootpw']
     br = None
 
     def __init__(self):
@@ -36,12 +48,12 @@ class RockHoster(Hoster):
         """
         self.br.open(vps_option.purchase_url)
         self.br.select_form(nr=4)
-        self.fill_in_server_form(self.br, user_settings)
+        self.fill_in_server_form(user_settings)
         self.br.submit()
         self.br.open('https://rockhoster.com/cloud/cart.php?a=view')
         self.br.follow_link(text_regex=r"Checkout")
         self.br.select_form(nr=4)
-        self.fill_in_user_form(self.br, user_settings)
+        self.fill_in_user_form(user_settings)
         self.br.submit()
         self.br.follow_link(url_regex="coinbase")
 
