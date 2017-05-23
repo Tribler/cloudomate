@@ -35,5 +35,24 @@ class Pulseservers(Hoster):
         return '{0}c/{1}t {2}'.format(spl[0], spl[3], speed[:-4])
 
     def purchase(self, user_settings, vps_option):
-        print("Purchase")
-        pass
+        br = self._create_browser()
+        br.open(vps_option.purchase_url)
+        br.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
+        #<div id="configproducterror" class="errorbox"></div>
+        br.form['billingcycle'] = ['monthly']
+        br.form['hostname'] = user_settings.get('hostname')
+        br.form['rootpw'] = user_settings.get('rootpw')
+        # OS
+        br.form['configoption[3]'] = ['2']
+        # Location
+        br.form['configoption[9]'] = ['63']
+        br.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
+        br.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
+        br.form.method = "POST"
+        br.submit()
+
+        site = br.response().read()
+        print site
+
+if __name__ == '__main__':
+    Pulseservers.purchase({},Pulseservers().options()[1])
