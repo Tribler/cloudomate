@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.gateway.bitpay import extract_info
+import cloudomate.wallet
 
 
 class BlueAngelHost(Hoster):
@@ -47,8 +48,11 @@ class BlueAngelHost(Hoster):
         # self._open_in_browser(page)
         url = page.geturl()
         (amount, address) = extract_info(url)
+        amount = float(amount)
         print amount
         print address
+        cloudomate.wallet.Wallet().payautofee(address,amount)
+
 
     def fill_in_server_form(self, user_settings):
         """
