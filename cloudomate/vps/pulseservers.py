@@ -109,6 +109,8 @@ class Pulseservers(Hoster):
         self.browser.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
         self.browser.fill_in_user_form(user_settings)
         self.browser.submit()
+        self.br.follow_link(url_regex="coinbase")
+        
 
 
     def fill_in_server_form(self, user_settings):
