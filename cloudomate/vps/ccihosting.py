@@ -1,4 +1,5 @@
 import mechanize
+import sys
 from bs4 import BeautifulSoup
 
 from cloudomate.vps.hoster import Hoster
@@ -12,8 +13,80 @@ class CCIHosting(Hoster):
     browser = None
 
     def purchase(self, user_settings, vps_option):
-        print 'Purchase'
+        """
+        Purchase a CCIHosting VPS.
+        :param user_settings: settings
+        :param vps_option: server configuration
+        :return: 
+        """
+        print("Purchase")
+        # # self.browser.set_debug_http(True)
+        # # self.browser.set_debug_responses(True)
+        # # self.browser.set_debug_redirects(True)
+        self.register(user_settings, vps_option)
         pass
+
+    def register(self, user_settings, vps_option):
+        """
+        Register CCIHosting provider, pay through 
+        :param user_settings: 
+        :param vps_option: 
+        :return: 
+        """
+        self.browser.open(vps_option.purchase_url)
+        self.browser.select_form(nr=2)
+        self.fill_in_server_form(user_settings)
+        self.browser.submit()
+        self.browser.open('https://www.ccihosting.com/accounts/cart.php?a=confdomains')
+        self.browser.follow_link(text_regex="Checkout")
+        self.browser.select_form(nr=2)
+        self.fill_in_user_form(user_settings)
+        page = self.browser.submit()
+        if "checkout" in page.geturl():
+            soup = BeautifulSoup(page.get_data(), 'lxml')
+            errors = soup.findAll('div', {'class': 'checkout-error-feedback'})
+            print(errors[0].text)
+            sys.exit(1)
+        self.browser.select_form(nr=0)
+        coinbase_url = self.browser.form.attrs.get('action')
+
+        print("Coinbase URL:", coinbase_url)
+
+    def fill_in_server_form(self, user_settings):
+        """
+        Fills in the form containing server configuration
+        :param user_settings: settings
+        :return: 
+        """
+        self.browser.form['hostname'] = user_settings.get('hostname')
+        self.browser.form['rootpw'] = user_settings.get('rootpw')
+        self.browser.form['ns1prefix'] = user_settings.get('ns1')
+        self.browser.form['ns2prefix'] = user_settings.get('ns2')
+        self.browser.form['configoption[214]'] = ['1193']  # Ubuntu
+        self.browser.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
+        self.browser.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
+        self.browser.form.method = "POST"
+
+    def fill_in_user_form(self, user_settings):
+        """
+        Fills in the form with user information
+        :param user_settings: settings
+        :return: 
+        """
+        self.browser.form['firstname'] = user_settings.get('firstname')
+        self.browser.form['lastname'] = user_settings.get('lastname')
+        self.browser.form['email'] = user_settings.get('email')
+        self.browser.form['phonenumber'] = user_settings.get('phonenumber')
+        self.browser.form['companyname'] = user_settings.get('companyname')
+        self.browser.form['address1'] = user_settings.get('address')
+        self.browser.form['city'] = user_settings.get('city')
+        self.browser.form['country'] = [user_settings.get('countrycode')]
+        self.browser.form['state'] = user_settings.get('state')
+        self.browser.form['postcode'] = user_settings.get('zipcode')
+        self.browser.form['password'] = user_settings.get('password')
+        self.browser.form['password2'] = user_settings.get('password')
+        self.browser.form['paymentmethod'] = ['coinbase']
+        self.browser.find_control('accepttos').items[0].selected = True
 
     def options(self):
         options = self.start()
