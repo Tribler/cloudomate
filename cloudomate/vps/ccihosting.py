@@ -109,10 +109,7 @@ class CCIHosting(Hoster):
         pass
 
     def start(self):
-        self.browser = mechanize.Browser()
-        self.browser.set_handle_robots(False)
-        self.browser.addheaders = [('User-agent', 'Firefox')]
-
+        self.browser = self._create_browser()
         cci_page = self.browser.open('http://www.ccihosting.com/vps.php')
         return self.parse_options(cci_page)
 
