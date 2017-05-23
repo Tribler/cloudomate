@@ -127,7 +127,7 @@ class CrownCloud(Hoster):
         elements = column.findAll('td')
         option = VpsOption()
         option.name = elements[0].text
-        option.ram = elements[1].text
+        option.ram = elements[1].text.split('/')[0]
         option.storage = elements[2].text
         option.cpu = elements[3].text
         option.bandwidth = elements[4].text

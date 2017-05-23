@@ -40,7 +40,7 @@ class CCIHosting(Hoster):
     @staticmethod
     def parse_cci_options(column):
         option = VpsOption()
-        option.name = column.find('div', {'class': 'boxtitle'}).text.split('S')[1]
+        option.name = column.find('div', {'class': 'boxtitle'}).text.split('S')[1].strip()
         option.price = column.find('div', {'class': 'PriceTag'}).find('span').text.split('U')[0]
         planinfo = column.find('ul')
         info = planinfo.findAll('li')

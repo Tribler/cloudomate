@@ -116,14 +116,14 @@ class BlueAngelHost(Hoster):
     def parse_blue_options(column):
         option = VpsOption()
         option.name = column.find('div', {'class': 'plan_title'}).find('h4').text
-        option.price = column.find('div', {'class': 'plan_price_m'}).text
+        option.price = column.find('div', {'class': 'plan_price_m'}).text.strip()
         planinfo = column.find('ul', {'class': 'plan_info_list'})
         info = planinfo.findAll('li')
-        option.cpu = info[0].text.split(":")[1]
-        option.ram = info[1].text.split(":")[1]
-        option.storage = info[2].text.split(":")[1]
-        option.connection = info[3].text.split(":")[1]
-        option.bandwidth = info[4].text.split("h")[1]
+        option.cpu = info[0].text.split(":")[1].strip()
+        option.ram = info[1].text.split(":")[1].strip()
+        option.storage = info[2].text.split(":")[1].strip()
+        option.connection = info[3].text.split(":")[1].strip()
+        option.bandwidth = info[4].text.split("h")[1].strip()
         option.purchase_url = column.find('a')['href']
         return option
 
