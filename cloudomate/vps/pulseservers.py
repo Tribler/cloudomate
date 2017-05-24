@@ -44,7 +44,7 @@ class Pulseservers(Hoster):
         :return: parsed options
         '''
         self.browser = self._create_browser()
-        response = br.open('https://pulseservers.com/vps-linux.html')
+        response = self.browser.open('https://pulseservers.com/vps-linux.html')
         return self.parse_options(response)
 
     def parse_options(self, response):
@@ -108,27 +108,32 @@ class Pulseservers(Hoster):
         self.browser.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
         self.fill_in_server_form(user_settings)
         self.browser.submit()
-        self.browser.open('https://pulseservers.com/billing/cart.php?a=view')
+        next = self.browser.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
+        # redirects to https://www.pulseservers.com/billing/cart.php?a=view
+        
         self.browser.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
-        self.browser.fill_in_user_form(user_settings)
+        self.fill_in_user_form(user_settings)
+
+        promobutton = self.browser.form.find_control(name="validatepromo")
+        promobutton.disabled = True
+
+        print(self.browser.form)
+
         page = self.browser.submit()
-        if 'billing' in page.geturl():
-            contents = soup(page.get_data(), 'lxml')
+
+        if 'checkout' in page.geturl():
+            contents = soup(page.read(), 'lxml')
             errors = contents.find('div', {'class': 'errorbox'})
-            print(errors.text)
+            print(errors)
+            print(page.read())
             sys.exit(1)
 
-        print page
+        print(page.read())
 
-        checkout_page = self.br.follow_link(url_regex="coinbase")
-        checkout_url = checkout_page.geturl()
-        amount, address = extract_info(checkout_url)
+        self.browser.select_form(nr=0)
+        page = self.browser.submit()
 
-        print checkout_page
-        print checkout_url
-        print amount
-        print address
-
+        (amount, address) = extract_info(page.geturl())
 
     def fill_in_server_form(self, user_settings):
         '''
@@ -141,9 +146,9 @@ class Pulseservers(Hoster):
         self.browser.form['hostname'] = user_settings.get('hostname')
         self.browser.form['rootpw'] = user_settings.get('rootpw')
         # OS
-        self.browser.form['configoption[3]'] = ['2']
+        #self.browser.form['configoption[3]'] = ['2']
         # Location
-        self.browser.form['configoption[9]'] = ['63']
+        #self.browser.form['configoption[9]'] = ['63']
         self.browser.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
         self.browser.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
         self.browser.form.method = "POST"
@@ -162,8 +167,6 @@ class Pulseservers(Hoster):
         self.browser.form['address1'] = user_settings.get("address")
         self.browser.form['city'] = user_settings.get("city")
         countrycode = user_settings.get("countrycode")
-
-        # State input changes based on country: USA (default) -> Select, Other -> Text
         self.browser.form['country'] = [countrycode]
         self.browser.form['state'] = user_settings.get("state")
         self.browser.form['postcode'] = user_settings.get("zipcode")
