@@ -42,6 +42,7 @@ class CCIHosting(Hoster):
         option = VpsOption()
         option.name = column.find('div', {'class': 'boxtitle'}).text.split('S')[1].strip()
         option.price = column.find('div', {'class': 'PriceTag'}).find('span').text.split('U')[0]
+        option.price = option.price.split('$')[1]
         planinfo = column.find('ul')
         info = planinfo.findAll('li')
         option.cpu = info[1].text.split("CPU")[0] + info[1].text.split("CPU")[1]

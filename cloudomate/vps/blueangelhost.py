@@ -49,8 +49,6 @@ class BlueAngelHost(Hoster):
         url = page.geturl()
         (amount, address) = extract_info(url)
         amount = float(amount)
-        print amount
-        print address
         wallet.Wallet().payautofee(address, amount)
 
     def fill_in_server_form(self, user_settings):
@@ -120,6 +118,8 @@ class BlueAngelHost(Hoster):
         option = VpsOption()
         option.name = column.find('div', {'class': 'plan_title'}).find('h4').text
         option.price = column.find('div', {'class': 'plan_price_m'}).text.strip()
+        option.price = option.price.split('$')[1]
+        option.price = option.price.split('/')[0]
         planinfo = column.find('ul', {'class': 'plan_info_list'})
         info = planinfo.findAll('li')
         option.cpu = info[0].text.split(":")[1].strip()

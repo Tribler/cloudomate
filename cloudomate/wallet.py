@@ -6,14 +6,20 @@ from bs4 import BeautifulSoup
 from forex_python.bitcoin import BtcConverter
 
 
+
 class Wallet:
     def __init__(self):
         pass
 
     @staticmethod
-    def getcurrentbtcprice(amount, currency):
-        b = BtcConverter()
-        return b.convert_to_btc(amount, currency)
+    def getrate(currency):
+        c = BtcConverter()
+        print 1/(c.get_latest_price(currency))
+
+    @staticmethod
+    def getcurrentbtcprice(amount, rate):
+        price = amount*rate
+        return price
 
     @staticmethod
     def getbalance():
@@ -46,6 +52,9 @@ class Wallet:
     @staticmethod
     def getbitpayfee():
         return 0.000423
+
+    def getfullfee(self):
+        return self.getfee() + self.getbitpayfee()
 
     def payautofee(self, address, amount):
         subprocess.call(['electrum', 'daemon', 'start'])
