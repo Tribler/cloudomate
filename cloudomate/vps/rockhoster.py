@@ -1,5 +1,4 @@
 import itertools
-
 from bs4 import BeautifulSoup
 
 from cloudomate.vps.hoster import Hoster
@@ -13,7 +12,6 @@ class RockHoster(Hoster):
         'firstname',
         'lastname',
         'email',
-        'phonenumber',
         'address',
         'city',
         'state',
@@ -22,22 +20,9 @@ class RockHoster(Hoster):
         'password',
         'hostname',
         'rootpw']
-    br = None
 
     def __init__(self):
-        self.br = self._create_browser()
-        pass
-
-    def purchase(self, user_settings, vps_option):
-        """
-        Purchase a RockHoster VPS.
-        :param user_settings: settings
-        :param vps_option: server configuration
-        :return: 
-        """
-        print("Purchase")
-        self.register(user_settings, vps_option)
-        pass
+        super(RockHoster, self).__init__()
 
     def register(self, user_settings, vps_option):
         """
@@ -114,24 +99,18 @@ class RockHoster(Hoster):
         self.br.form['paymentmethod'] = ['coinbase']
         self.br.find_control('accepttos').items[0].selected = True
 
-    def options(self):
-        return self.crawl_options()
-
-    def crawl_options(self):
+    def start(self):
         """
         Linux (OpenVZ) and Windows (KVM) pages are slightly different, therefore their pages are parsed by different 
         methoods. Windows configurations allow a selection of Linux distributions, but not vice-versa.
         :return: possible configurations.
         """
-        browser = self._create_browser()
-
-        openvz_hosting_page = browser.open("https://rockhoster.com/linux.html")
+        openvz_hosting_page = self.br.open("https://rockhoster.com/linux.html")
         options = self.parse_openvz_hosting(openvz_hosting_page.get_data())
 
-        kvm_hosting_page = browser.open("https://rockhoster.com/windows-vps")
+        kvm_hosting_page = self.br.open("https://rockhoster.com/windows-vps")
         options = itertools.chain(options, self.parse_kvm_hosting(kvm_hosting_page.get_data()))
-        self.configurations = list(options)
-        return self.configurations
+        return options
 
     def parse_openvz_hosting(self, page):
         soup = BeautifulSoup(page, "lxml")

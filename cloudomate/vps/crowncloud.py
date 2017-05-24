@@ -1,36 +1,30 @@
-import mechanize
 import sys
 from bs4 import BeautifulSoup
 
+import cloudomate.gateway.bitpay
 from cloudomate.gateway import bitpay
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
-import cloudomate.gateway.bitpay
 
 
 class CrownCloud(Hoster):
     name = "crowncloud"
     website = "http://crowncloud.net/"
-    required_settings = ["rootpw"]
-    br = None
+    required_settings = [
+        'firstname',
+        'lastname',
+        'email',
+        'address',
+        'city',
+        'state',
+        'zipcode',
+        'phonenumber',
+        'password',
+        'rootpw'
+    ]
 
     def __init__(self):
-        self.br = self._create_browser()
-        # self.br.set_debug_redirects(True)
-        # self.br.set_debug_http(True)
-        # self.br.set_debug_responses(True)
-        pass
-
-    def purchase(self, user_settings, vps_option):
-        """
-        Purchase a CrownCloud VPS.
-        :param user_settings: settings
-        :param vps_option: server configuration
-        :return: 
-        """
-        print("Purchase")
-        self.register(user_settings, vps_option)
-        pass
+        super(CrownCloud, self).__init__()
 
     def register(self, user_settings, vps_option):
         """
@@ -101,17 +95,8 @@ class CrownCloud(Hoster):
         self.br.form['paymentmethod'] = ['bitpay']
         self.br.find_control('accepttos').items[0].selected = True
 
-    def options(self):
-        options = self.start()
-        self.configurations = list(options)
-        return self.configurations
-
     def start(self):
-        browser = mechanize.Browser()
-        browser.set_handle_robots(False)
-        browser.addheaders = [('User-agent', 'Firefox')]
-
-        clown_page = browser.open('http://crowncloud.net/openvz.php')
+        clown_page = self.br.open('http://crowncloud.net/openvz.php')
         return self.parse_options(clown_page)
 
     def parse_options(self, page):

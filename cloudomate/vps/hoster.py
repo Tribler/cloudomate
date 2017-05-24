@@ -4,12 +4,10 @@ At this time there is no abstract implementation for any functionality.
 """
 import os
 import random
-import re
 import webbrowser
+from mechanize import Browser
 from tempfile import mkstemp
 from urlparse import urlparse
-
-from mechanize import Browser
 
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
@@ -41,12 +39,40 @@ class Hoster(object):
     name = None
     website = None
     required_settings = None
-    configurations = None
+
+    def __init__(self):
+        '''
+        Initialize hoster object common variables
+         configurations holds the vps options available
+         br holds the stateful mechanize browser
+        '''
+        self.configurations = None
+        self.br = self._create_browser()
 
     def options(self):
+        '''
+        Retrieve hosting options at Hoster.
+        :return: A list of hosting options
+        '''
+        options = self.start()
+        self.configurations = list(options)
+        return self.configurations
+
+    def start(self):
         raise NotImplementedError('Abstract method implementation')
 
     def purchase(self, user_settings, vps_option):
+        '''
+        Purchase a VPS
+        :param user_settings: settings
+        :param vps_option: server configuration
+        :return: 
+        '''
+        print('Purchase')
+        self.register(user_settings, vps_option)
+        pass
+
+    def register(self, user_settings, vps_option):
         raise NotImplementedError('Abstract method implementation')
 
     def print_configurations(self):
