@@ -1,10 +1,19 @@
 import subprocess
 import json
+import mechanize
+
+from bs4 import BeautifulSoup
+from forex_python.bitcoin import BtcConverter
 
 
 class Wallet:
     def __init__(self):
         pass
+
+    @staticmethod
+    def getcurrentbtcprice(amount, currency):
+        b = BtcConverter()
+        return b.convert_to_btc(amount, currency)
 
     @staticmethod
     def getbalance():
@@ -21,9 +30,27 @@ class Wallet:
         addresses = addr[0]
         print addresses
 
+    @staticmethod
+    def getfee():
+        browser = mechanize.Browser()
+        browser.set_handle_robots(False)
+        browser.addheaders = [('User-agent', 'Firefox')]
+        page = browser.open('https://bitcoinfees.21.co/api/v1/fees/recommended')
+        soup = BeautifulSoup(page, 'lxml')
+        rates = json.loads(soup.find('p').text)
+        satoshiRate = rates['halfHourFee']
+        satoshiRate = float(satoshiRate)
+        rate = satoshiRate / 100000000
+        return rate * 226
+
+    @staticmethod
+    def getbitpayfee():
+        return 0.000423
+
     def payautofee(self, address, amount):
         subprocess.call(['electrum', 'daemon', 'start'])
         subprocess.call(['electrum', 'daemon', 'load_wallet'])
+        amount = amount + self.getfee() + self.getbitpayfee()
         if self.getbalance() < amount:
             print 'NotEnoughFunds'
         else:
