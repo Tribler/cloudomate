@@ -9,7 +9,7 @@ def extract_info(url):
     :return: a tuple of the amount in BitCoin along with the address
     """
     response = urllib.urlopen(url)
-    site = soup(response)
+    site = soup(response, 'lxml')
     details = site.find('div', {'class': 'details'})
     bitcoin_url = details.p.a['href']
     # bitcoin:1HhFxARoW7Pfzgzm2ar9xL1PHUu4L3RbaR?amount=0.00045748&amp;r=https://www.coinbase.com/r/59240ff201bc8b1054a037e5

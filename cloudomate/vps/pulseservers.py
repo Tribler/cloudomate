@@ -3,6 +3,9 @@ from bs4 import BeautifulSoup as soup
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 
+from cloudomate.gateway.coinbase import extract_info
+
+import sys
 
 class Pulseservers(Hoster):
     '''
@@ -108,9 +111,23 @@ class Pulseservers(Hoster):
         self.browser.open('https://pulseservers.com/billing/cart.php?a=view')
         self.browser.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
         self.browser.fill_in_user_form(user_settings)
-        self.browser.submit()
-        self.br.follow_link(url_regex="coinbase")
-        
+        page = self.browser.submit()
+        if 'billing' in page.geturl():
+            contents = soup(page.get_data(), 'lxml')
+            errors = contents.find('div', {'class': 'errorbox'})
+            print(errors.text)
+            sys.exit(1)
+
+        print page
+
+        checkout_page = self.br.follow_link(url_regex="coinbase")
+        checkout_url = checkout_page.geturl()
+        amount, address = extract_info(checkout_url)
+
+        print checkout_page
+        print checkout_url
+        print amount
+        print address
 
 
     def fill_in_server_form(self, user_settings):
