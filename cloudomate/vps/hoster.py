@@ -4,7 +4,6 @@ At this time there is no abstract implementation for any functionality.
 """
 import os
 import random
-import re
 import webbrowser
 from tempfile import mkstemp
 from urlparse import urlparse
@@ -46,9 +45,43 @@ class Hoster(object):
     configurations = None
 
     def options(self):
+        """
+        List the available VPS options for specified provider.
+        :return: 
+        """
         raise NotImplementedError('Abstract method implementation')
 
     def purchase(self, user_settings, vps_option):
+        """
+        Purchase an instance of specified provider.
+        :param user_settings: the user settings used for registration.
+        :param vps_option: the vps option to purchase.
+        :return: 
+        """
+        raise NotImplementedError('Abstract method implementation')
+
+    def get_status(self, user_settings):
+        """
+        Get the status of purchased services for specified provider.
+        :param user_settings: the user settings used to login.
+        :return: 
+        """
+        raise NotImplementedError('Abstract method implementation')
+
+    def set_rootpw(self, user_settings):
+        """
+        Set the root password for the last purchased service of specified provider.
+        :param user_settings: the user settings including root password and login data.
+        :return: 
+        """
+        raise NotImplementedError('Abstract method implementation')
+
+    def get_ip(self, user_settings):
+        """
+        Get the ip for the last purchased service of specified provider.
+        :param user_settings: the user settings including root password and login data.
+        :return: 
+        """
         raise NotImplementedError('Abstract method implementation')
 
     def print_configurations(self):

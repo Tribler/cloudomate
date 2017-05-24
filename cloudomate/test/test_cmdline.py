@@ -34,7 +34,7 @@ class TestCmdLine(unittest.TestCase):
     def test_execute_purchase(self):
         self._mock_options([self._create_option()])
         RockHoster.purchase = MagicMock()
-        command = ["purchase", "rockhoster", "-c", "config_test.cfg", "-rp", "asdf", "0"]
+        command = ["purchase", "rockhoster", "-f", "-c", "config_test.cfg", "-rp", "asdf", "0"]
         cmdline.execute(command)
         RockHoster.purchase.assert_called_once()
 
@@ -50,11 +50,11 @@ class TestCmdLine(unittest.TestCase):
         return option
 
     def test_execute_purchase_verify_options_failure(self):
-        command = ["purchase", "rockhoster", "-c", "config_test.cfg", "1"]
+        command = ["purchase", "rockhoster", "-f", "-c", "config_test.cfg", "1"]
         self._check_exit_code(2, cmdline.execute, command)
 
     def test_execute_purchase_unknown_provider(self):
-        command = ["purchase", "nonode", "-rp", "asdf", "1"]
+        command = ["purchase", "nonode", "-f", "-rp", "asdf", "1"]
         self._check_exit_code(2, cmdline.execute, command)
 
     def test_execute_options_unknown_provider(self):

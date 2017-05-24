@@ -1,6 +1,7 @@
 import mechanize
 from bs4 import BeautifulSoup
 
+from cloudomate.vps.clientarea import ClientArea
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.gateway.bitpay import extract_info
@@ -11,7 +12,7 @@ class BlueAngelHost(Hoster):
     name = "blueangelhost"
     website = "https://www.blueangelhost.com/"
     required_settings = ["rootpw"]
-    browser = None
+    clientarea_url = 'https://www.billing.blueangelhost.com/clientarea.php'
 
     def purchase(self, user_settings, vps_option):
         """
@@ -129,6 +130,28 @@ class BlueAngelHost(Hoster):
         option.purchase_url = column.find('a')['href']
         return option
 
+    def get_status(self, user_settings):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self.browser, self.clientarea_url, email, password)
+        clientarea.print_services()
 
-if __name__ == "__main__":
-    BlueAngelHost.start()
+    def set_rootpw(self, user_settings):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self.browser, self.clientarea_url, email, password)
+        rootpw = user_settings.get('rootpw')
+        if 'number' in user_settings.config:
+            clientarea.set_rootpw(rootpw, int(user_settings.get('number')))
+        else:
+            clientarea.set_rootpw(rootpw)
+
+    def get_ip(self, user_settings):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self.browser, self.clientarea_url, email, password)
+        client_data_url = 'https://www.billing.blueangelhost.com/modules/servers/solusvmpro/get_client_data.php'
+        if 'number' in user_settings.config:
+            clientarea.get_ip(client_data_url, int(user_settings.get('number')))
+        else:
+            clientarea.get_ip(client_data_url)

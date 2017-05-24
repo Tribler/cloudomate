@@ -2,6 +2,7 @@ import itertools
 
 from bs4 import BeautifulSoup
 
+from cloudomate.vps.clientarea import ClientArea
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 
@@ -22,7 +23,7 @@ class RockHoster(Hoster):
         'password',
         'hostname',
         'rootpw']
-    br = None
+    clientarea_url = 'https://rockhoster.com/cloud/clientarea.php'
 
     def __init__(self):
         self.br = self._create_browser()
@@ -56,17 +57,6 @@ class RockHoster(Hoster):
         self.fill_in_user_form(user_settings)
         self.br.submit()
         self.br.follow_link(url_regex="coinbase")
-
-    def login(self, user_settings):
-        """
-        Login into the RockHoster clientarea.
-        :return: 
-        """
-        self.br.open("https://rockhoster.com/cloud/clientarea.php")
-        self.br.select_form(nr=0)
-        self.br.form['username'] = user_settings.get('email')
-        self.br.form['password'] = user_settings.get('password')
-        page = self.br.submit()
 
     def number_of_services(self):
         page = self.br.open("https://rockhoster.com/cloud/clientarea.php")
@@ -176,3 +166,30 @@ class RockHoster(Hoster):
         option.price = option.price.split('/')[0]
         option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
         return option
+
+    def get_status(self, user_settings):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self.br, self.clientarea_url, email, password)
+        clientarea.get_services()
+        clientarea.print_services()
+
+    def set_rootpw(self, user_settings):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self.br, self.clientarea_url, email, password)
+        rootpw = user_settings.get('rootpw')
+        if 'number' in user_settings.config:
+            clientarea.set_rootpw(rootpw, int(user_settings.get('number')))
+        else:
+            clientarea.set_rootpw(rootpw)
+
+    def get_ip(self, user_settings):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self.br, self.clientarea_url, email, password)
+        client_data_url = 'https://rockhoster.com/cloud/modules/servers/solusvmpro/get_client_data.php'
+        if 'number' in user_settings.config:
+            clientarea.get_ip(client_data_url, int(user_settings.get('number')))
+        else:
+            clientarea.get_ip(client_data_url)
