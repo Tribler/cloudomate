@@ -49,7 +49,8 @@ class BlueAngelHost(Hoster):
         url = page.geturl()
         (amount, address) = extract_info(url)
         amount = float(amount)
-        wallet.Wallet().payautofee(address, amount)
+        fee = wallet.Wallet().getfee()
+        wallet.Wallet().pay(address, amount, fee)
 
     def fill_in_server_form(self, user_settings):
         """

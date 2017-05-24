@@ -6,19 +6,18 @@ from bs4 import BeautifulSoup
 from forex_python.bitcoin import BtcConverter
 
 
-
 class Wallet:
     def __init__(self):
         pass
 
     @staticmethod
-    def getrate(currency):
-        c = BtcConverter()
-        print 1/(c.get_latest_price(currency))
+    def getrate():
+        b = BtcConverter()
+        print b.get_latest_price('EUR')
 
     @staticmethod
     def getcurrentbtcprice(amount, rate):
-        price = amount*rate
+        price = amount * rate
         return price
 
     @staticmethod
@@ -71,11 +70,14 @@ class Wallet:
         subprocess.call(['electrum', 'daemon', 'stop'])
 
     def pay(self, address, amount, fee):
-        if self.getbalance() < amount:
+        subprocess.call(['electrum', 'daemon', 'start'])
+        subprocess.call(['electrum', 'daemon', 'load_wallet'])
+        if self.getbalance() < amount + fee:
             print 'NotEnoughFunds'
         else:
-            subprocess.check_output(['electrum', 'payto', address, amount, '-f', fee])
+            subprocess.check_output(['electrum', 'payto', str(address), str(amount), '-f', str(fee)])
             print 'payment succeeded'
+        subprocess.call(['electrum', 'daemon', 'stop'])
 
     def emptywallet(self, address):
         if self.getbalance() is not 0.0:
