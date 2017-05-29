@@ -21,6 +21,8 @@ class RockHoster(Hoster):
         'password',
         'hostname',
         'rootpw']
+    clientarea_url = 'https://rockhoster.com/cloud/clientarea.php'
+    client_data_url = 'https://rockhoster.com/cloud/modules/servers/solusvmpro/get_client_data.php'
 
     def __init__(self):
         super(RockHoster, self).__init__()
@@ -44,23 +46,6 @@ class RockHoster(Hoster):
         page = self.br.follow_link(url_regex="coinbase")
         amount, address = extract_info(page.geturl())
         return amount, address
-
-    def login(self, user_settings):
-        """
-        Login into the RockHoster clientarea.
-        :return: 
-        """
-        self.br.open("https://rockhoster.com/cloud/clientarea.php")
-        self.br.select_form(nr=0)
-        self.br.form['username'] = user_settings.get('email')
-        self.br.form['password'] = user_settings.get('password')
-        page = self.br.submit()
-
-    def number_of_services(self):
-        page = self.br.open("https://rockhoster.com/cloud/clientarea.php")
-        soup = BeautifulSoup(page.get_data(), 'lxml')
-        stat = soup.find('div', {'class': 'col-sm-3 col-xs-6 tile'}).a.find('div', {'class': 'stat'})
-        return stat.text
 
     def fill_in_server_form(self, user_settings):
         """
@@ -125,15 +110,18 @@ class RockHoster(Hoster):
     def parse_openvz_option(column):
         elements = column.findAll("li")
         option = VpsOption()
-        option.storage = elements[0].text.split(": ")[1]
-        option.ram = elements[1].text.split("RAM: ")[1]
+        storage = elements[0].text.split(": ")[1]
+        option.storage = storage.split("G")[0]
+        ram = elements[1].text.split("G")[0]
+        option.ram = ram.split("RAM: ")[1]
         option.bandwidth = 'unmetered'
-        option.cpu = elements[3].text
-        option.connection = elements[5].text.split(": ")[1]
+        option.cpu = elements[3].text.split(':')[1]
+        connection = elements[5].text.split(": ")[1]
+        option.connection = connection.split('M')[0]
         option.name = column.div.h2.string
-        option.price = column.div.strong.text
-        option.price = option.price.split('$')[1]
-        option.price = option.price.split('/')[0]
+        price = column.div.strong.text
+        price = price.split('$')[1]
+        option.price = price.split('/')[0]
         option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
         return option
 
@@ -147,14 +135,26 @@ class RockHoster(Hoster):
     def parse_kvm_option(column):
         elements = column.findAll("li")
         option = VpsOption()
-        option.storage = elements[0].text.split(": ")[1]
-        option.ram = elements[1].text.split("RAM:")[1].strip()
+        storage = elements[0].text.split(": ")[1]
+        option.storage = storage.split('G')[0]
+        ram = elements[1].text.split("RAM:")[1].strip()
+        ram = int(ram.split('M')[0])/1024
+        option.ram = str(ram)
         option.bandwidth = 'unmetered'
-        option.cpu = elements[3].text
-        option.connection = '1000 Mbps'
+        option.cpu = elements[3].text.split(':')[1]
+        option.connection = '1000'
         option.name = column.div.h2.string
         option.price = column.div.strong.text
         option.price = option.price.split('$')[1]
         option.price = option.price.split('/')[0]
         option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
         return option
+
+    def get_status(self, user_settings):
+        self._clientarea_get_status(user_settings, self.clientarea_url)
+
+    def set_rootpw(self, user_settings):
+        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+
+    def get_ip(self, user_settings):
+        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)

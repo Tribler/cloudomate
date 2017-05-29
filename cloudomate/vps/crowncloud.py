@@ -20,8 +20,10 @@ class CrownCloud(Hoster):
         'phonenumber',
         'password',
         'rootpw'
-    ]
-
+    ]    
+    clientarea_url = 'https://crowncloud.net/clients/clientarea.php'
+    client_data_url = 'https://crowncloud.net/clients/modules/servers/solusvmpro/get_client_data.php'
+    
     def __init__(self):
         super(CrownCloud, self).__init__()
 
@@ -107,21 +109,38 @@ class CrownCloud(Hoster):
                     yield self.parse_clown_options(column)
 
     @staticmethod
+    def beautiful_bandwidth(bandwidth):
+        if bandwidth == '512 GB':
+            return '0.5'
+        else:
+            return bandwidth.split('T')[0]
+
+
+    @staticmethod
     def parse_clown_options(column):
         elements = column.findAll('td')
         option = VpsOption()
         option.name = elements[0].text
-        option.ram = elements[1].text.split('/')[0]
-        option.storage = elements[2].text
-        option.cpu = elements[3].text
-        option.bandwidth = elements[4].text
-        option.connection = elements[7].text
+        ram = elements[1].text.split('/')[0]
+        ram = float(ram.split('M')[0])/1024
+        option.ram = str(ram)
+        option.storage = elements[2].text.split('G')[0]
+        option.cpu = elements[3].text.split('v')[0]
+        option.bandwidth = CrownCloud().beautiful_bandwidth(elements[4].text)
+        connection = int(elements[7].text.split('G')[0])*1000
+        option.connection = str(connection)
         option.price = elements[8].text
         option.price = option.price.split('$')[1]
         option.price = option.price.split('/')[0]
         option.purchase_url = elements[9].find('a')['href']
         return option
 
+    def get_status(self, user_settings):
+        self._clientarea_get_status(user_settings, self.clientarea_url)
 
-if __name__ == "__main__":
-    CrownCloud.start()
+    def set_rootpw(self, user_settings):
+        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+
+    def get_ip(self, user_settings):
+        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)
+

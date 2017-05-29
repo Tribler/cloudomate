@@ -11,6 +11,8 @@ from urlparse import urlparse
 
 from cloudomate import wallet
 
+from cloudomate.vps.clientarea import ClientArea
+
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
@@ -41,7 +43,9 @@ class Hoster(object):
     name = None
     website = None
     required_settings = None
-
+    configurations = None
+    client_area = None
+    
     def __init__(self):
         '''
         Initialize hoster object common variables
@@ -80,6 +84,30 @@ class Hoster(object):
     def register(self, user_settings, vps_option):
         raise NotImplementedError('Abstract method implementation')
 
+    def get_status(self, user_settings):
+        """
+        Get the status of purchased services for specified provider.
+        :param user_settings: the user settings used to login.
+        :return: 
+        """
+        raise NotImplementedError('Abstract method implementation')
+
+    def set_rootpw(self, user_settings):
+        """
+        Set the root password for the last purchased service of specified provider.
+        :param user_settings: the user settings including root password and login data.
+        :return: 
+        """
+        raise NotImplementedError('Abstract method implementation')
+
+    def get_ip(self, user_settings):
+        """
+        Get the ip for the last purchased service of specified provider.
+        :param user_settings: the user settings including root password and login data.
+        :return: 
+        """
+        raise NotImplementedError('Abstract method implementation')
+
     def print_configurations(self):
         """
         Print parsed VPS configurations.
@@ -87,13 +115,13 @@ class Hoster(object):
         rate = wallet.Wallet().getrate()
         fee = wallet.Wallet().getfullfee()
 
-        row_format = "{:<5}" + "{:15}" * 7
-        print(row_format.format("#", "Name", "CPU", "RAM", "Storage", "Bandwidth", "Connection", "Estimated Price"))
+        row_format = "{:<5}" + "{:18}" * 7
+        print(row_format.format("#", "Name", "CPU (cores)", "RAM (GB)", "Storage (GB)", "Bandwidth (TB)", "Connection (Mbps)", "Estimated Price (mBTC)"))
 
         i = 0
         for item in self.configurations:
             print(row_format.format(i, item.name, item.cpu, item.ram, item.storage, item.bandwidth,
-                                    item.connection, str((float(item.price) * rate) + fee) + ' btc'))
+                                    item.connection, str( round(( (float(item.price) * rate) + fee)*1000, 2))))
             i = i + 1
 
     @staticmethod
@@ -128,3 +156,28 @@ class Hoster(object):
         os.close(fd)
 
         webbrowser.open(path)
+
+    def _clientarea_set_rootpw(self, user_settings, clientarea_url):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self._create_browser(), clientarea_url, email, password)
+        rootpw = user_settings.get('rootpw')
+        if 'number' in user_settings.config:
+            clientarea.set_rootpw(rootpw, int(user_settings.get('number')))
+        else:
+            clientarea.set_rootpw(rootpw)
+
+    def _clientarea_get_status(self, user_settings, clientarea_url):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self._create_browser(), clientarea_url, email, password)
+        clientarea.print_services()
+
+    def _clientarea_get_ip(self, user_settings, clientarea_url, client_data_url):
+        email = user_settings.get('email')
+        password = user_settings.get('password')
+        clientarea = ClientArea(self._create_browser(), clientarea_url, email, password)
+        if 'number' in user_settings.config:
+            clientarea.get_ip(client_data_url, int(user_settings.get('number')))
+        else:
+            clientarea.get_ip(client_data_url)

@@ -53,7 +53,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'cloudomate=cloudomate:cmdline',
+            'cloudomate=cloudomate.cmdline:execute',
         ],
     },
 )

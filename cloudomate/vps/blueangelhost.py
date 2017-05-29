@@ -23,6 +23,8 @@ class BlueAngelHost(Hoster):
         'ns1',
         'ns2'
     ]
+    clientarea_url = 'https://www.billing.blueangelhost.com/clientarea.php'
+    client_data_url = 'https://www.billing.blueangelhost.com/modules/servers/solusvmpro/get_client_data.php'
 
     def __init__(self):
         super(BlueAngelHost, self).__init__()
@@ -107,14 +109,25 @@ class BlueAngelHost(Hoster):
         option.price = option.price.split('/')[0]
         planinfo = column.find('ul', {'class': 'plan_info_list'})
         info = planinfo.findAll('li')
-        option.cpu = info[0].text.split(":")[1].strip()
-        option.ram = info[1].text.split(":")[1].strip()
-        option.storage = info[2].text.split(":")[1].strip()
-        option.connection = info[3].text.split(":")[1].strip()
-        option.bandwidth = info[4].text.split("h")[1].strip()
+        cpu = info[0].text.split(":")[1].strip()
+        option.cpu = cpu.split('C')[0].strip()
+        ram = info[1].text.split(":")[1].strip()
+        option.ram = ram.split('G')[0].strip()
+        storage = info[2].text.split(":")[1].strip()
+        option.storage = storage.split('G')[0].strip()
+        connection = info[3].text.split(":")[1].strip()
+        connection = int(connection.split('G')[0].strip())*1000
+        option.connection = str(connection)
+        bandwidth = info[4].text.split("h")[1].strip()
+        option.bandwidth = bandwidth.split('T')[0].strip()
         option.purchase_url = column.find('a')['href']
         return option
 
+    def get_status(self, user_settings):
+        self._clientarea_get_status(user_settings, self.clientarea_url)
 
-if __name__ == "__main__":
-    BlueAngelHost.start()
+    def set_rootpw(self, user_settings):
+        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+
+    def get_ip(self, user_settings):
+        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)
