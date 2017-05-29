@@ -11,7 +11,8 @@ class BlueAngelHost(Hoster):
     name = "blueangelhost"
     website = "https://www.blueangelhost.com/"
     required_settings = ["rootpw"]
-    browser = None
+    clientarea_url = 'https://www.billing.blueangelhost.com/clientarea.php'
+    client_data_url = 'https://www.billing.blueangelhost.com/modules/servers/solusvmpro/get_client_data.php'
 
     def purchase(self, user_settings, vps_option):
         """
@@ -129,6 +130,11 @@ class BlueAngelHost(Hoster):
         option.purchase_url = column.find('a')['href']
         return option
 
+    def get_status(self, user_settings):
+        self._clientarea_get_status(user_settings, self.clientarea_url)
 
-if __name__ == "__main__":
-    BlueAngelHost.start()
+    def set_rootpw(self, user_settings):
+        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+
+    def get_ip(self, user_settings):
+        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)

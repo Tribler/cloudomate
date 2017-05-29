@@ -12,13 +12,11 @@ class CrownCloud(Hoster):
     name = "crowncloud"
     website = "http://crowncloud.net/"
     required_settings = ["rootpw"]
-    br = None
+    clientarea_url = 'https://crowncloud.net/clients/clientarea.php'
+    client_data_url = 'https://crowncloud.net/clients/modules/servers/solusvmpro/get_client_data.php'
 
     def __init__(self):
         self.br = self._create_browser()
-        # self.br.set_debug_redirects(True)
-        # self.br.set_debug_http(True)
-        # self.br.set_debug_responses(True)
         pass
 
     def purchase(self, user_settings, vps_option):
@@ -138,6 +136,12 @@ class CrownCloud(Hoster):
         option.purchase_url = elements[9].find('a')['href']
         return option
 
+    def get_status(self, user_settings):
+        self._clientarea_get_status(user_settings, self.clientarea_url)
 
-if __name__ == "__main__":
-    CrownCloud.start()
+    def set_rootpw(self, user_settings):
+        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+
+    def get_ip(self, user_settings):
+        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)
+

@@ -1,5 +1,5 @@
-import mechanize
 import sys
+
 from bs4 import BeautifulSoup
 
 from cloudomate.vps.hoster import Hoster
@@ -9,6 +9,7 @@ from cloudomate.vps.vpsoption import VpsOption
 class CCIHosting(Hoster):
     name = "ccihosting"
     website = "http://www.ccihosting.com/"
+    clientarea_url = "https://www.ccihosting.com/accounts/clientarea.php"
     required_settings = [
         'firstname',
         'lastname',
@@ -135,6 +136,11 @@ class CCIHosting(Hoster):
         option.purchase_url = column.find('a')['href']
         return option
 
+    def get_status(self, user_settings):
+        self._clientarea_get_status(user_settings, self.clientarea_url)
 
-if __name__ == "__main__":
-    CCIHosting.start()
+    def set_rootpw(self, user_settings):
+        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+
+    def get_ip(self, user_settings):
+        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)

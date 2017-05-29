@@ -1,11 +1,10 @@
+import sys
+
 from bs4 import BeautifulSoup as soup
 
+from cloudomate.gateway.coinbase import extract_info
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
-
-from cloudomate.gateway.coinbase import extract_info
-
-import sys
 
 
 class Pulseservers(Hoster):
@@ -29,6 +28,7 @@ class Pulseservers(Hoster):
         'hostname',
         'rootpw'
     ]
+    clientarea_url = 'https://www.pulseservers.com/billing/clientarea.php'
 
     def options(self):
         """
@@ -176,6 +176,11 @@ class Pulseservers(Hoster):
         self.browser.form['paymentmethod'] = ['coinbase']
         self.browser.find_control('accepttos').items[0].selected = True
 
+    def get_status(self, user_settings):
+        self._clientarea_get_status(user_settings, self.clientarea_url)
 
-if __name__ == '__main__':
-    Pulseservers.purchase({}, Pulseservers().options()[1])
+    def set_rootpw(self, user_settings):
+        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+
+    def get_ip(self, user_settings):
+        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)
