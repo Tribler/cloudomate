@@ -143,15 +143,18 @@ class RockHoster(Hoster):
     def parse_openvz_option(column):
         elements = column.findAll("li")
         option = VpsOption()
-        option.storage = elements[0].text.split(": ")[1]
-        option.ram = elements[1].text.split("RAM: ")[1]
+        storage = elements[0].text.split(": ")[1]
+        option.storage = storage.split("G")[0]
+        ram = elements[1].text.split("G")[0]
+        option.ram = ram.split("RAM: ")[1]
         option.bandwidth = 'unmetered'
-        option.cpu = elements[3].text
-        option.connection = elements[5].text.split(": ")[1]
+        option.cpu = elements[3].text.split(':')[1]
+        connection = elements[5].text.split(": ")[1]
+        option.connection = connection.split('M')[0]
         option.name = column.div.h2.string
-        option.price = column.div.strong.text
-        option.price = option.price.split('$')[1]
-        option.price = option.price.split('/')[0]
+        price = column.div.strong.text
+        price = price.split('$')[1]
+        option.price = price.split('/')[0]
         option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
         return option
 
@@ -165,11 +168,14 @@ class RockHoster(Hoster):
     def parse_kvm_option(column):
         elements = column.findAll("li")
         option = VpsOption()
-        option.storage = elements[0].text.split(": ")[1]
-        option.ram = elements[1].text.split("RAM:")[1].strip()
+        storage = elements[0].text.split(": ")[1]
+        option.storage = storage.split('G')[0]
+        ram = elements[1].text.split("RAM:")[1].strip()
+        ram = int(ram.split('M')[0])/1024
+        option.ram = str(ram)
         option.bandwidth = 'unmetered'
-        option.cpu = elements[3].text
-        option.connection = '1000 Mbps'
+        option.cpu = elements[3].text.split(':')[1]
+        option.connection = '1000'
         option.name = column.div.h2.string
         option.price = column.div.strong.text
         option.price = option.price.split('$')[1]
