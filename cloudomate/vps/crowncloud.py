@@ -2,7 +2,6 @@ import sys
 from bs4 import BeautifulSoup
 
 import cloudomate.gateway.bitpay
-from cloudomate.gateway import bitpay
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 

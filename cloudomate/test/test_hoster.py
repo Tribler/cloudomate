@@ -1,14 +1,13 @@
 import unittest
 
-import cloudomate.vps.hoster
-
 from parameterized import parameterized
 
-from cloudomate.vps.rockhoster import RockHoster
-from cloudomate.vps.pulseservers import Pulseservers
+import cloudomate.vps.hoster
+from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
 from cloudomate.vps.crowncloud import CrownCloud
-from cloudomate.vps.blueangelhost import BlueAngelHost
+from cloudomate.vps.pulseservers import Pulseservers
+from cloudomate.vps.rockhoster import RockHoster
 
 providers = [
     (RockHoster,),
