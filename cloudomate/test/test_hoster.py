@@ -32,7 +32,7 @@ class TestHosterAbstract(unittest.TestCase):
 
     def testHosterPurchase(self):
         hoster = cloudomate.vps.hoster.Hoster()
-        self.assertRaises(NotImplementedError, hoster.purchase, *(None, None))
+        self.assertRaises(NotImplementedError, hoster.purchase, *(None, None, None))
 
 
 if __name__ == '__main__':
