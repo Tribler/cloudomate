@@ -7,10 +7,12 @@ from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
 from cloudomate.vps.crowncloud import CrownCloud
 from cloudomate.vps.rockhoster import RockHoster
+from cloudomate.vps.pulseservers import Pulseservers
 
 commands = ["options", "purchase", "list"]
 providers = {
     "rockhoster": RockHoster(),
+    'pulseservers': Pulseservers(),
     "crowncloud": CrownCloud(),
     "blueangelhost": BlueAngelHost(),
     "ccihosting": CCIHosting(),
