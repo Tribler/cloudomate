@@ -66,14 +66,22 @@ class Pulseservers(Hoster):
         :return: VpsOption containing hosting details
         """
         details = box.findAll('li')
+        storage = details[4].strong.text
+        if storage == '1TB':
+            storage = '1024'
+        else:
+            storage = storage.split('G')[0]
+
+        connection = details[5].strong.text.split('G')[0]
+        connection = int(connection) * 1000
         return VpsOption(
             name=details[0].h4.text,
             price=details[1].h1.text.split('$')[1] + details[1].span.text.split('/')[0],
-            cpu=self._beautify_cpu(details[2].strong.text, details[2].find(text=True, recursive=False)),
-            ram=details[3].strong.text,
-            storage=details[4].strong.text,
-            connection=details[5].strong.text,
-            bandwidth=details[6].strong.text,
+            cpu=details[2].strong.text.split('C')[0],
+            ram=details[3].strong.text.split('G')[0],
+            storage=storage,
+            connection=str(connection),
+            bandwidth='unmetered',
             purchase_url=details[9].a['href']
         )
 

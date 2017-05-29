@@ -94,13 +94,13 @@ class Hoster(object):
         rate = wallet.Wallet().getrate()
         fee = wallet.Wallet().getfullfee()
 
-        row_format = "{:<5}" + "{:15}" * 7
-        print(row_format.format("#", "Name", "CPU", "RAM", "Storage", "Bandwidth", "Connection", "Estimated Price"))
+        row_format = "{:<5}" + "{:18}" * 7
+        print(row_format.format("#", "Name", "CPU (cores)", "RAM (GB)", "Storage (GB)", "Bandwidth (TB)", "Connection (Mbps)", "Estimated Price (mBTC)"))
 
         i = 0
         for item in self.configurations:
             print(row_format.format(i, item.name, item.cpu, item.ram, item.storage, item.bandwidth,
-                                    item.connection, str((float(item.price) * rate) + fee) + ' btc'))
+                                    item.connection, str( round(( (float(item.price) * rate) + fee)*1000, 2))))
             i = i + 1
 
     @staticmethod
