@@ -7,6 +7,7 @@ from cloudomate.gateway.coinbase import extract_info
 
 import sys
 
+
 class Pulseservers(Hoster):
     '''
     PulseServers contains the logic to view hosting configurations and to 
@@ -66,14 +67,14 @@ class Pulseservers(Hoster):
         '''
         details = box.findAll('li')
         return VpsOption(
-            name = details[0].h4.text,
-            price = details[1].h1.text + details[1].span.text,
-            cpu = self._beautify_cpu(details[2].strong.text, details[2].find(text=True, recursive=False)),
-            ram = details[3].strong.text,
-            storage = details[4].strong.text,
-            connection = details[5].strong.text,
-            bandwidth = details[6].strong.text,
-            purchase_url = details[9].a['href']
+            name=details[0].h4.text,
+            price=details[1].h1.text.split('$')[1] + details[1].span.text.split('/')[0],
+            cpu=self._beautify_cpu(details[2].strong.text, details[2].find(text=True, recursive=False)),
+            ram=details[3].strong.text,
+            storage=details[4].strong.text,
+            connection=details[5].strong.text,
+            bandwidth=details[6].strong.text,
+            purchase_url=details[9].a['href']
         )
 
     def _beautify_cpu(self, cores, speed):
@@ -105,13 +106,13 @@ class Pulseservers(Hoster):
         :return: 
         '''
         self.browser.open(vps_option.purchase_url)
-        self.browser.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
+        self.browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
         self.fill_in_server_form(user_settings)
         self.browser.submit()
         next = self.browser.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
         # redirects to https://www.pulseservers.com/billing/cart.php?a=view
-        
-        self.browser.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
+
+        self.browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
         self.fill_in_user_form(user_settings)
 
         promobutton = self.browser.form.find_control(name="validatepromo")
@@ -146,9 +147,9 @@ class Pulseservers(Hoster):
         self.browser.form['hostname'] = user_settings.get('hostname')
         self.browser.form['rootpw'] = user_settings.get('rootpw')
         # OS
-        #self.browser.form['configoption[3]'] = ['2']
+        # self.browser.form['configoption[3]'] = ['2']
         # Location
-        #self.browser.form['configoption[9]'] = ['63']
+        # self.browser.form['configoption[9]'] = ['63']
         self.browser.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
         self.browser.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
         self.browser.form.method = "POST"
@@ -175,5 +176,6 @@ class Pulseservers(Hoster):
         self.browser.form['paymentmethod'] = ['coinbase']
         self.browser.find_control('accepttos').items[0].selected = True
 
+
 if __name__ == '__main__':
-    Pulseservers.purchase({},Pulseservers().options()[1])
+    Pulseservers.purchase({}, Pulseservers().options()[1])
