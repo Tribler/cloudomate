@@ -10,6 +10,8 @@ from tempfile import mkstemp
 from urlparse import urlparse
 
 from mechanize import Browser
+from forex_python.bitcoin import BtcConverter
+from cloudomate import wallet
 
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
@@ -53,13 +55,16 @@ class Hoster(object):
         """
         Print parsed VPS configurations.
         """
+        rate = wallet.Wallet().getrate()
+        fee = wallet.Wallet().getfullfee()
+
         row_format = "{:<5}" + "{:15}" * 7
-        print(row_format.format("#", "Name", "CPU", "RAM", "Storage", "Bandwidth", "Connection", "Price"))
+        print(row_format.format("#", "Name", "CPU", "RAM", "Storage", "Bandwidth", "Connection", "Estimated Price"))
 
         i = 0
         for item in self.configurations:
             print(row_format.format(i, item.name, item.cpu, item.ram, item.storage, item.bandwidth,
-                                    item.connection, item.price))
+                                    item.connection, str((float(item.price) * rate) + fee) + ' btc'))
             i = i + 1
 
     @staticmethod

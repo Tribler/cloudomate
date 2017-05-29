@@ -138,6 +138,8 @@ class RockHoster(Hoster):
         option.connection = elements[5].text.split(": ")[1]
         option.name = column.div.h2.string
         option.price = column.div.strong.text
+        option.price = option.price.split('$')[1]
+        option.price = option.price.split('/')[0]
         option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
         return option
 
@@ -158,5 +160,7 @@ class RockHoster(Hoster):
         option.connection = '1000 Mbps'
         option.name = column.div.h2.string
         option.price = column.div.strong.text
+        option.price = option.price.split('$')[1]
+        option.price = option.price.split('/')[0]
         option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
         return option
