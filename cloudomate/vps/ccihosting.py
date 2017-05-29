@@ -127,11 +127,12 @@ class CCIHosting(Hoster):
         option.price = option.price.split('$')[1]
         planinfo = column.find('ul')
         info = planinfo.findAll('li')
-        option.cpu = info[1].text.split("CPU")[0] + info[1].text.split("CPU")[1]
-        option.ram = info[2].text.split("R")[0]
-        option.storage = info[3].text.split("S")[0]
-        option.bandwidth = info[4].text.split("Ba")[0]
-        option.connection = info[5].text.split("/")[0]
+        option.cpu = info[1].text.split("CPU")[0]
+        option.ram = info[2].text.split("G")[0]
+        option.storage = info[3].text.split("G")[0]
+        option.bandwidth = info[4].text.split("T")[0]
+        connection = int(info[5].text.split("G")[0])*1000
+        option.connection = str(connection)
         option.purchase_url = column.find('a')['href']
         return option
 
