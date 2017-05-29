@@ -52,8 +52,8 @@ class CCIHosting(Hoster):
         coinbase_url = self.br.form.attrs.get('action')
 
         amount, address = coinbase.extract_info(coinbase_url)
-        print('Amount: {0}'.format(amount))
-        print('Address: {0}'.format(address))
+
+        return amount, address
 
     def fill_in_server_form(self, user_settings):
         """

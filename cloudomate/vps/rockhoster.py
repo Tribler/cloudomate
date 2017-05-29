@@ -1,6 +1,7 @@
 import itertools
 from bs4 import BeautifulSoup
 
+from cloudomate.gateway.coinbase import extract_info
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 
@@ -40,7 +41,9 @@ class RockHoster(Hoster):
         self.br.select_form(nr=4)
         self.fill_in_user_form(user_settings)
         self.br.submit()
-        self.br.follow_link(url_regex="coinbase")
+        page = self.br.follow_link(url_regex="coinbase")
+        amount, address = extract_info(page.geturl())
+        return amount, address
 
     def login(self, user_settings):
         """

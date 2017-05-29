@@ -50,9 +50,8 @@ class BlueAngelHost(Hoster):
         page = self.br.submit()
         # self._open_in_browser(page)
         url = page.geturl()
-        (amount, address) = extract_info(url)
-        print amount
-        print address
+        amount, address = extract_info(url)
+        return amount, address
 
     def fill_in_server_form(self, user_settings):
         """

@@ -61,7 +61,7 @@ class Hoster(object):
     def start(self):
         raise NotImplementedError('Abstract method implementation')
 
-    def purchase(self, user_settings, vps_option):
+    def purchase(self, user_settings, vps_option, wallet):
         '''
         Purchase a VPS
         :param user_settings: settings
@@ -69,7 +69,8 @@ class Hoster(object):
         :return: 
         '''
         print('Purchase')
-        self.register(user_settings, vps_option)
+        amount, address = self.register(user_settings, vps_option)
+        
         pass
 
     def register(self, user_settings, vps_option):

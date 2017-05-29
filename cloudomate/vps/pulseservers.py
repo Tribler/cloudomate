@@ -113,7 +113,8 @@ class Pulseservers(Hoster):
         self.br.select_form(nr=0)
         page = self.br.submit()
 
-        (amount, address) = extract_info(page.geturl())
+        amount, address = extract_info(page.geturl())
+        return amount, address
 
     def fill_in_server_form(self, user_settings):
         '''
