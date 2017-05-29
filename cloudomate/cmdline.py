@@ -194,7 +194,7 @@ def _purchase(provider, vps_option, user_settings):
     if user_settings.get("noconfirm") is not None and user_settings.get("noconfirm") is True:
         choice = True
     else:
-        choice = _confirmation("Puchase this option?", default="no")
+        choice = _confirmation("Purchase this option?", default="no")
     if choice:
         _register(provider, vps_option, user_settings)
     else:

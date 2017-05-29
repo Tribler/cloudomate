@@ -57,15 +57,14 @@ class ClientArea(object):
         Print parsed VPS configurations.
         """
         self._services()
-        row_format = "{:5}" + "{:15}" * 6
-        print(row_format.format('#', 'Product', 'Host', 'Price', 'Term', 'Next due date', 'Status', 'Id'))
+        row_format = "{:5}" + "{:15}" * 5
+        print(row_format.format('#', 'Product', 'Price', 'Term', 'Next due date', 'Status', 'Id'))
 
         i = 0
         for service in self.services:
             print(row_format.format(
                 str(i),
                 service['product'],
-                service['host'],
                 service['price'],
                 service['term'],
                 service['next_due_date'],
@@ -86,7 +85,6 @@ class ClientArea(object):
             self.services.append({
                 'id': tds[4].a['href'].split('id=')[1],
                 'product': tds[0].strong.text,
-                'host': tds[0].a.text,
                 'price': tds[1].text.split('USD')[0],
                 'term': tds[1].text.split('USD')[1],
                 'next_due_date': tds[2].text[0:10],
@@ -105,6 +103,9 @@ class ClientArea(object):
             print("Wrong index: %s not between 0 and %s" % (number, len(self.services) - 1))
             sys.exit(2)
         service = self.services[number]
+        if service['status'] != 'Active':
+            print("Unable to obtain ip: service is %s" % (service['status']))
+            sys.exit(2)
         vserverid = self._get_vserverid(service['url'])
         millis = int(round(time.time() * 1000))
         page = self.browser.open(client_data_url + '?vserverid=%s&_=%s' % (vserverid, millis))

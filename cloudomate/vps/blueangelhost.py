@@ -1,7 +1,6 @@
 import mechanize
 from bs4 import BeautifulSoup
 
-from cloudomate.vps.clientarea import ClientArea
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.gateway.bitpay import extract_info
@@ -13,6 +12,7 @@ class BlueAngelHost(Hoster):
     website = "https://www.blueangelhost.com/"
     required_settings = ["rootpw"]
     clientarea_url = 'https://www.billing.blueangelhost.com/clientarea.php'
+    client_data_url = 'https://www.billing.blueangelhost.com/modules/servers/solusvmpro/get_client_data.php'
 
     def purchase(self, user_settings, vps_option):
         """
@@ -131,27 +131,10 @@ class BlueAngelHost(Hoster):
         return option
 
     def get_status(self, user_settings):
-        email = user_settings.get('email')
-        password = user_settings.get('password')
-        clientarea = ClientArea(self.browser, self.clientarea_url, email, password)
-        clientarea.print_services()
+        self._clientarea_get_status(user_settings, self.clientarea_url)
 
     def set_rootpw(self, user_settings):
-        email = user_settings.get('email')
-        password = user_settings.get('password')
-        clientarea = ClientArea(self.browser, self.clientarea_url, email, password)
-        rootpw = user_settings.get('rootpw')
-        if 'number' in user_settings.config:
-            clientarea.set_rootpw(rootpw, int(user_settings.get('number')))
-        else:
-            clientarea.set_rootpw(rootpw)
+        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
 
     def get_ip(self, user_settings):
-        email = user_settings.get('email')
-        password = user_settings.get('password')
-        clientarea = ClientArea(self.browser, self.clientarea_url, email, password)
-        client_data_url = 'https://www.billing.blueangelhost.com/modules/servers/solusvmpro/get_client_data.php'
-        if 'number' in user_settings.config:
-            clientarea.get_ip(client_data_url, int(user_settings.get('number')))
-        else:
-            clientarea.get_ip(client_data_url)
+        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)
