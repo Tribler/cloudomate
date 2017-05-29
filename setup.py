@@ -41,7 +41,7 @@ setup(
 
 
 
-    install_requires=['appdirs', 'mechanize', 'bs4', 'mock', 'forex_python', 'parameterized'],
+    install_requires=['appdirs', 'mechanize', 'bs4', 'mock', 'forex_python', 'parameterized', 'python-bitcoinaddress'],
 
     extras_require={
         'dev': [],
