@@ -7,11 +7,12 @@ from cloudomate.gateway.coinbase import extract_info
 
 import sys
 
+
 class Pulseservers(Hoster):
-    '''
+    """
     PulseServers contains the logic to view hosting configurations and to 
     purchase servers at Pulseservers.
-    '''
+    """
     name = "pulseservers"
     website = "https://pulseservers.com/"
     required_settings = [
@@ -30,88 +31,88 @@ class Pulseservers(Hoster):
     ]
 
     def options(self):
-        '''
+        """
         Retrieve hosting options at Pulseservers.
         :return: A list of hosting options
-        '''
+        """
         options = self.start()
         self.configurations = list(options)
         return self.configurations
 
     def start(self):
-        '''
+        """
         Open browser to hoster website and return parsed options
         :return: parsed options
-        '''
+        """
         self.browser = self._create_browser()
         response = self.browser.open('https://pulseservers.com/vps-linux.html')
         return self.parse_options(response)
 
     def parse_options(self, response):
-        '''
+        """
         Parse options of hosting configurations
         :param response: Site to be parsed
         :return: list of configurations
-        '''
+        """
         site = soup(response.read(), 'lxml')
         pricingboxes = site.findAll('div', {'class': 'pricing-box'})
         self.configurations = [self._parse_box(box) for box in pricingboxes]
         return self.configurations
 
     def _parse_box(self, box):
-        '''
+        """
         Parse a single hosting configuration
         :param box: Div containing hosting details
         :return: VpsOption containing hosting details
-        '''
+        """
         details = box.findAll('li')
         return VpsOption(
-            name = details[0].h4.text,
-            price = details[1].h1.text + details[1].span.text,
-            cpu = self._beautify_cpu(details[2].strong.text, details[2].find(text=True, recursive=False)),
-            ram = details[3].strong.text,
-            storage = details[4].strong.text,
-            connection = details[5].strong.text,
-            bandwidth = details[6].strong.text,
-            purchase_url = details[9].a['href']
+            name=details[0].h4.text,
+            price=details[1].h1.text.split('$')[1] + details[1].span.text.split('/')[0],
+            cpu=self._beautify_cpu(details[2].strong.text, details[2].find(text=True, recursive=False)),
+            ram=details[3].strong.text,
+            storage=details[4].strong.text,
+            connection=details[5].strong.text,
+            bandwidth=details[6].strong.text,
+            purchase_url=details[9].a['href']
         )
 
     def _beautify_cpu(self, cores, speed):
-        '''
+        """
         Format cores and speed to fit cpu column
         :param cores: cores text
         :param speed: speed text
         :return: formatted string
-        '''
+        """
         spl = cores.split()
         return '{0}c/{1}t {2}'.format(spl[0], spl[3], speed[:-4])
 
     def purchase(self, user_settings, vps_option):
-        '''
+        """
         Purchase a Pulseserver VPS
         :param user_settings: settings
         :param vps_option: server configuration
         :return: 
-        '''
+        """
         print('Purchase')
         self.register(user_settings, vps_option)
         pass
 
     def register(self, user_settings, vps_option):
-        '''
+        """
         Register at Pulseservers provider and pay through coinbase
         :param user_settings: 
         :param vps_option: 
         :return: 
-        '''
+        """
         self.browser.open(vps_option.purchase_url)
-        self.browser.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
+        self.browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
         self.fill_in_server_form(user_settings)
         self.browser.submit()
         next = self.browser.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
         # redirects to https://www.pulseservers.com/billing/cart.php?a=view
-        
-        self.browser.select_form(predicate = lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
+
+        self.browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
         self.fill_in_user_form(user_settings)
 
         promobutton = self.browser.form.find_control(name="validatepromo")
@@ -136,29 +137,29 @@ class Pulseservers(Hoster):
         (amount, address) = extract_info(page.geturl())
 
     def fill_in_server_form(self, user_settings):
-        '''
+        """
         Fill in the form with user information
         :param user_settings: settings
         :return: 
-        '''
+        """
         # <div id="configproducterror" class="errorbox"></div>
         self.browser.form['billingcycle'] = ['monthly']
         self.browser.form['hostname'] = user_settings.get('hostname')
         self.browser.form['rootpw'] = user_settings.get('rootpw')
         # OS
-        #self.browser.form['configoption[3]'] = ['2']
+        # self.browser.form['configoption[3]'] = ['2']
         # Location
-        #self.browser.form['configoption[9]'] = ['63']
+        # self.browser.form['configoption[9]'] = ['63']
         self.browser.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
         self.browser.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
         self.browser.form.method = "POST"
 
     def fill_in_user_form(self, user_settings):
-        '''
+        """
         Fill in form with registration information
         :param user_settings: user info
         :return: 
-        '''
+        """
         self.browser.form['firstname'] = user_settings.get("firstname")
         self.browser.form['lastname'] = user_settings.get("lastname")
         self.browser.form['email'] = user_settings.get("email")
@@ -175,5 +176,6 @@ class Pulseservers(Hoster):
         self.browser.form['paymentmethod'] = ['coinbase']
         self.browser.find_control('accepttos').items[0].selected = True
 
+
 if __name__ == '__main__':
-    Pulseservers.purchase({},Pulseservers().options()[1])
+    Pulseservers.purchase({}, Pulseservers().options()[1])
