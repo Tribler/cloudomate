@@ -13,7 +13,8 @@ class Wallet:
     @staticmethod
     def getrate():
         b = BtcConverter()
-        print b.get_latest_price('EUR')
+        rate = 1 / b.get_latest_price('USD')
+        return rate
 
     @staticmethod
     def getcurrentbtcprice(amount, rate):
@@ -33,7 +34,7 @@ class Wallet:
         address = str(subprocess.check_output(['electrum', 'listaddresses']))
         addr = json.loads(address)
         addresses = addr[0]
-        print addresses
+        return addresses
 
     @staticmethod
     def getfee():
@@ -43,17 +44,18 @@ class Wallet:
         page = browser.open('https://bitcoinfees.21.co/api/v1/fees/recommended')
         soup = BeautifulSoup(page, 'lxml')
         rates = json.loads(soup.find('p').text)
-        satoshiRate = rates['halfHourFee']
-        satoshiRate = float(satoshiRate)
-        rate = satoshiRate / 100000000
-        return rate * 226
+        satoshirate = rates['halfHourFee']
+        satoshirate = float(satoshirate)
+        fee = satoshirate / 100000000
+        return fee * 226
 
     @staticmethod
     def getbitpayfee():
         return 0.000423
 
     def getfullfee(self):
-        return self.getfee() + self.getbitpayfee()
+        fullfee = self.getfee() + self.getbitpayfee()
+        return fullfee
 
     def payautofee(self, address, amount):
         subprocess.call(['electrum', 'daemon', 'start'])
@@ -80,11 +82,14 @@ class Wallet:
         subprocess.call(['electrum', 'daemon', 'stop'])
 
     def emptywallet(self, address):
+        subprocess.call(['electrum', 'daemon', 'start'])
+        subprocess.call(['electrum', 'daemon', 'load_wallet'])
         if self.getbalance() is not 0.0:
             output = subprocess.check_output(['electrum', 'payto', address, '!'])
             temp = json.loads(output)
             hextransaction = temp['hex']
             subprocess.call(['electrum', 'broadcast', hextransaction])
-            print 'Wallet was succesfully emptied'
+            print 'Wallet was successfully emptied'
         else:
             print 'Wallet already empty'
+        subprocess.call(['electrum', 'daemon', 'stop'])

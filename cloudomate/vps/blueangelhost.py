@@ -39,18 +39,16 @@ class BlueAngelHost(Hoster):
         self.browser.follow_link(text_regex='Checkout')
         self.browser.select_form(nr=2)
         self.fill_in_user_form(user_settings)
-        # self.browser.set_debug_http(True)
-        # self.browser.set_debug_responses(True)
-        # self.browser.set_debug_redirects(True)
         self.browser.submit()
         self.browser.select_form(nr=0)
         page = self.browser.submit()
-        # self._open_in_browser(page)
         url = page.geturl()
         (amount, address) = extract_info(url)
-        amount = float(amount)
-        fee = wallet.Wallet().getfee()
-        wallet.Wallet().pay(address, amount, fee)
+        print('Pay', amount, 'to', address)
+        # commented out so we don't accidentally buy servers
+        # amount = float(amount)
+        # fee = wallet.Wallet().getfee()
+        # wallet.Wallet().pay(address, amount, fee)
 
     def fill_in_server_form(self, user_settings):
         """

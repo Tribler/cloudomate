@@ -55,8 +55,7 @@ class Hoster(object):
         """
         Print parsed VPS configurations.
         """
-        b = BtcConverter()
-        rate = 1 / (b.get_latest_price('USD'))
+        rate = wallet.Wallet().getrate()
         fee = wallet.Wallet().getfullfee()
 
         row_format = "{:<5}" + "{:15}" * 7
@@ -65,7 +64,7 @@ class Hoster(object):
         i = 0
         for item in self.configurations:
             print(row_format.format(i, item.name, item.cpu, item.ram, item.storage, item.bandwidth,
-                                    item.connection, (float(item.price) * rate) + fee))
+                                    item.connection, str((float(item.price) * rate) + fee) + ' btc'))
             i = i + 1
 
     @staticmethod
