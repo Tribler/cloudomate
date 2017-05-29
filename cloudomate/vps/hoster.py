@@ -72,12 +72,10 @@ class Hoster(object):
         '''
         print('Purchase')
         amount, address = self.register(user_settings, vps_option)
-
-        # commented out so we don't accidentally buy servers
-        # amount = float(amount)
-        # fee = wallet.Wallet().getfee()
-        # wallet.Wallet().pay(address, amount, fee)
-        pass
+        print('Paying')
+        fee = wallet.Wallet().getfee()
+        #wallet.pay(address, amount, fee)
+        print('Done purchasing')
 
     def register(self, user_settings, vps_option):
         raise NotImplementedError('Abstract method implementation')
