@@ -81,7 +81,7 @@ class Pulseservers(Hoster):
             ram=details[3].strong.text.split('G')[0],
             storage=storage,
             connection=str(connection),
-            bandwidth=details[6].strong.text,
+            bandwidth='unmetered',
             purchase_url=details[9].a['href']
         )
 
