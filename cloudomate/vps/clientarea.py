@@ -1,9 +1,9 @@
+import json
 import re
 import sys
 import time
 
 from bs4 import BeautifulSoup
-from flask import json
 
 
 class ClientArea(object):
