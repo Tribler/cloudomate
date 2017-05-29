@@ -1,6 +1,7 @@
-from setuptools import setup, find_packages
 from codecs import open
 from os import path
+
+from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
@@ -38,8 +39,6 @@ setup(
     keywords='vps bitcoin',
 
     packages=find_packages(exclude=['docs', 'test']),
-
-
 
     install_requires=['appdirs', 'mechanize', 'bs4', 'mock', 'forex_python', 'parameterized'],
 
