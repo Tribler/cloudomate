@@ -2,8 +2,8 @@
 Cloudomate
 ==========
 
-.. image:: https://jenkins.tribler.org/buildStatus/icon?job=pers/Cloudomate_test
-   :target: https://jenkins.tribler.org/job/pers/job/Cloudomate_test/
+.. image:: https://jenkins.tribler.org/buildStatus/icon?job=pers/Cloudomate
+   :target: https://jenkins.tribler.org/job/pers/job/Cloudomate/
    :alt: Build Status
 
 
