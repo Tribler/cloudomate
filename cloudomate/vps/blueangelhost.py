@@ -128,7 +128,7 @@ class BlueAngelHost(Hoster):
         storage = info[2].text.split(":")[1].strip()
         option.storage = storage.split('G')[0].strip()
         connection = info[3].text.split(":")[1].strip()
-        connection = int(connection.split('G')[0].strip())
+        connection = int(connection.split('G')[0].strip())*1000
         option.connection = str(connection)
         bandwidth = info[4].text.split("h")[1].strip()
         option.bandwidth = bandwidth.split('T')[0].strip()
