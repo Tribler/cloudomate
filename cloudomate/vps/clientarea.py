@@ -25,7 +25,10 @@ class ClientArea(object):
         :return: The clientarea homepage on succesful login.
         """
         self.browser.open(self.clientarea_url)
-        self.browser.select_form(nr=0)
+        if len(list(self.browser.forms())) > 1:
+            self.browser.select_form(nr=1)
+        else:
+            self.browser.select_form(nr=0)
         self.browser.form['username'] = email
         self.browser.form['password'] = password
         page = self.browser.submit()
