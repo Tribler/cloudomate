@@ -16,7 +16,7 @@ class BlueAngelHost(Hoster):
         'city',
         'state',
         'zipcode',
-        'phonenumber'
+        'phonenumber',
         'password',
         'hostname',
         'rootpw',
