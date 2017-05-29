@@ -42,7 +42,7 @@ setup(
 
     install_requires=['appdirs', 'mechanize', 'bs4', 'mock', 'forex_python', 'parameterized'],
 
-    dependency_links=['https://github.com/nederhoed/python-bitcoinaddress/archive/v0.2.zip'],
+    dependency_links=['https://github.com/nederhoed/python-bitcoinaddress/archive/v0.2.zip#egg=python-bitcoinaddress'],
 
     extras_require={
         'dev': [],
