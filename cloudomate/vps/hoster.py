@@ -9,6 +9,8 @@ from mechanize import Browser
 from tempfile import mkstemp
 from urlparse import urlparse
 
+from cloudomate import wallet
+
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
@@ -70,7 +72,11 @@ class Hoster(object):
         '''
         print('Purchase')
         amount, address = self.register(user_settings, vps_option)
-        
+
+        # commented out so we don't accidentally buy servers
+        # amount = float(amount)
+        # fee = wallet.Wallet().getfee()
+        # wallet.Wallet().pay(address, amount, fee)
         pass
 
     def register(self, user_settings, vps_option):
@@ -80,13 +86,16 @@ class Hoster(object):
         """
         Print parsed VPS configurations.
         """
+        rate = wallet.Wallet().getrate()
+        fee = wallet.Wallet().getfullfee()
+
         row_format = "{:<5}" + "{:15}" * 7
-        print(row_format.format("#", "Name", "CPU", "RAM", "Storage", "Bandwidth", "Connection", "Price"))
+        print(row_format.format("#", "Name", "CPU", "RAM", "Storage", "Bandwidth", "Connection", "Estimated Price"))
 
         i = 0
         for item in self.configurations:
             print(row_format.format(i, item.name, item.cpu, item.ram, item.storage, item.bandwidth,
-                                    item.connection, item.price))
+                                    item.connection, str((float(item.price) * rate) + fee) + ' btc'))
             i = i + 1
 
     @staticmethod

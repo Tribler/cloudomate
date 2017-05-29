@@ -42,13 +42,9 @@ class BlueAngelHost(Hoster):
         self.br.follow_link(text_regex='Checkout')
         self.br.select_form(nr=2)
         self.fill_in_user_form(user_settings)
-        # self.br.set_debug_http(True)
-        # self.br.set_debug_responses(True)
-        # self.br.set_debug_redirects(True)
         self.br.submit()
         self.br.select_form(nr=0)
         page = self.br.submit()
-        # self._open_in_browser(page)
         url = page.geturl()
         amount, address = extract_info(url)
         return amount, address
@@ -107,6 +103,8 @@ class BlueAngelHost(Hoster):
         option = VpsOption()
         option.name = column.find('div', {'class': 'plan_title'}).find('h4').text
         option.price = column.find('div', {'class': 'plan_price_m'}).text.strip()
+        option.price = option.price.split('$')[1]
+        option.price = option.price.split('/')[0]
         planinfo = column.find('ul', {'class': 'plan_info_list'})
         info = planinfo.findAll('li')
         option.cpu = info[0].text.split(":")[1].strip()

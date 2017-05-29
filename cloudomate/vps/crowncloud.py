@@ -117,6 +117,8 @@ class CrownCloud(Hoster):
         option.bandwidth = elements[4].text
         option.connection = elements[7].text
         option.price = elements[8].text
+        option.price = option.price.split('$')[1]
+        option.price = option.price.split('/')[0]
         option.purchase_url = elements[9].find('a')['href']
         return option
 
