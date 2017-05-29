@@ -1,6 +1,8 @@
 import sys
 from argparse import ArgumentParser
 
+from cloudomate.wallet import Wallet
+
 from cloudomate.util.config import UserOptions
 from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
@@ -222,7 +224,8 @@ def _confirmation(message, default="y"):
         print("Please respond with y[es] or n[o]")
 
 
-def list_providers(args):
+# noinspection PyUnusedLocal
+def list_providers(args=None):
     _list_providers()
 
 
@@ -247,9 +250,11 @@ def _options(provider):
 
 
 def _register(provider, vps_option, user_settings):
+    # For now use standard wallet implementation through Electrum
+    wallet = Wallet()
     print("Register for %s:\n" % provider)
     p = providers[provider]
-    p.purchase(user_settings=user_settings, vps_option=vps_option)
+    p.purchase(user_settings=user_settings, vps_option=vps_option, wallet=wallet)
 
 
 if __name__ == '__main__':

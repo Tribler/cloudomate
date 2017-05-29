@@ -1,34 +1,32 @@
-import mechanize
 import sys
+
 from bs4 import BeautifulSoup
 
-from cloudomate.gateway import bitpay
+import cloudomate.gateway.bitpay
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
-import cloudomate.gateway.bitpay
 
 
 class CrownCloud(Hoster):
     name = "crowncloud"
     website = "http://crowncloud.net/"
-    required_settings = ["rootpw"]
+    required_settings = [
+        'firstname',
+        'lastname',
+        'email',
+        'address',
+        'city',
+        'state',
+        'zipcode',
+        'phonenumber',
+        'password',
+        'rootpw'
+    ]
     clientarea_url = 'https://crowncloud.net/clients/clientarea.php'
     client_data_url = 'https://crowncloud.net/clients/modules/servers/solusvmpro/get_client_data.php'
 
     def __init__(self):
-        self.br = self._create_browser()
-        pass
-
-    def purchase(self, user_settings, vps_option):
-        """
-        Purchase a CrownCloud VPS.
-        :param user_settings: settings
-        :param vps_option: server configuration
-        :return: 
-        """
-        print("Purchase")
-        self.register(user_settings, vps_option)
-        pass
+        super(CrownCloud, self).__init__()
 
     def register(self, user_settings, vps_option):
         """
@@ -40,7 +38,7 @@ class CrownCloud(Hoster):
         self.br.open("https://crowncloud.net")
         self.br.open(vps_option.purchase_url)
         self.br.select_form(nr=2)
-        self.fill_in_server_form(user_settings)
+        self.fill_in_server_form()
         self.br.submit()
         self.br.open('https://crowncloud.net/clients/cart.php?a=view')
         self.br.select_form(nr=2)
@@ -55,19 +53,14 @@ class CrownCloud(Hoster):
             sys.exit(1)
         self.br.select_form(nr=0)
         page = self.br.submit()
-        (amount, address) = cloudomate.gateway.bitpay.extract_info(page.geturl())
-        print("Pay", amount, "to", address)
+        amount, address = cloudomate.gateway.bitpay.extract_info(page.geturl())
+        return amount, address
 
-    def fill_in_server_form(self, user_settings):
+    def fill_in_server_form(self):
         """
         Fills in the form containing server configuration.
-        :param user_settings: settings
         :return: 
         """
-        # self.br.form['hostname'] = user_settings.get("hostname")
-        # self.br.form['rootpw'] = user_settings.get("rootpw")
-        # self.br.form['ns1prefix'] = user_settings.get("ns1")
-        # self.br.form['ns2prefix'] = user_settings.get("ns2")
         self.br.form['configoption[1]'] = ['56']
         self.br.form['configoption[8]'] = ['52']
         self.br.form['configoption[9]'] = '0'
@@ -99,17 +92,8 @@ class CrownCloud(Hoster):
         self.br.form['paymentmethod'] = ['bitpay']
         self.br.find_control('accepttos').items[0].selected = True
 
-    def options(self):
-        options = self.start()
-        self.configurations = list(options)
-        return self.configurations
-
     def start(self):
-        browser = mechanize.Browser()
-        browser.set_handle_robots(False)
-        browser.addheaders = [('User-agent', 'Firefox')]
-
-        clown_page = browser.open('http://crowncloud.net/openvz.php')
+        clown_page = self.br.open('http://crowncloud.net/openvz.php')
         return self.parse_options(clown_page)
 
     def parse_options(self, page):
@@ -127,19 +111,18 @@ class CrownCloud(Hoster):
         else:
             return bandwidth.split('T')[0]
 
-
     @staticmethod
     def parse_clown_options(column):
         elements = column.findAll('td')
         option = VpsOption()
         option.name = elements[0].text
         ram = elements[1].text.split('/')[0]
-        ram = float(ram.split('M')[0])/1024
+        ram = float(ram.split('M')[0]) / 1024
         option.ram = str(ram)
         option.storage = elements[2].text.split('G')[0]
         option.cpu = elements[3].text.split('v')[0]
         option.bandwidth = CrownCloud().beautiful_bandwidth(elements[4].text)
-        connection = int(elements[7].text.split('G')[0])*1000
+        connection = int(elements[7].text.split('G')[0]) * 1000
         option.connection = str(connection)
         option.price = elements[8].text
         option.price = option.price.split('$')[1]
@@ -155,4 +138,3 @@ class CrownCloud(Hoster):
 
     def get_ip(self, user_settings):
         self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)
-

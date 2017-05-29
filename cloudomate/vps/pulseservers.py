@@ -1,6 +1,6 @@
 import sys
 
-from bs4 import BeautifulSoup as soup
+from bs4 import BeautifulSoup
 
 from cloudomate.gateway.coinbase import extract_info
 from cloudomate.vps.hoster import Hoster
@@ -23,29 +23,21 @@ class Pulseservers(Hoster):
         'city',
         'state',
         'zipcode',
-        'phonenumber',
         'password',
         'hostname',
         'rootpw'
     ]
     clientarea_url = 'https://www.pulseservers.com/billing/clientarea.php'
 
-    def options(self):
-        """
-        Retrieve hosting options at Pulseservers.
-        :return: A list of hosting options
-        """
-        options = self.start()
-        self.configurations = list(options)
-        return self.configurations
+    def __init__(self):
+        super(Pulseservers, self).__init__()
 
     def start(self):
         """
         Open browser to hoster website and return parsed options
         :return: parsed options
         """
-        self.browser = self._create_browser()
-        response = self.browser.open('https://pulseservers.com/vps-linux.html')
+        response = self.br.open('https://pulseservers.com/vps-linux.html')
         return self.parse_options(response)
 
     def parse_options(self, response):
@@ -54,12 +46,13 @@ class Pulseservers(Hoster):
         :param response: Site to be parsed
         :return: list of configurations
         """
-        site = soup(response.read(), 'lxml')
+        site = BeautifulSoup(response.read(), 'lxml')
         pricingboxes = site.findAll('div', {'class': 'pricing-box'})
         self.configurations = [self._parse_box(box) for box in pricingboxes]
         return self.configurations
 
-    def _parse_box(self, box):
+    @staticmethod
+    def _parse_box(box):
         """
         Parse a single hosting configuration
         :param box: Div containing hosting details
@@ -85,7 +78,8 @@ class Pulseservers(Hoster):
             purchase_url=details[9].a['href']
         )
 
-    def _beautify_cpu(self, cores, speed):
+    @staticmethod
+    def _beautify_cpu(cores, speed):
         """
         Format cores and speed to fit cpu column
         :param cores: cores text
@@ -95,17 +89,6 @@ class Pulseservers(Hoster):
         spl = cores.split()
         return '{0}c/{1}t {2}'.format(spl[0], spl[3], speed[:-4])
 
-    def purchase(self, user_settings, vps_option):
-        """
-        Purchase a Pulseserver VPS
-        :param user_settings: settings
-        :param vps_option: server configuration
-        :return: 
-        """
-        print('Purchase')
-        self.register(user_settings, vps_option)
-        pass
-
     def register(self, user_settings, vps_option):
         """
         Register at Pulseservers provider and pay through coinbase
@@ -113,25 +96,26 @@ class Pulseservers(Hoster):
         :param vps_option: 
         :return: 
         """
-        self.browser.open(vps_option.purchase_url)
-        self.browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
+        self.br.open(vps_option.purchase_url)
+        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
+
         self.fill_in_server_form(user_settings)
-        self.browser.submit()
-        next = self.browser.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
+        self.br.submit()
+        self.br.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
         # redirects to https://www.pulseservers.com/billing/cart.php?a=view
 
-        self.browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
+        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
         self.fill_in_user_form(user_settings)
 
-        promobutton = self.browser.form.find_control(name="validatepromo")
+        promobutton = self.br.form.find_control(name="validatepromo")
         promobutton.disabled = True
 
-        print(self.browser.form)
+        print(self.br.form)
 
-        page = self.browser.submit()
+        page = self.br.submit()
 
         if 'checkout' in page.geturl():
-            contents = soup(page.read(), 'lxml')
+            contents = BeautifulSoup(page.read(), 'lxml')
             errors = contents.find('div', {'class': 'errorbox'})
             print(errors)
             print(page.read())
@@ -139,10 +123,11 @@ class Pulseservers(Hoster):
 
         print(page.read())
 
-        self.browser.select_form(nr=0)
-        page = self.browser.submit()
+        self.br.select_form(nr=0)
+        page = self.br.submit()
 
-        (amount, address) = extract_info(page.geturl())
+        amount, address = extract_info(page.geturl())
+        return amount, address
 
     def fill_in_server_form(self, user_settings):
         """
@@ -151,16 +136,16 @@ class Pulseservers(Hoster):
         :return: 
         """
         # <div id="configproducterror" class="errorbox"></div>
-        self.browser.form['billingcycle'] = ['monthly']
-        self.browser.form['hostname'] = user_settings.get('hostname')
-        self.browser.form['rootpw'] = user_settings.get('rootpw')
+        self.br.form['billingcycle'] = ['monthly']
+        self.br.form['hostname'] = user_settings.get('hostname')
+        self.br.form['rootpw'] = user_settings.get('rootpw')
         # OS
-        # self.browser.form['configoption[3]'] = ['2']
+        # self.br.form['configoption[3]'] = ['2']
         # Location
-        # self.browser.form['configoption[9]'] = ['63']
-        self.browser.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
-        self.browser.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
-        self.browser.form.method = "POST"
+        # self.br.form['configoption[9]'] = ['63']
+        self.br.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
+        self.br.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
+        self.br.form.method = "POST"
 
     def fill_in_user_form(self, user_settings):
         """
@@ -168,21 +153,22 @@ class Pulseservers(Hoster):
         :param user_settings: user info
         :return: 
         """
-        self.browser.form['firstname'] = user_settings.get("firstname")
-        self.browser.form['lastname'] = user_settings.get("lastname")
-        self.browser.form['email'] = user_settings.get("email")
-        self.browser.form['phonenumber'] = user_settings.get("phonenumber")
-        self.browser.form['companyname'] = user_settings.get("companyname")
-        self.browser.form['address1'] = user_settings.get("address")
-        self.browser.form['city'] = user_settings.get("city")
+        self.br.form['firstname'] = user_settings.get("firstname")
+        self.br.form['lastname'] = user_settings.get("lastname")
+        self.br.form['email'] = user_settings.get("email")
+        self.br.form['phonenumber'] = user_settings.get("phonenumber")
+        self.br.form['companyname'] = user_settings.get("companyname")
+        self.br.form['address1'] = user_settings.get("address")
+        self.br.form['city'] = user_settings.get("city")
+
         countrycode = user_settings.get("countrycode")
-        self.browser.form['country'] = [countrycode]
-        self.browser.form['state'] = user_settings.get("state")
-        self.browser.form['postcode'] = user_settings.get("zipcode")
-        self.browser.form['password'] = user_settings.get("password")
-        self.browser.form['password2'] = user_settings.get("password")
-        self.browser.form['paymentmethod'] = ['coinbase']
-        self.browser.find_control('accepttos').items[0].selected = True
+        self.br.form['country'] = [countrycode]
+        self.br.form['state'] = user_settings.get("state")
+        self.br.form['postcode'] = user_settings.get("zipcode")
+        self.br.form['password'] = user_settings.get("password")
+        self.br.form['password2'] = user_settings.get("password")
+        self.br.form['paymentmethod'] = ['coinbase']
+        self.br.find_control('accepttos').items[0].selected = True
 
     def get_status(self, user_settings):
         self._clientarea_get_status(user_settings, self.clientarea_url)

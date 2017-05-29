@@ -9,9 +9,8 @@ from tempfile import mkstemp
 from urlparse import urlparse
 
 from mechanize import Browser
-from forex_python.bitcoin import BtcConverter
-from cloudomate import wallet
 
+from cloudomate import wallet
 from cloudomate.vps.clientarea import ClientArea
 
 user_agents = [
@@ -47,20 +46,43 @@ class Hoster(object):
     configurations = None
     client_area = None
 
+    def __init__(self):
+        """
+        Initialize hoster object common variables
+         configurations holds the vps options available
+         br holds the stateful mechanize browser
+        """
+        self.configurations = None
+        self.br = self._create_browser()
+
     def options(self):
         """
-        List the available VPS options for specified provider.
-        :return: 
+        Retrieve hosting options at Hoster.
+        :return: A list of hosting options
         """
+        options = self.start()
+        self.configurations = list(options)
+        return self.configurations
+
+    def start(self):
         raise NotImplementedError('Abstract method implementation')
 
-    def purchase(self, user_settings, vps_option):
+    def purchase(self, user_settings, vps_option, wallet):
         """
-        Purchase an instance of specified provider.
-        :param user_settings: the user settings used for registration.
-        :param vps_option: the vps option to purchase.
+        Purchase a VPS
+        :param wallet: bitcoin wallet
+        :param user_settings: settings
+        :param vps_option: server configuration
         :return: 
         """
+        print('Purchase')
+        amount, address = self.register(user_settings, vps_option)
+        print('Paying')
+        fee = wallet.Wallet().getfee()
+        # wallet.pay(address, amount, fee)
+        print('Done purchasing')
+
+    def register(self, user_settings, vps_option):
         raise NotImplementedError('Abstract method implementation')
 
     def get_status(self, user_settings):
@@ -95,12 +117,14 @@ class Hoster(object):
         fee = wallet.Wallet().getfullfee()
 
         row_format = "{:<5}" + "{:18}" * 7
-        print(row_format.format("#", "Name", "CPU (cores)", "RAM (GB)", "Storage (GB)", "Bandwidth (TB)", "Connection (Mbps)", "Estimated Price (mBTC)"))
+        print(row_format.format("#", "Name", "CPU (cores)", "RAM (GB)", "Storage (GB)", "Bandwidth (TB)",
+                                "Connection (Mbps)",
+                                "Estimated Price (mBTC)"))
 
         i = 0
         for item in self.configurations:
             print(row_format.format(i, item.name, item.cpu, item.ram, item.storage, item.bandwidth,
-                                    item.connection, str( round(( (float(item.price) * rate) + fee)*1000, 2))))
+                                    item.connection, str(round(((float(item.price) * rate) + fee) * 1000, 2))))
             i = i + 1
 
     @staticmethod
