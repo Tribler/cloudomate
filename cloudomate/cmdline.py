@@ -224,7 +224,8 @@ def _confirmation(message, default="y"):
         print("Please respond with y[es] or n[o]")
 
 
-def list_providers(args):
+# noinspection PyUnusedLocal
+def list_providers(args=None):
     _list_providers()
 
 

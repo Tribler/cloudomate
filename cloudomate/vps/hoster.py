@@ -5,12 +5,12 @@ At this time there is no abstract implementation for any functionality.
 import os
 import random
 import webbrowser
-from mechanize import Browser
 from tempfile import mkstemp
 from urlparse import urlparse
 
-from cloudomate import wallet
+from mechanize import Browser
 
+from cloudomate import wallet
 from cloudomate.vps.clientarea import ClientArea
 
 user_agents = [
@@ -45,21 +45,21 @@ class Hoster(object):
     required_settings = None
     configurations = None
     client_area = None
-    
+
     def __init__(self):
-        '''
+        """
         Initialize hoster object common variables
          configurations holds the vps options available
          br holds the stateful mechanize browser
-        '''
+        """
         self.configurations = None
         self.br = self._create_browser()
 
     def options(self):
-        '''
+        """
         Retrieve hosting options at Hoster.
         :return: A list of hosting options
-        '''
+        """
         options = self.start()
         self.configurations = list(options)
         return self.configurations
@@ -68,17 +68,18 @@ class Hoster(object):
         raise NotImplementedError('Abstract method implementation')
 
     def purchase(self, user_settings, vps_option, wallet):
-        '''
+        """
         Purchase a VPS
+        :param wallet: bitcoin wallet
         :param user_settings: settings
         :param vps_option: server configuration
         :return: 
-        '''
+        """
         print('Purchase')
         amount, address = self.register(user_settings, vps_option)
         print('Paying')
         fee = wallet.Wallet().getfee()
-        #wallet.pay(address, amount, fee)
+        # wallet.pay(address, amount, fee)
         print('Done purchasing')
 
     def register(self, user_settings, vps_option):
@@ -116,12 +117,14 @@ class Hoster(object):
         fee = wallet.Wallet().getfullfee()
 
         row_format = "{:<5}" + "{:18}" * 7
-        print(row_format.format("#", "Name", "CPU (cores)", "RAM (GB)", "Storage (GB)", "Bandwidth (TB)", "Connection (Mbps)", "Estimated Price (mBTC)"))
+        print(row_format.format("#", "Name", "CPU (cores)", "RAM (GB)", "Storage (GB)", "Bandwidth (TB)",
+                                "Connection (Mbps)",
+                                "Estimated Price (mBTC)"))
 
         i = 0
         for item in self.configurations:
             print(row_format.format(i, item.name, item.cpu, item.ram, item.storage, item.bandwidth,
-                                    item.connection, str( round(( (float(item.price) * rate) + fee)*1000, 2))))
+                                    item.connection, str(round(((float(item.price) * rate) + fee) * 1000, 2))))
             i = i + 1
 
     @staticmethod

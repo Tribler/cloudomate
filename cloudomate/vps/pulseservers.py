@@ -1,6 +1,6 @@
 import sys
 
-from bs4 import BeautifulSoup as soup
+from bs4 import BeautifulSoup
 
 from cloudomate.gateway.coinbase import extract_info
 from cloudomate.vps.hoster import Hoster
@@ -46,12 +46,13 @@ class Pulseservers(Hoster):
         :param response: Site to be parsed
         :return: list of configurations
         """
-        site = soup(response.read(), 'lxml')
+        site = BeautifulSoup(response.read(), 'lxml')
         pricingboxes = site.findAll('div', {'class': 'pricing-box'})
         self.configurations = [self._parse_box(box) for box in pricingboxes]
         return self.configurations
 
-    def _parse_box(self, box):
+    @staticmethod
+    def _parse_box(box):
         """
         Parse a single hosting configuration
         :param box: Div containing hosting details
@@ -77,7 +78,8 @@ class Pulseservers(Hoster):
             purchase_url=details[9].a['href']
         )
 
-    def _beautify_cpu(self, cores, speed):
+    @staticmethod
+    def _beautify_cpu(cores, speed):
         """
         Format cores and speed to fit cpu column
         :param cores: cores text
@@ -99,9 +101,8 @@ class Pulseservers(Hoster):
 
         self.fill_in_server_form(user_settings)
         self.br.submit()
-        next = self.br.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
+        self.br.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
         # redirects to https://www.pulseservers.com/billing/cart.php?a=view
-
 
         self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
         self.fill_in_user_form(user_settings)
@@ -114,7 +115,7 @@ class Pulseservers(Hoster):
         page = self.br.submit()
 
         if 'checkout' in page.geturl():
-            contents = soup(page.read(), 'lxml')
+            contents = BeautifulSoup(page.read(), 'lxml')
             errors = contents.find('div', {'class': 'errorbox'})
             print(errors)
             print(page.read())

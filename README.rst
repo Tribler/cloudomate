@@ -19,7 +19,7 @@ Requirements
 * Works on Linux, Windows, Mac OSX, BSD
 
 Tests
-=======
+=====
 
 To run the project's tests   ::
     
