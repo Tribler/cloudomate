@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.gateway.bitpay import extract_info
+from cloudomate import wallet
 
 
 class BlueAngelHost(Hoster):
@@ -38,17 +39,16 @@ class BlueAngelHost(Hoster):
         self.browser.follow_link(text_regex='Checkout')
         self.browser.select_form(nr=2)
         self.fill_in_user_form(user_settings)
-        # self.browser.set_debug_http(True)
-        # self.browser.set_debug_responses(True)
-        # self.browser.set_debug_redirects(True)
         self.browser.submit()
         self.browser.select_form(nr=0)
         page = self.browser.submit()
-        # self._open_in_browser(page)
         url = page.geturl()
         (amount, address) = extract_info(url)
-        print amount
-        print address
+        print('Pay', amount, 'to', address)
+        # commented out so we don't accidentally buy servers
+        # amount = float(amount)
+        # fee = wallet.Wallet().getfee()
+        # wallet.Wallet().pay(address, amount, fee)
 
     def fill_in_server_form(self, user_settings):
         """
@@ -117,6 +117,8 @@ class BlueAngelHost(Hoster):
         option = VpsOption()
         option.name = column.find('div', {'class': 'plan_title'}).find('h4').text
         option.price = column.find('div', {'class': 'plan_price_m'}).text.strip()
+        option.price = option.price.split('$')[1]
+        option.price = option.price.split('/')[0]
         planinfo = column.find('ul', {'class': 'plan_info_list'})
         info = planinfo.findAll('li')
         option.cpu = info[0].text.split(":")[1].strip()
