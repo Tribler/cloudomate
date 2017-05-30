@@ -1,14 +1,13 @@
-import subprocess
 import json
 import mechanize
-
+import subprocess
 from bs4 import BeautifulSoup
+
 from forex_python.bitcoin import BtcConverter
 
-
 class Wallet:
-    def __init__(self):
-        pass
+    AVG_TX_SIZE = 226
+    BTC_TO_SATOSHI = 1.0 / 100000000
 
     @staticmethod
     def getrate():
@@ -46,8 +45,8 @@ class Wallet:
         rates = json.loads(soup.find('p').text)
         satoshirate = rates['halfHourFee']
         satoshirate = float(satoshirate)
-        fee = satoshirate / 100000000
-        return fee * 226
+        fee = satoshirate * Wallet.BTC_TO_SATOSHI
+        return fee * Wallet.AVG_TX_SIZE
 
     @staticmethod
     def getbitpayfee():
@@ -58,38 +57,41 @@ class Wallet:
         return fullfee
 
     def payautofee(self, address, amount):
-        subprocess.call(['electrum', 'daemon', 'start'])
-        subprocess.call(['electrum', 'daemon', 'load_wallet'])
-        amount = amount + self.getfee() + self.getbitpayfee()
-        if self.getbalance() < amount:
-            print 'NotEnoughFunds'
-        else:
-            output = subprocess.check_output(['electrum', 'payto', str(address), str(amount)])
-            temp = json.loads(output)
-            hextransaction = temp['hex']
-            subprocess.call(['electrum', 'broadcast', hextransaction])
-            print 'payment succeeded'
-        subprocess.call(['electrum', 'daemon', 'stop'])
+        with ElectrumWalletHandler():
+            amount = amount + self.getfee() + self.getbitpayfee()
+            if self.getbalance() < amount:
+                print 'NotEnoughFunds'
+            else:
+                output = subprocess.check_output(['electrum', 'payto', str(address), str(amount)])
+                temp = json.loads(output)
+                hextransaction = temp['hex']
+                subprocess.call(['electrum', 'broadcast', hextransaction])
+                print 'payment succeeded'
 
     def pay(self, address, amount, fee):
-        subprocess.call(['electrum', 'daemon', 'start'])
-        subprocess.call(['electrum', 'daemon', 'load_wallet'])
-        if self.getbalance() < amount + fee:
-            print 'NotEnoughFunds'
-        else:
-            subprocess.check_output(['electrum', 'payto', str(address), str(amount), '-f', str(fee)])
-            print 'payment succeeded'
-        subprocess.call(['electrum', 'daemon', 'stop'])
+        with ElectrumWalletHandler():
+            if self.getbalance() < amount + fee:
+                print 'NotEnoughFunds'
+            else:
+                subprocess.check_output(['electrum', 'payto', str(address), str(amount), '-f', str(fee)])
+                print 'payment succeeded'
 
     def emptywallet(self, address):
+        with ElectrumWalletHandler():
+            if self.getbalance() is not 0.0:
+                output = subprocess.check_output(['electrum', 'payto', address, '!'])
+                temp = json.loads(output)
+                hextransaction = temp['hex']
+                subprocess.call(['electrum', 'broadcast', hextransaction])
+                print 'Wallet was successfully emptied'
+            else:
+                print 'Wallet already empty'
+
+
+class ElectrumWalletHandler(object):
+    def __enter__(self):
         subprocess.call(['electrum', 'daemon', 'start'])
         subprocess.call(['electrum', 'daemon', 'load_wallet'])
-        if self.getbalance() is not 0.0:
-            output = subprocess.check_output(['electrum', 'payto', address, '!'])
-            temp = json.loads(output)
-            hextransaction = temp['hex']
-            subprocess.call(['electrum', 'broadcast', hextransaction])
-            print 'Wallet was successfully emptied'
-        else:
-            print 'Wallet already empty'
+
+    def __exit__(self):
         subprocess.call(['electrum', 'daemon', 'stop'])
