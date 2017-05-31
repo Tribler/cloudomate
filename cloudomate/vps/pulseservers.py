@@ -2,6 +2,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
+from cloudomate.vps.clientarea import ClientArea
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
@@ -172,10 +173,18 @@ class Pulseservers(Hoster):
         self.br.find_control('accepttos').items[0].selected = True
 
     def get_status(self, user_settings):
-        self._clientarea_get_status(user_settings, self.clientarea_url)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+        raise NotImplementedError
+        # TODO
+        # clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        # clientarea.set_rootpw()
+        pass
 
     def get_ip(self, user_settings):
-        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        info = clientarea.get_service_info()
+        print(info[1])
+

@@ -154,11 +154,12 @@ class LineVast(Hoster):
         return option
 
     def get_status(self, user_settings):
-        self._clientarea_get_status(user_settings, self.clientarea_url)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        page = self._get_service_page(user_settings)
-        info = self._extract_service_info(page)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        info = clientarea.get_service_info()
         self.br.open("https://vm.linevast.de/login.php")
         self.br.select_form(nr=0)
         self.br.form['username'] = info[2]
@@ -209,31 +210,6 @@ class LineVast(Hoster):
         return False
 
     def get_ip(self, user_settings):
-        page = self._get_service_page(user_settings)
-        info = self._extract_service_info(page)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        info = clientarea.get_service_info()
         print(info[1])
-
-    def _get_service_page(self, user_settings):
-        email = user_settings.get('email')
-        password = user_settings.get('password')
-        clientarea = ClientArea(self.br, self.clientarea_url, email, password)
-        number = 0
-        if 'number' in user_settings.config:
-            number = int(user_settings.get('number'))
-        services = clientarea.get_services()
-        if not 0 <= number < len(services):
-            print("Wrong index: %s not between 0 and %s" % (number, len(services) - 1))
-            sys.exit(2)
-        service = services[number]
-        return self.br.open(service['url'])
-
-    @staticmethod
-    def _extract_service_info(page):
-        soup = BeautifulSoup(page.read(), 'lxml')
-        domain = soup.find('div', {'id': 'domain'})
-        cols = domain.findAll('div', {'class': 'row'})
-        info = []
-        for col in cols:
-            data = col.find('div', {'class': 'text-left'})
-            info.append(data.text.strip())
-        return info

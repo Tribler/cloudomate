@@ -10,8 +10,7 @@ from urlparse import urlparse
 
 from mechanize import Browser
 
-import cloudomate.wallet as wallet
-from cloudomate.vps.clientarea import ClientArea
+from cloudomate import wallet
 
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
@@ -166,28 +165,3 @@ class Hoster(object):
         os.close(fd)
 
         webbrowser.open(path)
-
-    def _clientarea_set_rootpw(self, user_settings, clientarea_url):
-        email = user_settings.get('email')
-        password = user_settings.get('password')
-        clientarea = ClientArea(self._create_browser(), clientarea_url, email, password)
-        rootpw = user_settings.get('rootpw')
-        if 'number' in user_settings.config:
-            clientarea.set_rootpw(rootpw, int(user_settings.get('number')))
-        else:
-            clientarea.set_rootpw(rootpw)
-
-    def _clientarea_get_status(self, user_settings, clientarea_url):
-        email = user_settings.get('email')
-        password = user_settings.get('password')
-        clientarea = ClientArea(self._create_browser(), clientarea_url, email, password)
-        clientarea.print_services()
-
-    def _clientarea_get_ip(self, user_settings, clientarea_url, client_data_url):
-        email = user_settings.get('email')
-        password = user_settings.get('password')
-        clientarea = ClientArea(self._create_browser(), clientarea_url, email, password)
-        if 'number' in user_settings.config:
-            clientarea.get_ip(client_data_url, int(user_settings.get('number')))
-        else:
-            clientarea.get_ip(client_data_url)
