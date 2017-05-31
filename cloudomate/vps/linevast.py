@@ -159,7 +159,8 @@ class LineVast(Hoster):
 
     def set_rootpw(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        info = clientarea.get_service_info()
+        service = clientarea.get_specified_service()
+        info = clientarea.get_service_info(service)
         self.br.open("https://vm.linevast.de/login.php")
         self.br.select_form(nr=0)
         self.br.form['username'] = info[2]
@@ -211,5 +212,4 @@ class LineVast(Hoster):
 
     def get_ip(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        info = clientarea.get_service_info()
-        print(info[1])
+        print(clientarea.get_ip())

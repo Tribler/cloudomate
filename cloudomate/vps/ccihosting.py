@@ -132,6 +132,7 @@ class CCIHosting(Hoster):
         clientarea.set_rootpw()
 
     def get_ip(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.get_client_data_ip(self.client_data_url)
+        raise NotImplementedError
+        # clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        # print(clientarea.get_client_data_ip(self.client_data_url))
 

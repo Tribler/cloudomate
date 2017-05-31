@@ -108,16 +108,25 @@ class ClientArea(object):
         return match.group(1)
 
     def get_client_data_ip(self, client_data_url):
-        number = self._get_number()
-        self._services()
-        self._verify_number(number)
-        service = self.services[number]
+        """
+        Get the ip of specified service through client_data.php. For some clientarea providers this is the way to obtain 
+        the IP address.
+        :param client_data_url: the URL pointing towards the clientarea's client_data.php
+        :return: the IP address
+        """
+        service = self.get_specified_service()
         self._ensure_active(service)
         vserverid = self._get_vserverid(service['url'])
         millis = int(round(time.time() * 1000))
         page = self.browser.open(client_data_url + '?vserverid=%s&_=%s' % (vserverid, millis))
         data = json.loads(page.get_data())
-        print(data['mainip'])
+        return data['mainip']
+
+    def get_specified_service(self):
+        number = self._get_number()
+        self._services()
+        self._verify_number(number)
+        return self.services[number]
 
     def _verify_number(self, number):
         self._services()
@@ -126,11 +135,8 @@ class ClientArea(object):
             sys.exit(2)
 
     def set_rootpw(self):
-        number = self._get_number()
         password = self.user_settings.get('password')
-        self._services()
-        self._verify_number(number)
-        service = self.services[number]
+        service = self.get_specified_service()
         self._ensure_active(service)
         millis = int(round(time.time() * 1000))
 
@@ -148,20 +154,26 @@ class ClientArea(object):
 
     @staticmethod
     def _ensure_active(service):
-        if service['status'] is not 'active':
-            print("Service is not active")
+        if service['status'] != 'active':
+            print("Service is %s" % service['status'])
             sys.exit(2)
 
-    def get_service_info(self):
-        page = self._get_service_page()
+    def get_service_info(self, service):
+        service = self.get_specified_service()
+        self._ensure_active(service)
+        page = self.browser.open(service['url'])
         return self._extract_service_info(page)
 
-    def _get_service_page(self):
-        self._services()
-        number = self._get_number()
-        self._verify_number(number)
-        service = self.services[number]
-        return self.browser.open(service['url'])
+    def get_ip(self):
+        service = self.get_specified_service()
+        if service['status'] != 'active' and 'number' not in self.user_settings.config:
+            for s in self.services:
+                if s['status'] == 'active':
+                    service = s
+                    break
+        self._ensure_active(service)
+        page = self.browser.open(service['url'])
+        return self._extract_service_info(page)[1]
 
     @staticmethod
     def _extract_service_info(page):
