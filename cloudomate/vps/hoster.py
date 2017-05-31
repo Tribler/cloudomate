@@ -123,10 +123,14 @@ class Hoster(object):
         rates = wallet.get_rates(currencies)
         transaction_fee = wallet.get_network_fee()
         for i, item in enumerate(self.configurations):
-            item_price = self.gateway.estimate_price(item.price * rates[item.currency])
-            estimated_price = item_price + transaction_fee
+            if item.currency is not None:
+                item_price = self.gateway.estimate_price(item.price * rates[item.currency])
+                estimated_price = item_price + transaction_fee
+                price_string =  str(round(1000 * estimated_price, 2))
+            else:
+                price_string = 'est. unavalable'
             print(row_format.format(i, item.name, str(item.cpu), str(item.ram), str(item.storage), str(item.bandwidth),
-                                    str(item.connection), str(round(1000 * estimated_price, 2)), '{0} {1}'.format(item.currency, item.price)))
+                                    str(item.connection), price_string, '{0} {1}'.format(item.currency, item.price)))
 
     @staticmethod
     def _print_row(i, item, item_names):

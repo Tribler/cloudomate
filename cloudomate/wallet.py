@@ -14,15 +14,16 @@ def determine_currency(text):
     :param text: text cointaining a currency symbol
     :return: currency name of symbol
     """
-    if '$' in text:
+    if '$' in text or 'usd' in text.lower():
         return 'USD'
-    elif u'€' in text:
+    elif u'€' in text or 'eur' in text.lower():
         return 'EUR'
     else:
-        raise NotImplementedError('Currency cannot be determined: {0}'.format(text))
+        return None
 
 AVG_TX_SIZE = 226
 SATOSHI_TO_BTC = 0.00000001
+
 
 def get_rate(currency='USD'):
     """
@@ -31,9 +32,13 @@ def get_rate(currency='USD'):
     :param currency: currency to convert to
     :return: conversion rate from currency to BTC
     """
+    if currency is None:
+        return None
     b = BtcConverter()
-    rate = 1.0 / b.get_latest_price(currency)
-    return rate
+    factor = b.get_latest_price(currency)
+    if factor is None:
+        return None
+    return 1.0 / factor
 
 def get_rates(currencies):
     """
