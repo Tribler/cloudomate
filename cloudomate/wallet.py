@@ -2,10 +2,12 @@
 
 import json
 import subprocess
-import time
-from mechanize import Browser
 
 from forex_python.bitcoin import BtcConverter
+from mechanize import Browser
+
+AVG_TX_SIZE = 226
+SATOSHI_TO_BTC = 0.00000001
 
 
 def determine_currency(text):
@@ -14,7 +16,7 @@ def determine_currency(text):
     :param text: text cointaining a currency symbol
     :return: currency name of symbol
     """
-    #Naive approach, for example NZ$ also contains $
+    # Naive approach, for example NZ$ also contains $
     if '$' in text or 'usd' in text.lower():
         return 'USD'
     elif u'€' in text or 'eur' in text.lower():
@@ -22,14 +24,12 @@ def determine_currency(text):
     else:
         return None
 
-AVG_TX_SIZE = 226
-SATOSHI_TO_BTC = 0.00000001
-
 
 def get_rate(currency='USD'):
     """
     Return price of 1 currency in BTC
-    Supported currencies available at http://forex-python.readthedocs.io/en/latest/currencysource.html#list-of-supported-currency-codes
+    Supported currencies available at 
+    http://forex-python.readthedocs.io/en/latest/currencysource.html#list-of-supported-currency-codes
     :param currency: currency to convert to
     :return: conversion rate from currency to BTC
     """
@@ -41,6 +41,7 @@ def get_rate(currency='USD'):
         return None
     return 1.0 / factor
 
+
 def get_rates(currencies):
     """
     Return rates for all currencies to BTC.
@@ -48,6 +49,7 @@ def get_rates(currencies):
     """
     rates = {cur: get_rate(cur) for cur in currencies}
     return rates
+
 
 def get_price(amount, currency='USD'):
     """
@@ -59,6 +61,7 @@ def get_price(amount, currency='USD'):
     price = amount * get_rate(currency)
     return price
 
+
 def _get_network_cost(speed):
     br = Browser()
     br.addheaders = [('User-Agent', 'Firefox')]
@@ -66,6 +69,7 @@ def _get_network_cost(speed):
     rates = json.loads(page.read())
     satoshirate = float(rates[speed])
     return satoshirate
+
 
 def get_network_fee(speed='halfHourFee'):
     """
@@ -83,7 +87,10 @@ class Wallet:
     Currently Wallet only supports electrum wallets without passwords for automated operation.
     Wallets with passwords may still be used, but passwords will have to be entered manually.
     """
-    def __init__(self, wallet_command=['electrum']):
+
+    def __init__(self, wallet_command=None):
+        if wallet_command is None:
+            wallet_command = ['electrum']
         self.command = wallet_command
         self.wallet_handler = ElectrumWalletHandler(wallet_command)
 
@@ -98,9 +105,9 @@ class Wallet:
         balance_output = self.wallet_handler.get_balance()
         balance = 0.0
         if confirmed:
-           balance = balance + float(balance_output.get('confirmed', 0.0))
+            balance = balance + float(balance_output.get('confirmed', 0.0))
         if unconfirmed:
-           balance = balance + float(balance_output.get('unconfirmed', 0.0))
+            balance = balance + float(balance_output.get('unconfirmed', 0.0))
         return balance
 
     def get_balance_confirmed(self):
@@ -128,28 +135,31 @@ class Wallet:
     def pay(self, address, amount, fee=None):
         tx_fee = 0 if fee is None else fee
         if self.get_balance() < amount + tx_fee:
-            print('notenoughfunds')
+            print('Not enough funds')
         with self.wallet_handler:
             transaction_hex = self.wallet_handler.create_transaction(amount, address, fee)
             success, transaction_hash = self.wallet_handler.broadcast(transaction_hex)
             if not success:
-                error = transaction_hash
-                print('transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash))
+                print('Transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash))
             else:
-                print 'transaction successfull'
-            print transaction_hex
-            print success
-            print transaction_hash
+                print('Transaction successful')
+            print(transaction_hex)
+            print(success)
+            print(transaction_hash)
+
 
 class ElectrumWalletHandler(object):
     """
     ElectrumWalletHandler ensures the correct opening and closing of the electrum wallet daemon
     """
-    def __init__(self, wallet_command=['electrum']):
+
+    def __init__(self, wallet_command=None):
         """
         Allows wallet_command to be changed to for example electrum --testnet
         :param wallet_command: command to call wallet
         """
+        if wallet_command is None:
+            wallet_command = ['electrum']
         self.command = wallet_command
 
     def __enter__(self):
@@ -186,7 +196,6 @@ class ElectrumWalletHandler(object):
         jbr = json.loads(str(broadcast))
         return tuple(jbr)
 
-
     def get_balance(self):
         """
         Return the balance of the default electrum wallet
@@ -204,12 +213,3 @@ class ElectrumWalletHandler(object):
         address = str(subprocess.check_output(self.command + ['listaddresses']))
         addr = json.loads(address)
         return addr
-
-
-if __name__ == '__main__':
-    w = Wallet(['electrum', '--testnet'])
-    print(w.get_balance_confirmed())
-    print(w.get_balance_unconfirmed())
-    w.pay('mv4rnyY3Su5gjcDNzbMLKBQkBicCtHUtFB', 0.00001)
-    print(w.get_balance_confirmed())
-    print(w.get_balance_unconfirmed())
