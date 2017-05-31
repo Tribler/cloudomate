@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import cloudomate.gateway.bitpay
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.wallet import determine_currency
 
 
 class CrownCloud(Hoster):
@@ -24,6 +25,7 @@ class CrownCloud(Hoster):
     ]
     clientarea_url = 'https://crowncloud.net/clients/clientarea.php'
     client_data_url = 'https://crowncloud.net/clients/modules/servers/solusvmpro/get_client_data.php'
+    gateway = cloudomate.gateway.bitpay
 
     def __init__(self):
         super(CrownCloud, self).__init__()
@@ -53,7 +55,7 @@ class CrownCloud(Hoster):
             sys.exit(1)
         self.br.select_form(nr=0)
         page = self.br.submit()
-        amount, address = cloudomate.gateway.bitpay.extract_info(page.geturl())
+        amount, address = self.gateway.extract_info(page.geturl())
         return amount, address
 
     def fill_in_server_form(self):
@@ -107,28 +109,30 @@ class CrownCloud(Hoster):
     @staticmethod
     def beautiful_bandwidth(bandwidth):
         if bandwidth == '512 GB':
-            return '0.5'
+            return 0.5
         else:
-            return bandwidth.split('T')[0]
+            return float(bandwidth.split('T')[0])
 
     @staticmethod
     def parse_clown_options(column):
         elements = column.findAll('td')
-        option = VpsOption()
-        option.name = elements[0].text
         ram = elements[1].text.split('/')[0]
         ram = float(ram.split('M')[0]) / 1024
-        option.ram = str(ram)
-        option.storage = elements[2].text.split('G')[0]
-        option.cpu = elements[3].text.split('v')[0]
-        option.bandwidth = CrownCloud().beautiful_bandwidth(elements[4].text)
-        connection = int(elements[7].text.split('G')[0]) * 1000
-        option.connection = str(connection)
-        option.price = elements[8].text
-        option.price = option.price.split('$')[1]
-        option.price = option.price.split('/')[0]
-        option.purchase_url = elements[9].find('a')['href']
-        return option
+        price = elements[8].text
+        price = price.split('$')[1]
+        price = float(price.split('/')[0])
+
+        return VpsOption(
+            name = elements[0].text,
+            ram = ram,
+            storage = float(elements[2].text.split('G')[0]),
+            cpu = int(elements[3].text.split('v')[0]),
+            bandwidth = CrownCloud.beautiful_bandwidth(elements[4].text),
+            connection = int(elements[7].text.split('G')[0]) * 1000,
+            price = price,
+            currency = determine_currency(elements[8].text),
+            purchase_url = elements[9].find('a')['href']
+        )
 
     def get_status(self, user_settings):
         self._clientarea_get_status(user_settings, self.clientarea_url)

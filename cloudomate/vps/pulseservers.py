@@ -2,9 +2,10 @@ import sys
 
 from bs4 import BeautifulSoup
 
-from cloudomate.gateway.coinbase import extract_info
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.wallet import determine_currency
+from cloudomate.gateway import coinbase
 
 
 class Pulseservers(Hoster):
@@ -28,6 +29,7 @@ class Pulseservers(Hoster):
         'rootpw'
     ]
     clientarea_url = 'https://www.pulseservers.com/billing/clientarea.php'
+    gateway = coinbase
 
     def __init__(self):
         super(Pulseservers, self).__init__()
@@ -61,19 +63,20 @@ class Pulseservers(Hoster):
         details = box.findAll('li')
         storage = details[4].strong.text
         if storage == '1TB':
-            storage = '1024'
+            storage = 1024.0
         else:
-            storage = storage.split('G')[0]
+            storage = float(storage.split('G')[0])
 
         connection = details[5].strong.text.split('G')[0]
         connection = int(connection) * 1000
         return VpsOption(
             name=details[0].h4.text,
-            price=details[1].h1.text.split('$')[1] + details[1].span.text.split('/')[0],
-            cpu=details[2].strong.text.split('C')[0],
-            ram=details[3].strong.text.split('G')[0],
+            price=float(details[1].h1.text.split('$')[1]),
+            currency=determine_currency(details[1].h1.text),
+            cpu=int(details[2].strong.text.split('C')[0]),
+            ram=float(details[3].strong.text.split('G')[0]),
             storage=storage,
-            connection=str(connection),
+            connection=connection,
             bandwidth='unmetered',
             purchase_url=details[9].a['href']
         )
@@ -126,7 +129,7 @@ class Pulseservers(Hoster):
         self.br.select_form(nr=0)
         page = self.br.submit()
 
-        amount, address = extract_info(page.geturl())
+        amount, address = self.gateway.extract_info(page.geturl())
         return amount, address
 
     def fill_in_server_form(self, user_settings):

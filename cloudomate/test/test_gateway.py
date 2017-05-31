@@ -2,16 +2,20 @@ import unittest
 
 from cloudomate.gateway import coinbase
 from cloudomate.util.bitcoinaddress import validate
-from cloudomate.wallet import Wallet
+from cloudomate.wallet import get_rate
 
 
 class TestCoinbase(unittest.TestCase):
     # test url from https://developers.coinbase.com/docs/merchants/payment-pages
     TEST_URL = 'https://www.coinbase.com/checkouts/2b30a03995ec62f15bdc54e8428caa87'
+    amount = None
+    address = None
+    rate = None
 
-    def setUp(self):
-        self.amount, self.address = coinbase.extract_info(self.TEST_URL)
-        self.rate = Wallet().getrate()
+    @classmethod
+    def setUpClass(cls):
+        cls.amount, cls.address = coinbase.extract_info(cls.TEST_URL)
+        cls.rate = get_rate()
 
     def test_address(self):
         self.assertTrue(validate(self.address))

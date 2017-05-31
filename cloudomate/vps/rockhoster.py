@@ -1,9 +1,10 @@
 import itertools
 from bs4 import BeautifulSoup
 
-from cloudomate.gateway.coinbase import extract_info
+from cloudomate.gateway import coinbase
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.wallet import determine_currency
 
 
 class RockHoster(Hoster):
@@ -23,6 +24,7 @@ class RockHoster(Hoster):
         'rootpw']
     clientarea_url = 'https://rockhoster.com/cloud/clientarea.php'
     client_data_url = 'https://rockhoster.com/cloud/modules/servers/solusvmpro/get_client_data.php'
+    gateway = coinbase
 
     def __init__(self):
         super(RockHoster, self).__init__()
@@ -44,7 +46,7 @@ class RockHoster(Hoster):
         self.fill_in_user_form(user_settings)
         self.br.submit()
         page = self.br.follow_link(url_regex="coinbase")
-        amount, address = extract_info(page.geturl())
+        amount, address = self.gateway.extract_info(page.geturl())
         return amount, address
 
     def fill_in_server_form(self, user_settings):
@@ -109,21 +111,24 @@ class RockHoster(Hoster):
     @staticmethod
     def parse_openvz_option(column):
         elements = column.findAll("li")
-        option = VpsOption()
-        storage = elements[0].text.split(": ")[1]
-        option.storage = storage.split("G")[0]
-        ram = elements[1].text.split("G")[0]
-        option.ram = ram.split("RAM: ")[1]
-        option.bandwidth = 'unmetered'
-        option.cpu = elements[3].text.split(':')[1]
-        connection = elements[5].text.split(": ")[1]
-        option.connection = connection.split('M')[0]
-        option.name = column.div.h2.string
         price = column.div.strong.text
-        price = price.split('$')[1]
-        option.price = price.split('/')[0]
-        option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
-        return option
+        currency = determine_currency(price)
+        price = price.split('$')[1].split('/')[0]
+        storage = elements[0].text.split(": ")[1]
+        ram = elements[1].text.split("G")[0]
+        connection = elements[5].text.split(": ")[1]
+
+        return VpsOption(
+            name = column.div.h2.string,
+            price = float(price),
+            currency = currency,
+            storage = float(storage.split("G")[0]),
+            ram = float(ram.split("RAM: ")[1]),
+            bandwidth='unmetered',
+            cpu = int(elements[3].text.split(':')[1]),
+            connection = int(connection.split('M')[0]),
+            purchase_url = column.find('div', {'class': 'bottom'}).a['href']
+        )
 
     def parse_kvm_hosting(self, page):
         soup = BeautifulSoup(page, "lxml")
@@ -134,21 +139,23 @@ class RockHoster(Hoster):
     @staticmethod
     def parse_kvm_option(column):
         elements = column.findAll("li")
-        option = VpsOption()
-        storage = elements[0].text.split(": ")[1]
-        option.storage = storage.split('G')[0]
+        price = column.div.strong.text
+        currency = determine_currency(price)
+        price = price.split('$')[1].split('/')[0]
         ram = elements[1].text.split("RAM:")[1].strip()
-        ram = int(ram.split('M')[0])/1024
-        option.ram = str(ram)
-        option.bandwidth = 'unmetered'
-        option.cpu = elements[3].text.split(':')[1]
-        option.connection = '1000'
-        option.name = column.div.h2.string
-        option.price = column.div.strong.text
-        option.price = option.price.split('$')[1]
-        option.price = option.price.split('/')[0]
-        option.purchase_url = column.find('div', {'class': 'bottom'}).a['href']
-        return option
+        storage = elements[0].text.split(": ")[1]
+
+        return VpsOption(
+            name = column.div.h2.string,
+            price = float(price),
+            currency = currency,
+            connection = 1000,
+            cpu = int(elements[3].text.split(':')[1]),
+            ram = int(ram.split('M')[0]) / 1024,
+            bandwidth = 'unmetered',
+            storage = float(storage.split('G')[0]),
+            purchase_url = column.find('div', {'class': 'bottom'}).a['href']
+        )
 
     def get_status(self, user_settings):
         self._clientarea_get_status(user_settings, self.clientarea_url)

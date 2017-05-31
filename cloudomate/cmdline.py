@@ -98,33 +98,21 @@ def add_parser_setrootpw(subparsers):
 
 
 def set_rootpw(args):
-    provider = args.provider
-    if not provider or provider not in providers:
-        _print_unknown_provider(provider)
-        _list_providers()
-        sys.exit(2)
+    provider = _get_provider(args)
     user_settings = _get_user_settings(args, provider)
     p = providers[provider]
     p.set_rootpw(user_settings)
 
 
 def get_ip(args):
-    provider = args.provider
-    if not provider or provider not in providers:
-        _print_unknown_provider(provider)
-        _list_providers()
-        sys.exit(2)
+    provider = _get_provider(args)
     user_settings = _get_user_settings(args, provider)
     p = providers[provider]
     p.get_ip(user_settings)
 
 
 def status(args):
-    provider = args.provider
-    if not provider or provider not in providers:
-        _print_unknown_provider(provider)
-        _list_providers()
-        sys.exit(2)
+    provider = _get_provider(args)
     print("Getting status for %s." % provider)
     user_settings = _get_user_settings(args, provider)
     p = providers[provider]
@@ -132,22 +120,14 @@ def status(args):
 
 
 def options(args):
-    provider = args.provider
-    if not provider or provider not in providers:
-        _print_unknown_provider(provider)
-        _list_providers()
-        sys.exit(2)
-    _options(args.provider)
+    provider = _get_provider(args)
+    _options(provider)
 
 
 def purchase(args):
     if "provider" not in vars(args):
         sys.exit(2)
-    provider = args.provider
-    if not provider or provider not in providers:
-        _print_unknown_provider(provider)
-        _list_providers()
-        sys.exit(2)
+    provider = _get_provider(args)
     user_settings = _get_user_settings(args, provider)
     if not _check_provider(provider, user_settings):
         print("Missing option")
@@ -185,7 +165,7 @@ def _purchase(provider, vps_option, user_settings):
     vps_option = configurations[vps_option]
     row_format = "{:15}" * 6
     print("Selected configuration:")
-    print(row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Price"))
+    print(row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Est.Price"))
     print(row_format.format(
         vps_option.name,
         vps_option.cpu,
@@ -256,6 +236,13 @@ def _register(provider, vps_option, user_settings):
     p = providers[provider]
     p.purchase(user_settings=user_settings, vps_option=vps_option, wallet=wallet)
 
+def _get_provider(args):
+    provider = args.provider
+    if not provider or provider not in providers:
+        _print_unknown_provider(provider)
+        _list_providers()
+        sys.exit(2)
+    return provider
 
 if __name__ == '__main__':
     execute()

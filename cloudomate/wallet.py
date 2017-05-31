@@ -1,95 +1,215 @@
-import subprocess
-import json
-import mechanize
+# -*- coding: utf-8 -*-
 
-from bs4 import BeautifulSoup
+import json
+import subprocess
+
 from forex_python.bitcoin import BtcConverter
+from mechanize import Browser
+
+AVG_TX_SIZE = 226
+SATOSHI_TO_BTC = 0.00000001
+
+
+def determine_currency(text):
+    """
+    Determine currency of text
+    :param text: text cointaining a currency symbol
+    :return: currency name of symbol
+    """
+    # Naive approach, for example NZ$ also contains $
+    if '$' in text or 'usd' in text.lower():
+        return 'USD'
+    elif u'€' in text or 'eur' in text.lower():
+        return 'EUR'
+    else:
+        return None
+
+
+def get_rate(currency='USD'):
+    """
+    Return price of 1 currency in BTC
+    Supported currencies available at 
+    http://forex-python.readthedocs.io/en/latest/currencysource.html#list-of-supported-currency-codes
+    :param currency: currency to convert to
+    :return: conversion rate from currency to BTC
+    """
+    if currency is None:
+        return None
+    b = BtcConverter()
+    factor = b.get_latest_price(currency)
+    if factor is None:
+        return None
+    return 1.0 / factor
+
+
+def get_rates(currencies):
+    """
+    Return rates for all currencies to BTC.
+    :return: conversion rates from currencies to BTC
+    """
+    rates = {cur: get_rate(cur) for cur in currencies}
+    return rates
+
+
+def get_price(amount, currency='USD'):
+    """
+    Convert price from one currency to bitcoins
+    :param amount: number of currencies to convert
+    :param currency: currency to convert from
+    :return: price in bitcoins
+    """
+    price = amount * get_rate(currency)
+    return price
+
+
+def _get_network_cost(speed):
+    br = Browser()
+    br.addheaders = [('User-Agent', 'Firefox')]
+    page = br.open('https://bitcoinfees.21.co/api/v1/fees/recommended')
+    rates = json.loads(page.read())
+    satoshirate = float(rates[speed])
+    return satoshirate
+
+
+def get_network_fee(speed='halfHourFee'):
+    """
+    Give an estimate of network fee for the average bitcoin transaction for given speed.
+    Supported speeds are available at https://bitcoinfees.21.co/api/v1/fees/recommended
+    :return: network cost
+    """
+    network_fee = _get_network_cost(speed) * SATOSHI_TO_BTC
+    return network_fee * AVG_TX_SIZE
 
 
 class Wallet:
-    def __init__(self):
-        pass
+    """
+    Wallet implements an adapter to the wallet handler.
+    Currently Wallet only supports electrum wallets without passwords for automated operation.
+    Wallets with passwords may still be used, but passwords will have to be entered manually.
+    """
 
-    @staticmethod
-    def getrate():
-        b = BtcConverter()
-        rate = 1 / b.get_latest_price('USD')
-        return rate
+    def __init__(self, wallet_command=None):
+        if wallet_command is None:
+            wallet_command = ['electrum']
+        self.command = wallet_command
+        self.wallet_handler = ElectrumWalletHandler(wallet_command)
 
-    @staticmethod
-    def getcurrentbtcprice(amount, rate):
-        price = amount * rate
-        return price
+    def get_balance(self, confirmed=True, unconfirmed=True):
+        """
+        Return the balance of the default electrum wallet
+        Confirmed and unconfirmed can be set to indicate which balance to retrieve.
+        :param confirmed: default: True
+        :param unconfirmed: default: True
+        :return: balance of default wallet
+        """
+        balance_output = self.wallet_handler.get_balance()
+        balance = 0.0
+        if confirmed:
+            balance = balance + float(balance_output.get('confirmed', 0.0))
+        if unconfirmed:
+            balance = balance + float(balance_output.get('unconfirmed', 0.0))
+        return balance
 
-    @staticmethod
-    def getbalance():
-        balance = str(subprocess.check_output(['electrum', 'getbalance']))
-        blance = json.loads(balance)
-        confirmed = blance['confirmed']
-        unconfirmed = blance.get('unconfirmed', 0.0)
-        return float(confirmed) + float(unconfirmed)
+    def get_balance_confirmed(self):
+        """
+        Return confirmed balance of default electrum wallet
+        :return: 
+        """
+        return self.get_balance(confirmed=True, unconfirmed=False)
 
-    @staticmethod
-    def getaddresses():
-        address = str(subprocess.check_output(['electrum', 'listaddresses']))
+    def get_balance_unconfirmed(self):
+        """
+        Return unconfirmed balance of default electrum wallet
+        :return: 
+        """
+        return self.get_balance(confirmed=False, unconfirmed=True)
+
+    def get_addresses(self):
+        """
+        Return the list of addresses of the default electrum wallet
+        :return: 
+        """
+        address_output = self.wallet_handler.get_addresses()
+        return address_output
+
+    def pay(self, address, amount, fee=None):
+        tx_fee = 0 if fee is None else fee
+        if self.get_balance() < amount + tx_fee:
+            print('Not enough funds')
+        with self.wallet_handler:
+            transaction_hex = self.wallet_handler.create_transaction(amount, address, fee)
+            success, transaction_hash = self.wallet_handler.broadcast(transaction_hex)
+            if not success:
+                print('Transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash))
+            else:
+                print('Transaction successful')
+            print(transaction_hex)
+            print(success)
+            print(transaction_hash)
+
+
+class ElectrumWalletHandler(object):
+    """
+    ElectrumWalletHandler ensures the correct opening and closing of the electrum wallet daemon
+    """
+
+    def __init__(self, wallet_command=None):
+        """
+        Allows wallet_command to be changed to for example electrum --testnet
+        :param wallet_command: command to call wallet
+        """
+        if wallet_command is None:
+            wallet_command = ['electrum']
+        self.command = wallet_command
+
+    def __enter__(self):
+        # things that can go wrong, unable to start daemon status?
+        # other things
+        subprocess.call(self.command + ['daemon', 'start'])
+        subprocess.call(self.command + ['daemon', 'load_wallet'])
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        subprocess.call(self.command + ['daemon', 'stop'])
+
+    def create_transaction(self, amount, address, fee):
+        """
+        Create a transaction
+        :param amount: amount of bitcoins to be transferred
+        :param address: address to transfer to
+        :param fee: None for autofee, or specify own fee
+        :return: transaction details
+        """
+        if fee is None:
+            transaction = subprocess.check_output(self.command + ['payto', str(address), str(amount)])
+        else:
+            transaction = subprocess.check_output(self.command + ['payto', str(address), str(amount), '-f', str(fee)])
+        jtrs = json.loads(str(transaction))
+        return jtrs['hex']
+
+    def broadcast(self, transaction):
+        """
+        Broadcast a transaction
+        :param transaction: hex of transaction
+        :return: if successfull returns success and 
+        """
+        broadcast = subprocess.check_output(self.command + ['broadcast', transaction])
+        jbr = json.loads(str(broadcast))
+        return tuple(jbr)
+
+    def get_balance(self):
+        """
+        Return the balance of the default electrum wallet
+        :return: balance of default wallet
+        """
+        output = str(subprocess.check_output(self.command + ['getbalance']))
+        balance_dict = json.loads(output)
+        return balance_dict
+
+    def get_addresses(self):
+        """
+        Return the list of addresses of default wallet
+        :return: 
+        """
+        address = str(subprocess.check_output(self.command + ['listaddresses']))
         addr = json.loads(address)
-        addresses = addr[0]
-        return addresses
-
-    @staticmethod
-    def getfee():
-        browser = mechanize.Browser()
-        browser.set_handle_robots(False)
-        browser.addheaders = [('User-agent', 'Firefox')]
-        page = browser.open('https://bitcoinfees.21.co/api/v1/fees/recommended')
-        soup = BeautifulSoup(page, 'lxml')
-        rates = json.loads(soup.find('p').text)
-        satoshirate = rates['halfHourFee']
-        satoshirate = float(satoshirate)
-        fee = satoshirate / 100000000
-        return fee * 226
-
-    @staticmethod
-    def getbitpayfee():
-        return 0.000423
-
-    def getfullfee(self):
-        fullfee = self.getfee() + self.getbitpayfee()
-        return fullfee
-
-    def payautofee(self, address, amount):
-        subprocess.call(['electrum', 'daemon', 'start'])
-        subprocess.call(['electrum', 'daemon', 'load_wallet'])
-        amount = amount + self.getfee() + self.getbitpayfee()
-        if self.getbalance() < amount:
-            print 'NotEnoughFunds'
-        else:
-            output = subprocess.check_output(['electrum', 'payto', str(address), str(amount)])
-            temp = json.loads(output)
-            hextransaction = temp['hex']
-            subprocess.call(['electrum', 'broadcast', hextransaction])
-            print 'payment succeeded'
-        subprocess.call(['electrum', 'daemon', 'stop'])
-
-    def pay(self, address, amount, fee):
-        subprocess.call(['electrum', 'daemon', 'start'])
-        subprocess.call(['electrum', 'daemon', 'load_wallet'])
-        if self.getbalance() < amount + fee:
-            print 'NotEnoughFunds'
-        else:
-            subprocess.check_output(['electrum', 'payto', str(address), str(amount), '-f', str(fee)])
-            print 'payment succeeded'
-        subprocess.call(['electrum', 'daemon', 'stop'])
-
-    def emptywallet(self, address):
-        subprocess.call(['electrum', 'daemon', 'start'])
-        subprocess.call(['electrum', 'daemon', 'load_wallet'])
-        if self.getbalance() is not 0.0:
-            output = subprocess.check_output(['electrum', 'payto', address, '!'])
-            temp = json.loads(output)
-            hextransaction = temp['hex']
-            subprocess.call(['electrum', 'broadcast', hextransaction])
-            print 'Wallet was successfully emptied'
-        else:
-            print 'Wallet already empty'
-        subprocess.call(['electrum', 'daemon', 'stop'])
+        return addr

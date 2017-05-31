@@ -15,3 +15,9 @@ def extract_info(url):
     amount = float(data['invoice']['buyerTotalBtcAmount'])
     address = data['invoice']['bitcoinAddress']
     return amount, address
+
+# https://bitpay.com/pricing
+GATEWAY_FEE = 0.01
+
+def estimate_price(cost):
+    return cost * (1.0 + GATEWAY_FEE)
