@@ -159,8 +159,7 @@ class LineVast(Hoster):
 
     def set_rootpw(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        service = clientarea.get_specified_service()
-        info = clientarea.get_service_info(service)
+        info = clientarea.get_service_info()
         self.br.open("https://vm.linevast.de/login.php")
         self.br.select_form(nr=0)
         self.br.form['username'] = info[2]
@@ -185,7 +184,7 @@ class LineVast(Hoster):
             print("Setting password failed")
             sys.exit(2)
         else:
-            print("Setting password succesful")
+            print("Setting password successful")
 
     @staticmethod
     def _extract_vi_from_links(links):

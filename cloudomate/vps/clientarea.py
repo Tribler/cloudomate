@@ -123,6 +123,11 @@ class ClientArea(object):
         return data['mainip']
 
     def get_specified_service(self):
+        """
+        If number is set through config or cli, return the service according to the number, else return the first 
+        service.
+        :return: the chosen service
+        """
         number = self._get_number()
         self._services()
         self._verify_number(number)
@@ -135,6 +140,10 @@ class ClientArea(object):
             sys.exit(2)
 
     def set_rootpw(self):
+        """
+        Set the rootpassword for the appropriate service.
+        :return: 
+        """
         password = self.user_settings.get('password')
         service = self.get_specified_service()
         self._ensure_active(service)
@@ -158,13 +167,24 @@ class ClientArea(object):
             print("Service is %s" % service['status'])
             sys.exit(2)
 
-    def get_service_info(self, service):
+    def get_service_info(self):
+        """
+        Get info for the specified service. This depends on the state of the service and on the provider. Contains
+        info like ip address, hostname, passwords...
+        :return: 
+        """
         service = self.get_specified_service()
         self._ensure_active(service)
         page = self.browser.open(service['url'])
         return self._extract_service_info(page)
 
     def get_ip(self):
+        """
+        Get the ip address for a service.
+        If a number is specified: return the IP address of this service.
+        If no number is specified, the IP address of first active service is returned.
+        :return: the chosen IP address
+        """
         service = self.get_specified_service()
         if service['status'] != 'active' and 'number' not in self.user_settings.config:
             for s in self.services:
