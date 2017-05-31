@@ -103,7 +103,7 @@ def set_rootpw(args):
         _print_unknown_provider(provider)
         _list_providers()
         sys.exit(2)
-    user_settings = _get_user_settings(args)
+    user_settings = _get_user_settings(args, provider)
     p = providers[provider]
     p.set_rootpw(user_settings)
 
@@ -114,7 +114,7 @@ def get_ip(args):
         _print_unknown_provider(provider)
         _list_providers()
         sys.exit(2)
-    user_settings = _get_user_settings(args)
+    user_settings = _get_user_settings(args, provider)
     p = providers[provider]
     p.get_ip(user_settings)
 
@@ -126,7 +126,7 @@ def status(args):
         _list_providers()
         sys.exit(2)
     print("Getting status for %s." % provider)
-    user_settings = _get_user_settings(args)
+    user_settings = _get_user_settings(args, provider)
     p = providers[provider]
     p.get_status(user_settings)
 
@@ -148,7 +148,7 @@ def purchase(args):
         _print_unknown_provider(provider)
         _list_providers()
         sys.exit(2)
-    user_settings = _get_user_settings(args)
+    user_settings = _get_user_settings(args, provider)
     if not _check_provider(provider, user_settings):
         print("Missing option")
         sys.exit(2)
@@ -160,12 +160,12 @@ def _check_provider(provider, config):
     return config.verify_options(p.required_settings)
 
 
-def _get_user_settings(args):
+def _get_user_settings(args, provider=None):
     user_settings = UserOptions()
     if 'config' in vars(args):
-        user_settings.read_settings(filename=args.config)
+        user_settings.read_settings(filename=args.config, provider=provider)
     else:
-        user_settings.read_settings()
+        user_settings.read_settings(provider=provider)
     _merge_arguments(user_settings, vars(args))
     return user_settings
 
