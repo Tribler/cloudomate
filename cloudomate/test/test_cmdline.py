@@ -39,15 +39,17 @@ class TestCmdLine(unittest.TestCase):
         RockHoster.purchase.assert_called_once()
 
     def _create_option(self):
-        option = VpsOption()
-        option.name = "Option name"
-        option.ram = "Option ram"
-        option.cpu = "Option cpu"
-        option.storage = "Option storage"
-        option.bandwidth = "Option bandwidth"
-        option.price = "Option price"
-        option.connection = "Option connection"
-        return option
+        return VpsOption(
+            name = "Option name",
+            ram = "Option ram",
+            cpu = "Option cpu",
+            storage = "Option storage",
+            bandwidth = "Option bandwidth",
+            price = "Option price",
+            currency = "Option currency",
+            connection = "Option connection",
+            purchase_url = "Option url"
+        )
 
     def test_execute_purchase_verify_options_failure(self):
         command = ["purchase", "rockhoster", "-f", "-c", "config_test.cfg", "1"]
