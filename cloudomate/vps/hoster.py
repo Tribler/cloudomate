@@ -5,13 +5,13 @@ At this time there is no abstract implementation for any functionality.
 import os
 import random
 import webbrowser
+from mechanize import Browser
 from tempfile import mkstemp
 from urlparse import urlparse
 
-from mechanize import Browser
-
-from cloudomate import wallet
 from cloudomate.vps.clientarea import ClientArea
+import cloudomate.wallet as wallet
+
 
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
@@ -45,6 +45,7 @@ class Hoster(object):
     required_settings = None
     configurations = None
     client_area = None
+    gateway = None
 
     def __init__(self):
         """
@@ -113,19 +114,19 @@ class Hoster(object):
         """
         Print parsed VPS configurations.
         """
-        rate = wallet.Wallet().getrate()
-        fee = wallet.Wallet().getfullfee()
-
-        row_format = "{:<5}" + "{:18}" * 7
+        row_format = "{:<5}" + "{:18}" * 8
         print(row_format.format("#", "Name", "CPU (cores)", "RAM (GB)", "Storage (GB)", "Bandwidth (TB)",
                                 "Connection (Mbps)",
-                                "Estimated Price (mBTC)"))
+                                "Est. Price (mBTC)", "Price"))
 
-        i = 0
-        for item in self.configurations:
-            print(row_format.format(i, item.name, item.cpu, item.ram, item.storage, item.bandwidth,
-                                    item.connection, str(round(((float(item.price) * rate) + fee) * 1000, 2))))
-            i = i + 1
+        currencies = set(item.currency for item in self.configurations)
+        rates = wallet.get_rates(currencies)
+        transaction_fee = wallet.get_network_fee()
+        for i, item in enumerate(self.configurations):
+            item_price = self.gateway.estimate_price(item.price * rates[item.currency])
+            estimated_price = item_price + transaction_fee
+            print(row_format.format(i, item.name, str(item.cpu), str(item.ram), str(item.storage), str(item.bandwidth),
+                                    str(item.connection), str(round(1000 * estimated_price, 2)), '{0} {1}'.format(item.currency, item.price)))
 
     @staticmethod
     def _print_row(i, item, item_names):

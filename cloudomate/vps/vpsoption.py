@@ -1,13 +1,14 @@
 class VpsOption(object):
     def __init__(self,
-                 name=None,
-                 price=None,
-                 cpu=None,
-                 ram=None,
-                 storage=None,
-                 bandwidth=None,
-                 connection=None,
-                 purchase_url=None):
+                 name,
+                 price,
+                 currency,
+                 cpu,
+                 ram,
+                 storage,
+                 bandwidth,
+                 connection,
+                 purchase_url):
         self.name = name
         self.ram = ram
         self.cpu = cpu
@@ -15,4 +16,5 @@ class VpsOption(object):
         self.bandwidth = bandwidth
         self.connection = connection
         self.price = price
+        self.currency = currency
         self.purchase_url = purchase_url

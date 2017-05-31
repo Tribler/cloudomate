@@ -165,7 +165,7 @@ def _purchase(provider, vps_option, user_settings):
     vps_option = configurations[vps_option]
     row_format = "{:15}" * 6
     print("Selected configuration:")
-    print(row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Price"))
+    print(row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Est.Price"))
     print(row_format.format(
         vps_option.name,
         vps_option.cpu,

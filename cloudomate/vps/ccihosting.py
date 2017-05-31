@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from cloudomate.gateway import coinbase
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.wallet import determine_currency
 
 
 class CCIHosting(Hoster):
@@ -25,6 +26,7 @@ class CCIHosting(Hoster):
         'hostname',
         'rootpw'
     ]
+    gateway = coinbase
 
     def __init__(self):
         super(CCIHosting, self).__init__()
@@ -53,7 +55,7 @@ class CCIHosting(Hoster):
         self.br.select_form(nr=0)
         coinbase_url = self.br.form.attrs.get('action')
 
-        amount, address = coinbase.extract_info(coinbase_url)
+        amount, address = self.gateway.extract_info(coinbase_url)
 
         return amount, address
 
@@ -105,20 +107,20 @@ class CCIHosting(Hoster):
 
     @staticmethod
     def parse_cci_options(column):
-        option = VpsOption()
-        option.name = column.find('div', {'class': 'boxtitle'}).text.split('S')[1].strip()
-        option.price = column.find('div', {'class': 'PriceTag'}).find('span').text.split('U')[0]
-        option.price = option.price.split('$')[1]
+        price = column.find('div', {'class': 'PriceTag'}).find('span').text.split('U')[0]
         planinfo = column.find('ul')
         info = planinfo.findAll('li')
-        option.cpu = info[1].text.split("CPU")[0]
-        option.ram = info[2].text.split("G")[0]
-        option.storage = info[3].text.split("G")[0]
-        option.bandwidth = info[4].text.split("T")[0]
-        connection = int(info[5].text.split("G")[0])*1000
-        option.connection = str(connection)
-        option.purchase_url = column.find('a')['href']
-        return option
+        return VpsOption(
+            name = column.find('div', {'class': 'boxtitle'}).text.split('S')[1].strip(),
+            price = float(price.split('$')[1]),
+            currency = determine_currency(price),
+            cpu = int(info[1].text.split("CPU")[0]),
+            ram = float(info[2].text.split("G")[0]),
+            storage = float(info[3].text.split("G")[0]),
+            bandwidth = float(info[4].text.split("T")[0]),
+            connection = int(info[5].text.split("G")[0])*1000,
+            purchase_url = column.find('a')['href']
+        )
 
     def get_status(self, user_settings):
         self._clientarea_get_status(user_settings, self.clientarea_url)

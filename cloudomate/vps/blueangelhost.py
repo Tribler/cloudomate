@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup
 
-from cloudomate.gateway.bitpay import extract_info
+from cloudomate.gateway import bitpay
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.wallet import determine_currency
 
 
 class BlueAngelHost(Hoster):
@@ -25,6 +26,7 @@ class BlueAngelHost(Hoster):
     ]
     clientarea_url = 'https://www.billing.blueangelhost.com/clientarea.php'
     client_data_url = 'https://www.billing.blueangelhost.com/modules/servers/solusvmpro/get_client_data.php'
+    gateway = bitpay
 
     def __init__(self):
         super(BlueAngelHost, self).__init__()
@@ -48,7 +50,7 @@ class BlueAngelHost(Hoster):
         self.br.select_form(nr=0)
         page = self.br.submit()
         url = page.geturl()
-        amount, address = extract_info(url)
+        amount, address = self.gateway.extract_info(url)
         return amount, address
 
     def fill_in_server_form(self, user_settings):
@@ -102,26 +104,28 @@ class BlueAngelHost(Hoster):
 
     @staticmethod
     def parse_blue_options(column):
-        option = VpsOption()
-        option.name = column.find('div', {'class': 'plan_title'}).find('h4').text
-        option.price = column.find('div', {'class': 'plan_price_m'}).text.strip()
-        option.price = option.price.split('$')[1]
-        option.price = option.price.split('/')[0]
+        price = column.find('div', {'class': 'plan_price_m'}).text.strip()
+        currency = determine_currency(price)
+        price = price.split('$')[1].split('/')[0]
         planinfo = column.find('ul', {'class': 'plan_info_list'})
         info = planinfo.findAll('li')
         cpu = info[0].text.split(":")[1].strip()
-        option.cpu = cpu.split('C')[0].strip()
         ram = info[1].text.split(":")[1].strip()
-        option.ram = ram.split('G')[0].strip()
         storage = info[2].text.split(":")[1].strip()
-        option.storage = storage.split('G')[0].strip()
         connection = info[3].text.split(":")[1].strip()
-        connection = int(connection.split('G')[0].strip())*1000
-        option.connection = str(connection)
         bandwidth = info[4].text.split("h")[1].strip()
-        option.bandwidth = bandwidth.split('T')[0].strip()
-        option.purchase_url = column.find('a')['href']
-        return option
+
+        return VpsOption(
+            name = column.find('div', {'class': 'plan_title'}).find('h4').text,
+            price = float(price),
+            currency = currency,
+            cpu = int(cpu.split('C')[0].strip()),
+            ram = float(ram.split('G')[0].strip()),
+            storage = float(storage.split('G')[0].strip()),
+            connection = int(connection.split('G')[0].strip())*1000,
+            bandwidth = float(bandwidth.split('T')[0].strip()),
+            purchase_url = column.find('a')['href']
+        )
 
     def get_status(self, user_settings):
         self._clientarea_get_status(user_settings, self.clientarea_url)
