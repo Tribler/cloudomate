@@ -1,9 +1,6 @@
 import sys
 from argparse import ArgumentParser
 
-from forex_python.bitcoin import BtcConverter
-
-from cloudomate import wallet
 from cloudomate.util.config import UserOptions
 from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
@@ -239,6 +236,7 @@ def _register(provider, vps_option, user_settings):
     p = providers[provider]
     p.purchase(user_settings=user_settings, vps_option=vps_option, wallet=wallet)
 
+
 def _get_provider(args):
     provider = args.provider
     if not provider or provider not in providers:
@@ -246,6 +244,7 @@ def _get_provider(args):
         _list_providers()
         sys.exit(2)
     return provider
+
 
 if __name__ == '__main__':
     execute()

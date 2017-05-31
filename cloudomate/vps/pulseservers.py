@@ -2,11 +2,11 @@ import sys
 
 from bs4 import BeautifulSoup
 
+from cloudomate.gateway import coinbase
 from cloudomate.vps.clientarea import ClientArea
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
-from cloudomate.gateway import coinbase
 
 
 class Pulseservers(Hoster):
@@ -186,4 +186,3 @@ class Pulseservers(Hoster):
     def get_ip(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         print(clientarea.get_ip())
-

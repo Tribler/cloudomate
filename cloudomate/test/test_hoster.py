@@ -35,8 +35,8 @@ class TestHosterAbstract(unittest.TestCase):
 
     def testHosterPurchase(self):
         hoster = cloudomate.vps.hoster.Hoster()
-        vps_option = VpsOption(name='', price='', cpu='', currency='USD', ram='', storage='', bandwidth='', connection='',
-                               purchase_url='')
+        vps_option = VpsOption(name='', price='', cpu='', currency='USD', ram='', storage='', bandwidth='',
+                               connection='', purchase_url='')
         self.assertRaises(NotImplementedError, hoster.purchase, *(None, vps_option, None))
 
 
