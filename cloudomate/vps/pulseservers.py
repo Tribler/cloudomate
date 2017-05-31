@@ -113,8 +113,6 @@ class Pulseservers(Hoster):
         promobutton = self.br.form.find_control(name="validatepromo")
         promobutton.disabled = True
 
-        print(self.br.form)
-
         page = self.br.submit()
 
         if 'checkout' in page.geturl():

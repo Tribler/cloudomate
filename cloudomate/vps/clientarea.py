@@ -68,7 +68,7 @@ class ClientArea(object):
             print(row_format.format(
                 str(i),
                 service['product'],
-                service['price'],
+                service['price'].encode('utf-8'),
                 service['term'],
                 service['next_due_date'],
                 service['status'],
@@ -85,11 +85,22 @@ class ClientArea(object):
         self.services = []
         for row in rows:
             tds = row.findAll('td', recursive=False)
+            price_text = tds[1].text
+            if 'USD' in price_text:
+                price = price_text.split('USD')[0]
+                term = price_text.split('USD')[1]
+            elif 'EUR' in price_text:
+                price = price_text.split('EUR')[0]
+                term = price_text.split('EUR')[1]
+            else:
+                price = price_text
+                term = ''
+
             self.services.append({
                 'id': tds[4].a['href'].split('id=')[1],
                 'product': tds[0].strong.text,
-                'price': tds[1].text.split('USD')[0],
-                'term': tds[1].text.split('USD')[1],
+                'price': price,
+                'term': term,
                 'next_due_date': tds[2].text[0:10],
                 'status': tds[3].text,
                 'url': self.clientarea_url + tds[4].a['href'].split('.php')[1],

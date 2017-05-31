@@ -5,13 +5,13 @@ At this time there is no abstract implementation for any functionality.
 import os
 import random
 import webbrowser
-from mechanize import Browser
 from tempfile import mkstemp
 from urlparse import urlparse
 
-from cloudomate.vps.clientarea import ClientArea
-import cloudomate.wallet as wallet
+from mechanize import Browser
 
+import cloudomate.wallet as wallet
+from cloudomate.vps.clientarea import ClientArea
 
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
@@ -76,11 +76,12 @@ class Hoster(object):
         :param vps_option: server configuration
         :return: 
         """
-        print('Purchase')
+        print('Purchasing %s instance: %s' % (type(self).__name__, vps_option.name))
         amount, address = self.register(user_settings, vps_option)
-        print('Paying')
+        print('Paying %s BTC to %s' % (amount, address))
         w = wallet.Wallet()
         fee = wallet.get_network_fee()
+        print('Calculated fee: %s' % fee)
         w.pay(address, amount, fee)
         print('Done purchasing')
 
@@ -127,7 +128,7 @@ class Hoster(object):
             if item.currency is not None:
                 item_price = self.gateway.estimate_price(item.price * rates[item.currency])
                 estimated_price = item_price + transaction_fee
-                price_string =  str(round(1000 * estimated_price, 2))
+                price_string = str(round(1000 * estimated_price, 2))
             else:
                 price_string = 'est. unavailable'
             print(row_format.format(i, item.name, str(item.cpu), str(item.ram), str(item.storage), str(item.bandwidth),

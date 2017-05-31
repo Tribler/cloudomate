@@ -1,14 +1,17 @@
 import sys
 from argparse import ArgumentParser
 
-from cloudomate.wallet import Wallet
+from forex_python.bitcoin import BtcConverter
 
+from cloudomate import wallet
 from cloudomate.util.config import UserOptions
 from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
 from cloudomate.vps.crowncloud import CrownCloud
-from cloudomate.vps.rockhoster import RockHoster
+from cloudomate.vps.linevast import LineVast
 from cloudomate.vps.pulseservers import Pulseservers
+from cloudomate.vps.rockhoster import RockHoster
+from cloudomate.wallet import Wallet
 
 commands = ["options", "purchase", "list"]
 providers = {
@@ -17,6 +20,7 @@ providers = {
     "crowncloud": CrownCloud(),
     "blueangelhost": BlueAngelHost(),
     "ccihosting": CCIHosting(),
+    "linevast": LineVast(),
 }
 
 
@@ -232,7 +236,6 @@ def _options(provider):
 def _register(provider, vps_option, user_settings):
     # For now use standard wallet implementation through Electrum
     wallet = Wallet()
-    print("Register for %s:\n" % provider)
     p = providers[provider]
     p.purchase(user_settings=user_settings, vps_option=vps_option, wallet=wallet)
 
