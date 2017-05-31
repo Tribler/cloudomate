@@ -40,7 +40,7 @@ setup(
 
     packages=find_packages(exclude=['docs', 'test']),
 
-    install_requires=['appdirs', 'mechanize', 'bs4', 'mock', 'forex_python', 'parameterized', 'python-bitcoinaddress'],
+    install_requires=['appdirs', 'mechanize', 'bs4', 'mock', 'forex_python', 'parameterized'],
 
     extras_require={
         'dev': [],

@@ -1,10 +1,9 @@
 import unittest
 
+from cloudomate.gateway import coinbase
+from cloudomate.util.bitcoinaddress import validate
 from cloudomate.wallet import Wallet
 
-from cloudomate.gateway import coinbase, bitpay
-
-from bitcoinaddress import validate
 
 class TestCoinbase(unittest.TestCase):
     # test url from https://developers.coinbase.com/docs/merchants/payment-pages
