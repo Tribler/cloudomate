@@ -12,12 +12,13 @@ class ClientArea(object):
     this control panel in an automated manner.
     """
 
-    def __init__(self, browser, clientarea_url, email, password):
+    def __init__(self, browser, clientarea_url, user_settings):
         self.browser = browser
         self.clientarea_url = clientarea_url
         self.home_page = None
         self.services = None
-        self._login(email, password)
+        self.user_settings = user_settings
+        self._login(user_settings.get('email'), user_settings.get('password'))
 
     def _login(self, email, password):
         """
@@ -68,7 +69,7 @@ class ClientArea(object):
             print(row_format.format(
                 str(i),
                 service['product'],
-                service['price'],
+                service['price'].encode('utf-8'),
                 service['term'],
                 service['next_due_date'],
                 service['status'],
@@ -85,13 +86,19 @@ class ClientArea(object):
         self.services = []
         for row in rows:
             tds = row.findAll('td', recursive=False)
+            classes = tds[3].span['class']
+            status = ''
+            for c in classes:
+                if 'status-' in c:
+                    status = c.split('status-')[1]
+
             self.services.append({
                 'id': tds[4].a['href'].split('id=')[1],
                 'product': tds[0].strong.text,
-                'price': tds[1].text.split('USD')[0],
-                'term': tds[1].text.split('USD')[1],
+                'price': tds[1].contents[0],
+                'term': tds[1].contents[2],
                 'next_due_date': tds[2].text[0:10],
-                'status': tds[3].text,
+                'status': status,
                 'url': self.clientarea_url + tds[4].a['href'].split('.php')[1],
             })
 
@@ -100,27 +107,46 @@ class ClientArea(object):
         match = re.search(r'vserverid = (\d+)', page.get_data())
         return match.group(1)
 
-    def get_ip(self, client_data_url, number=0):
-        self._services()
-        if not 0 <= number < len(self.services):
-            print("Wrong index: %s not between 0 and %s" % (number, len(self.services) - 1))
-            sys.exit(2)
-        service = self.services[number]
-        if service['status'] != 'Active':
-            print("Unable to obtain ip: service is %s" % (service['status']))
-            sys.exit(2)
+    def get_client_data_ip(self, client_data_url):
+        """
+        Get the ip of specified service through client_data.php. For some clientarea providers this is the way to obtain 
+        the IP address.
+        :param client_data_url: the URL pointing towards the clientarea's client_data.php
+        :return: the IP address
+        """
+        service = self.get_specified_service()
+        self._ensure_active(service)
         vserverid = self._get_vserverid(service['url'])
         millis = int(round(time.time() * 1000))
         page = self.browser.open(client_data_url + '?vserverid=%s&_=%s' % (vserverid, millis))
         data = json.loads(page.get_data())
-        print(data['mainip'])
+        return data['mainip']
 
-    def set_rootpw(self, password, number=0):
+    def get_specified_service(self):
+        """
+        If number is set through config or cli, return the service according to the number, else return the first 
+        service.
+        :return: the chosen service
+        """
+        number = self._get_number()
+        self._services()
+        self._verify_number(number)
+        return self.services[number]
+
+    def _verify_number(self, number):
         self._services()
         if not 0 <= number < len(self.services):
             print("Wrong index: %s not between 0 and %s" % (number, len(self.services) - 1))
             sys.exit(2)
-        service = self.services[number]
+
+    def set_rootpw(self):
+        """
+        Set the rootpassword for the appropriate service.
+        :return: 
+        """
+        password = self.user_settings.get('password')
+        service = self.get_specified_service()
+        self._ensure_active(service)
         millis = int(round(time.time() * 1000))
 
         print("Changing password for %s" % service['id'])
@@ -128,10 +154,59 @@ class ClientArea(object):
         url = self.clientarea_url + '?action=productdetails&id=%s&vserverid=%s&modop=custom&a=ChangeRootPassword' \
                                     '&newrootpassword=%s&ajax=1&ac=Custom_ChangeRootPassword&_=%s' \
                                     % (service['id'], vserverid, password, millis)
-        print(url)
         response = self.browser.open(url)
         response_json = json.loads(response.get_data())
         if response_json['success'] is True:
             print("Password changed successfully")
         else:
             print(response_json['msg'])
+
+    @staticmethod
+    def _ensure_active(service):
+        if service['status'] != 'active':
+            print("Service is %s" % service['status'])
+            sys.exit(2)
+
+    def get_service_info(self):
+        """
+        Get info for the specified service. This depends on the state of the service and on the provider. Contains
+        info like ip address, hostname, passwords...
+        :return: 
+        """
+        service = self.get_specified_service()
+        self._ensure_active(service)
+        page = self.browser.open(service['url'])
+        return self._extract_service_info(page)
+
+    def get_ip(self):
+        """
+        Get the ip address for a service.
+        If a number is specified: return the IP address of this service.
+        If no number is specified, the IP address of first active service is returned.
+        :return: the chosen IP address
+        """
+        service = self.get_specified_service()
+        if service['status'] != 'active' and 'number' not in self.user_settings.config:
+            for s in self.services:
+                if s['status'] == 'active':
+                    service = s
+                    break
+        self._ensure_active(service)
+        page = self.browser.open(service['url'])
+        return self._extract_service_info(page)[1]
+
+    @staticmethod
+    def _extract_service_info(page):
+        soup = BeautifulSoup(page.read(), 'lxml')
+        domain = soup.find('div', {'id': 'domain'})
+        cols = domain.findAll('div', {'class': 'row'})
+        info = []
+        for col in cols:
+            data = col.find('div', {'class': 'text-left'})
+            info.append(data.text.strip())
+        return info
+
+    def _get_number(self):
+        if 'number' in self.user_settings.config:
+            return int(self.user_settings.get('number'))
+        return 0

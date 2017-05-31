@@ -6,8 +6,10 @@ import cloudomate.vps.hoster
 from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
 from cloudomate.vps.crowncloud import CrownCloud
+from cloudomate.vps.linevast import LineVast
 from cloudomate.vps.pulseservers import Pulseservers
 from cloudomate.vps.rockhoster import RockHoster
+from cloudomate.vps.vpsoption import VpsOption
 
 providers = [
     (RockHoster,),
@@ -15,6 +17,7 @@ providers = [
     (CCIHosting,),
     (CrownCloud,),
     (BlueAngelHost,),
+    (LineVast,),
 ]
 
 
@@ -32,7 +35,9 @@ class TestHosterAbstract(unittest.TestCase):
 
     def testHosterPurchase(self):
         hoster = cloudomate.vps.hoster.Hoster()
-        self.assertRaises(NotImplementedError, hoster.purchase, *(None, None, None))
+        vps_option = VpsOption(name='', price='', cpu='', currency='USD', ram='', storage='', bandwidth='',
+                               connection='', purchase_url='')
+        self.assertRaises(NotImplementedError, hoster.purchase, *(None, vps_option, None))
 
 
 if __name__ == '__main__':

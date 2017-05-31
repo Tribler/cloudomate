@@ -1,4 +1,5 @@
 import urllib
+
 from bs4 import BeautifulSoup
 
 
@@ -41,8 +42,10 @@ def extract_address(bitcoin_url):
     address = address_text.split(':')[1]
     return address
 
+
 # https://support.coinbase.com/customer/portal/articles/1277919-what-fees-does-coinbase-charge-for-merchant-processing-
 GATEWAY_FEE = 0.01
+
 
 def estimate_price(cost):
     return cost * (1.0 + GATEWAY_FEE)

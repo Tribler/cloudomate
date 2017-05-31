@@ -3,6 +3,7 @@ import sys
 from bs4 import BeautifulSoup
 
 import cloudomate.gateway.bitpay
+from cloudomate.vps.clientarea import ClientArea
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
@@ -135,10 +136,13 @@ class CrownCloud(Hoster):
         )
 
     def get_status(self, user_settings):
-        self._clientarea_get_status(user_settings, self.clientarea_url)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        self._clientarea_set_rootpw(user_settings, self.clientarea_url)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.set_rootpw()
 
     def get_ip(self, user_settings):
-        self._clientarea_get_ip(user_settings, self.clientarea_url, self.client_data_url)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        print(clientarea.get_client_data_ip(self.client_data_url))
