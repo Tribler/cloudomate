@@ -14,6 +14,7 @@ def determine_currency(text):
     :param text: text cointaining a currency symbol
     :return: currency name of symbol
     """
+    #Naive approach, for example NZ$ also contains $
     if '$' in text or 'usd' in text.lower():
         return 'USD'
     elif u'€' in text or 'eur' in text.lower():
@@ -78,12 +79,13 @@ def get_network_fee(speed='halfHourFee'):
 
 class Wallet:
     """
-    Wallet implements an adapter to the default electrum wallet.
-    Currently Wallet only supports wallets without passwords for automated operation.
+    Wallet implements an adapter to the wallet handler.
+    Currently Wallet only supports electrum wallets without passwords for automated operation.
     Wallets with passwords may still be used, but passwords will have to be entered manually.
     """
     def __init__(self, wallet_command=['electrum']):
         self.command = wallet_command
+        self.wallet_handler = ElectrumWalletHandler(wallet_command)
 
     def get_balance(self, confirmed=True, unconfirmed=True):
         """
@@ -93,13 +95,12 @@ class Wallet:
         :param unconfirmed: default: True
         :return: balance of default wallet
         """
-        output = str(subprocess.check_output(self.command + ['getbalance']))
-        balance_dict = json.loads(output)
+        balance_output = self.wallet_handler.get_balance()
         balance = 0.0
         if confirmed:
-            balance = balance + float(balance_dict.get('confirmed', 0.0))
+           balance = balance + float(balance_output.get('confirmed', 0.0))
         if unconfirmed:
-            balance = balance + float(balance_dict.get('unconfirmed', 0.0))
+           balance = balance + float(balance_output.get('unconfirmed', 0.0))
         return balance
 
     def get_balance_confirmed(self):
@@ -121,42 +122,24 @@ class Wallet:
         Return the list of addresses of the default electrum wallet
         :return: 
         """
-        address = str(subprocess.check_output(self.command + ['listaddresses']))
-        addr = json.loads(address)
-        addresses = addr[0]
-        return addresses
+        address_output = self.wallet_handler.get_addresses()
+        return address_output
 
-    def pay(self, address, amount, fee):
-        with ElectrumWalletHandler(self.command) as wh:
-            if self.getbalance() < amount + fee:
-                print 'NotEnoughFunds'
+    def pay(self, address, amount, fee=None):
+        tx_fee = 0 if fee is None else fee
+        if self.get_balance() < amount + tx_fee:
+            print('notenoughfunds')
+        with self.wallet_handler:
+            transaction_hex = self.wallet_handler.create_transaction(amount, address, fee)
+            success, transaction_hash = self.wallet_handler.broadcast(transaction_hex)
+            if not success:
+                error = transaction_hash
+                print('transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash))
             else:
-                subprocess.check_output(wh.command + ['payto', str(address), str(amount), '-f', str(fee)])
-                print 'payment succeeded'
-
-    def pay_autofee(self, address, amount):
-        with ElectrumWalletHandler(self.command) as wh:
-            amount = amount + self.getfee() + self.getbitpayfee()
-            if self.getbalance() < amount:
-                print 'NotEnoughFunds'
-            else:
-                output = subprocess.check_output(wh.command + ['payto', str(address), str(amount)])
-                temp = json.loads(output)
-                hextransaction = temp['hex']
-                subprocess.call(wh.command + ['broadcast', hextransaction])
-                print 'payment succeeded'
-
-    def empty_wallet(self, address):
-        with ElectrumWalletHandler(self.command) as wh:
-            if self.getbalance() is not 0.0:
-                output = subprocess.check_output(wh.command + ['payto', address, '!'])
-                temp = json.loads(output)
-                hextransaction = temp['hex']
-                subprocess.call(wh.command + ['broadcast', hextransaction])
-                print 'Wallet was successfully emptied'
-            else:
-                print 'Wallet already empty'
-
+                print 'transaction successfull'
+            print transaction_hex
+            print success
+            print transaction_hash
 
 class ElectrumWalletHandler(object):
     """
@@ -170,11 +153,63 @@ class ElectrumWalletHandler(object):
         self.command = wallet_command
 
     def __enter__(self):
-        # things that can go wrong, unable to start
+        # things that can go wrong, unable to start daemon status?
         # other things
         subprocess.call(self.command + ['daemon', 'start'])
         subprocess.call(self.command + ['daemon', 'load_wallet'])
 
-    def __exit__(self):
-        time.sleep(5)
+    def __exit__(self, exc_type, exc_val, exc_tb):
         subprocess.call(self.command + ['daemon', 'stop'])
+
+    def create_transaction(self, amount, address, fee):
+        """
+        Create a transaction
+        :param amount: amount of bitcoins to be transferred
+        :param address: address to transfer to
+        :param fee: None for autofee, or specify own fee
+        :return: transaction details
+        """
+        if fee is None:
+            transaction = subprocess.check_output(self.command + ['payto', str(address), str(amount)])
+        else:
+            transaction = subprocess.check_output(self.command + ['payto', str(address), str(amount), '-f', str(fee)])
+        jtrs = json.loads(str(transaction))
+        return jtrs['hex']
+
+    def broadcast(self, transaction):
+        """
+        Broadcast a transaction
+        :param transaction: hex of transaction
+        :return: if successfull returns success and 
+        """
+        broadcast = subprocess.check_output(self.command + ['broadcast', transaction])
+        jbr = json.loads(str(broadcast))
+        return tuple(jbr)
+
+
+    def get_balance(self):
+        """
+        Return the balance of the default electrum wallet
+        :return: balance of default wallet
+        """
+        output = str(subprocess.check_output(self.command + ['getbalance']))
+        balance_dict = json.loads(output)
+        return balance_dict
+
+    def get_addresses(self):
+        """
+        Return the list of addresses of default wallet
+        :return: 
+        """
+        address = str(subprocess.check_output(self.command + ['listaddresses']))
+        addr = json.loads(address)
+        return addr
+
+
+if __name__ == '__main__':
+    w = Wallet(['electrum', '--testnet'])
+    print(w.get_balance_confirmed())
+    print(w.get_balance_unconfirmed())
+    w.pay('mv4rnyY3Su5gjcDNzbMLKBQkBicCtHUtFB', 0.00001)
+    print(w.get_balance_confirmed())
+    print(w.get_balance_unconfirmed())

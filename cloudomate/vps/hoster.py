@@ -79,8 +79,9 @@ class Hoster(object):
         print('Purchase')
         amount, address = self.register(user_settings, vps_option)
         print('Paying')
-        fee = wallet.Wallet().getfee()
-        # wallet.pay(address, amount, fee)
+        w = wallet.Wallet()
+        fee = wallet.get_network_fee()
+        w.pay(address, amount, fee)
         print('Done purchasing')
 
     def register(self, user_settings, vps_option):
@@ -128,7 +129,7 @@ class Hoster(object):
                 estimated_price = item_price + transaction_fee
                 price_string =  str(round(1000 * estimated_price, 2))
             else:
-                price_string = 'est. unavalable'
+                price_string = 'est. unavailable'
             print(row_format.format(i, item.name, str(item.cpu), str(item.ram), str(item.storage), str(item.bandwidth),
                                     str(item.connection), price_string, '{0} {1}'.format(item.currency, item.price)))
 
