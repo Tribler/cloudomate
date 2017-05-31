@@ -14,7 +14,40 @@ Cloudomate
 Overview
 ========
 
-Cloudomate is an unpermissioned open compute API which provides an automated way to buy VPS instances from multiple providers.
+Cloudomate is an unpermissioned open compute API which provides an automated way to buy VPS instances from multiple providers. The easiest way to use Cloudomate is via the command-line interface. 
+
+Requirements
+============
+
+* Python 2.7
+* Works on Linux, Mac OSX, BSD
+* An active Electrum_ wallet with sufficient funds
+
+Installation
+============
+
+The project can be install through the following commands ::
+
+   git clone https://github.com/Jaapp-/cloudomate.git
+   cd cloudomate
+   pip install .
+
+
+Providers
+=========
+
+Currently the following VPS providers are implemented: ::
+
+   linevast       https://linevast.de/
+   pulseservers   https://pulseservers.com/
+   rockhoster     https://rockhoster.com/
+   blueangelhost  https://www.blueangelhost.com/
+   ccihosting     http://www.ccihosting.com/
+   crowncloud     http://crowncloud.net/
+
+This same list can be accessed through the list command. ::
+
+   cloudomate list
 
 
 Basic usage
@@ -87,14 +120,6 @@ The following functions can be used to manage a purchased VPS instances ::
     getip               Get the ip of the specified service.
 
 
-
-
-Requirements
-============
-
-* Python 2.7
-* Works on Linux, Mac OSX, BSD
-* Electrum_ needs to be installed with an active walled
 
 Tests
 =====
