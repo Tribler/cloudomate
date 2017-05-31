@@ -40,6 +40,10 @@ class TestConfig(unittest.TestCase):
         self.config.put(key, value)
         self.assertEqual(self.config.get(key), value)
 
+    def test_custom_provider(self):
+        self.config = UserOptions()
+        self.config.read_settings("config_test.cfg", "testhoster")
+        self.assertEqual(self.config.get("email"), "test@test.net")
 
 if __name__ == '__main__':
     unittest.main()
