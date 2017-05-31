@@ -40,15 +40,15 @@ class TestCmdLine(unittest.TestCase):
 
     def _create_option(self):
         return VpsOption(
-            name = "Option name",
-            ram = "Option ram",
-            cpu = "Option cpu",
-            storage = "Option storage",
-            bandwidth = "Option bandwidth",
-            price = "Option price",
-            currency = "Option currency",
-            connection = "Option connection",
-            purchase_url = "Option url"
+            name="Option name",
+            ram="Option ram",
+            cpu="Option cpu",
+            storage="Option storage",
+            bandwidth="Option bandwidth",
+            price=12,
+            currency="Option currency",
+            connection="Option connection",
+            purchase_url="Option url"
         )
 
     def test_execute_purchase_verify_options_failure(self):
