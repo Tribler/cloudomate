@@ -26,6 +26,11 @@ class TestClientArea(unittest.TestCase):
              'price': u'$4.99 USD', 'term': u'Monthly', 'next_due_date': u'2017-05-24', 'id': '9019'}
         ])
 
+    def test_extract_service(self):
+        html_file = open(os.path.join(os.path.dirname(__file__), 'resources/clientarea_service.html'), 'r')
+        data = html_file.read()
+        info = ClientArea._extract_service_info(data)
+        self.assertEqual(info, [u'hostname', u'178.32.53.129', u'ns1.pulseservers.comns2.pulseservers.com'])
 
 if __name__ == '__main__':
     unittest.main(exit=False)

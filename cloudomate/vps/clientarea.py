@@ -171,7 +171,7 @@ class ClientArea(object):
         service = self.get_specified_service()
         self._ensure_active(service)
         page = self.browser.open(service['url'])
-        return self._extract_service_info(page)
+        return self._extract_service_info(page.get_data())
 
     def get_ip(self):
         """
@@ -188,11 +188,12 @@ class ClientArea(object):
                     break
         self._ensure_active(service)
         page = self.browser.open(service['url'])
-        return self._extract_service_info(page)[1]
+        print(page.geturl())
+        return self._extract_service_info(page.get_data())[1]
 
     @staticmethod
-    def _extract_service_info(page):
-        soup = BeautifulSoup(page.read(), 'lxml')
+    def _extract_service_info(html):
+        soup = BeautifulSoup(html, 'lxml')
         domain = soup.find('div', {'id': 'domain'})
         cols = domain.findAll('div', {'class': 'row'})
         info = []
