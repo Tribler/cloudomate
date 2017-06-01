@@ -51,6 +51,42 @@ This same list can be accessed through the list command. ::
    cloudomate list
 
 
+Configuration
+-------------
+
+For some commands, mainly purchase, user configuration is required. The
+main way to do this is through a configruation file. For Linux, the default
+location for the configuration file is `$HOME/.config/cloudomate.cfg`.
+
+A configuration file looks like this ::
+
+   [User]
+   email = 
+   firstName = 
+   lastName = 
+   companyName = 
+   phoneNumber = 
+   password = 
+
+   [Address]
+   address = 
+   city = 
+   state = 
+   countryCode = 
+   zipcode = 
+
+   [Server]
+   rootpw = 
+   ns1 = 
+   ns2 = 
+   hostname = 
+
+
+Section can be overridden for specific providers by adding a section,
+for example a [rockhoster] section can contain a separate email address only
+to be used for RockHoster.
+
+
 Basic usage
 -----------
 
