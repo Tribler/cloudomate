@@ -139,7 +139,7 @@ class ClientArea(object):
         Set the rootpassword for the appropriate service.
         :return: 
         """
-        password = self.user_settings.get('password')
+        password = self.user_settings.get('rootpw')
         service = self.get_specified_service()
         self._ensure_active(service)
         millis = int(round(time.time() * 1000))
