@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='cloudomate',
 
-    version='0.0.1',
+    version='0.1.0',
 
     description='Automate buying VPS instances with Bitcoin',
     long_description=long_description,
@@ -27,20 +27,23 @@ setup(
         'Development Status :: 3 - Alpha',
 
         'Intended Audience :: Developers',
-        'Topic :: System :: Installation/Setup'
+        'Topic :: System :: Installation/Setup',
         'Topic :: Software Development :: Libraries :: Python Modules',
 
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
 
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: MacOS',
     ],
 
     keywords='vps bitcoin',
 
     packages=find_packages(exclude=['docs', 'test']),
 
-    install_requires=['appdirs', 'mechanize', 'bs4', 'mock', 'forex_python', 'parameterized'],
+    install_requires=['appdirs', 'mechanize', 'bs4', 'lxml', 'mock', 'forex_python', 'parameterized'],
 
     extras_require={
         'dev': [],

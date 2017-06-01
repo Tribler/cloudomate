@@ -4,7 +4,6 @@ import unittest
 import urllib
 
 from mock import patch
-from mock.mock import MagicMock
 
 from cloudomate.gateway import coinbase, bitpay
 from cloudomate.util.bitcoinaddress import validate

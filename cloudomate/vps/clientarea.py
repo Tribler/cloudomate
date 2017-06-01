@@ -188,7 +188,6 @@ class ClientArea(object):
                     break
         self._ensure_active(service)
         page = self.browser.open(service['url'])
-        print(page.geturl())
         return self._extract_service_info(page.get_data())[1]
 
     @staticmethod
