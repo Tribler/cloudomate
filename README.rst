@@ -27,11 +27,10 @@ Requirements
 Installation
 ============
 
-The project can be install through the following commands ::
+The project can be installed through pip ::
 
-   git clone https://github.com/Jaapp-/cloudomate.git
-   cd cloudomate
-   pip install .
+   apt-get install python-lxml
+   pip install cloudomate
 
 
 Providers
