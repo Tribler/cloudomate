@@ -20,6 +20,7 @@ Requirements
 ============
 
 * Python 2.7
+* python-lxml installed on the system
 * Works on Linux, Mac OSX, BSD
 * An active Electrum_ wallet with sufficient funds
 
