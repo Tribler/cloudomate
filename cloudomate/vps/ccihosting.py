@@ -112,15 +112,15 @@ class CCIHosting(Hoster):
         planinfo = column.find('ul')
         info = planinfo.findAll('li')
         return VpsOption(
-            name = column.find('div', {'class': 'boxtitle'}).text.split('S')[1].strip(),
-            price = float(price.split('$')[1]),
-            currency = determine_currency(price),
-            cpu = int(info[1].text.split("CPU")[0]),
-            ram = float(info[2].text.split("G")[0]),
-            storage = float(info[3].text.split("G")[0]),
-            bandwidth = float(info[4].text.split("T")[0]),
-            connection = int(info[5].text.split("G")[0])*1000,
-            purchase_url = column.find('a')['href']
+            name=column.find('div', {'class': 'boxtitle'}).text.split('S')[1].strip(),
+            price=float(price.split('$')[1]),
+            currency=determine_currency(price),
+            cpu=int(info[1].text.split("CPU")[0]),
+            ram=float(info[2].text.split("G")[0]),
+            storage=float(info[3].text.split("G")[0]),
+            bandwidth=float(info[4].text.split("T")[0]),
+            connection=int(info[5].text.split("G")[0]) * 1000,
+            purchase_url=column.find('a')['href']
         )
 
     def get_status(self, user_settings):
@@ -135,4 +135,3 @@ class CCIHosting(Hoster):
         raise NotImplementedError
         # clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         # print(clientarea.get_client_data_ip(self.client_data_url))
-

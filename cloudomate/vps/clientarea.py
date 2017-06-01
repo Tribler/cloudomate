@@ -38,15 +38,6 @@ class ClientArea(object):
             sys.exit(2)
         self.home_page = page
 
-    def number_of_services(self):
-        """
-        Return the number of services.
-        :return: 
-        """
-        soup = BeautifulSoup(self.home_page.get_data(), 'lxml')
-        stat = soup.find('div', {'class': 'col-sm-3 col-xs-6 tile'}).a.find('div', {'class': 'stat'})
-        return stat.text
-
     def get_services(self):
         """
         Parse and list purchased services from clientarea_url?a=action.
@@ -81,7 +72,10 @@ class ClientArea(object):
         if self.services is not None:
             return
         services_page = self.browser.open(self.clientarea_url + "?action=services")
-        soup = BeautifulSoup(services_page.get_data(), 'lxml')
+        return self._extract_services(services_page.get_data())
+
+    def _extract_services(self, html):
+        soup = BeautifulSoup(html, 'lxml')
         rows = soup.find('table', {'id': 'tableServicesList'}).tbody.findAll('tr')
         self.services = []
         for row in rows:
@@ -101,6 +95,7 @@ class ClientArea(object):
                 'status': status,
                 'url': self.clientarea_url + tds[4].a['href'].split('.php')[1],
             })
+        return self.services
 
     def _get_vserverid(self, url):
         page = self.browser.open(url)
@@ -210,3 +205,19 @@ class ClientArea(object):
         if 'number' in self.user_settings.config:
             return int(self.user_settings.get('number'))
         return 0
+
+    def get_emails(self):
+        page = self.browser.open(self.clientarea_url + "?action=emails")
+        return self._extract_emails(page.get_data())
+
+    @staticmethod
+    def _extract_emails(data):
+        soup = BeautifulSoup(data, 'lxml')
+        table = soup.find('table', {'id': 'tableEmailsList'}).tbody
+        emails = []
+        for row in table.findAll('tr'):
+            emails.append({
+                'id': row['onclick'].split('\'')[1].split('id=')[1],
+                'title': row.findAll('td')[1].text
+            })
+        return emails

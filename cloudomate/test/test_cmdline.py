@@ -38,7 +38,8 @@ class TestCmdLine(unittest.TestCase):
         cmdline.execute(command)
         RockHoster.purchase.assert_called_once()
 
-    def _create_option(self):
+    @staticmethod
+    def _create_option():
         return VpsOption(
             name="Option name",
             ram="Option ram",
@@ -98,7 +99,8 @@ class TestCmdLine(unittest.TestCase):
         self._check_exit_code(1, cmdline.execute, command)
         mock.assert_called_once()
 
-    def _mock_options(self, items=None):
+    @staticmethod
+    def _mock_options(items=None):
         if items is None:
             items = []
         RockHoster.options = MagicMock(return_value=items)

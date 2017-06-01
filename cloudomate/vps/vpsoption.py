@@ -1,4 +1,5 @@
 class VpsOption(object):
+
     def __init__(self,
                  name,
                  price,

@@ -169,11 +169,11 @@ def _purchase(provider, vps_option, user_settings):
     print(row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Est.Price"))
     print(row_format.format(
         vps_option.name,
-        vps_option.cpu,
-        vps_option.ram,
-        vps_option.storage,
-        vps_option.bandwidth,
-        vps_option.price))
+        str(vps_option.cpu),
+        str(vps_option.ram),
+        str(vps_option.storage),
+        str(vps_option.bandwidth),
+        str(vps_option.price)))
     if user_settings.get("noconfirm") is not None and user_settings.get("noconfirm") is True:
         choice = True
     else:
