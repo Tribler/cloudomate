@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Client Area - CrownCloud - Internet Services</title>
+
+    <!-- Styling -->
+    <link href="//fonts.googleapis.com/css?family=Open+Sans:300,400,600|Raleway:400,700" rel="stylesheet">
+    <link href="/clients/templates/six/css/all.min.css?v=7d7cdf" rel="stylesheet">
+    <link href="/clients/templates/six/css/custom.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript">
+        var csrfToken = '',
+            markdownGuide = 'Markdown Guide',
+            locale = 'en',
+            saved = 'saved',
+            saving = 'autosaving';
+    </script>
+    <script src="/clients/templates/six/js/scripts.min.js?v=7d7cdf"></script>
+
+
+
+
+
+</head>
+<body>
+
+
+
+<section id="header">
+    <div class="container">
+        <ul class="top-nav">
+            <li>
+                <a href="#" class="choose-language" data-toggle="popover" id="languageChooser">
+                    English
+                    <b class="caret"></b>
+                </a>
+                <div id="languageChooserContent" class="hidden">
+                    <ul>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=arabic">العربية</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=azerbaijani">Azerbaijani</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=catalan">Català</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=chinese">中文</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=croatian">Hrvatski</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=czech">Čeština</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=danish">Dansk</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=dutch">Nederlands</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=english">English</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=estonian">Estonian</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=farsi">Persian</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=french">Français</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=german">Deutsch</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=hebrew">עברית</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=hungarian">Magyar</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=italian">Italiano</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=macedonian">Macedonian</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=norwegian">Norwegian</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=portuguese-br">Português</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=portuguese-pt">Português</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=romanian">Română</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=russian">Русский</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=spanish">Español</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=swedish">Svenska</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=turkish">Türkçe</a></li>
+                        <li><a href="/clients/clientarea.php?action=emails&amp;language=ukranian">Українська</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <a href="#" data-toggle="popover" id="accountNotifications" data-placement="bottom">
+                    Notifications
+                    <b class="caret"></b>
+                </a>
+                <div id="accountNotificationsContent" class="hidden">
+                    <ul class="client-alerts">
+                        <li class="none">
+                            You have no notifications at this time.
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="primary-action">
+                <a href="/clients/logout.php" class="btn btn-action">
+                    Logout
+                </a>
+            </li>
+        </ul>
+
+        <a href="/clients/index.php" class="logo"><img src="/clients/assets/img/logo.png" alt="CrownCloud - Internet Services"></a>
+
+    </div>
+</section>
+
+<section id="main-menu">
+
+    <nav id="nav" class="navbar navbar-default navbar-main" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#primary-nav">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="primary-nav">
+
+                <ul class="nav navbar-nav">
+
+                    <li menuItemName="Home" class="" id="Primary_Navbar-Home">
+                        <a href="/clients/clientarea.php">
+                            Home
+                        </a>
+                    </li>
+                    <li menuItemName="Services" class="dropdown" id="Primary_Navbar-Services">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            Services
+                            &nbsp;<b class="caret"></b>        </a>
+                        <ul class="dropdown-menu">
+                            <li menuItemName="My Services" id="Primary_Navbar-Services-My_Services">
+                                <a href="/clients/clientarea.php?action=services">
+                                    My Services
+                                </a>
+                            </li>
+                            <li menuItemName="Services Divider" class="nav-divider" id="Primary_Navbar-Services-Services_Divider">
+                                <a href="">
+                                    -----
+                                </a>
+                            </li>
+                            <li menuItemName="Order New Services" id="Primary_Navbar-Services-Order_New_Services">
+                                <a href="/clients/cart.php">
+                                    Order New Services
+                                </a>
+                            </li>
+                            <li menuItemName="View Available Addons" id="Primary_Navbar-Services-View_Available_Addons">
+                                <a href="/clients/cart.php?gid=addons">
+                                    View Available Addons
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li menuItemName="Domains" class="dropdown" id="Primary_Navbar-Domains">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            Domains
+                            &nbsp;<b class="caret"></b>        </a>
+                        <ul class="dropdown-menu">
+                            <li menuItemName="My Domains" id="Primary_Navbar-Domains-My_Domains">
+                                <a href="/clients/clientarea.php?action=domains">
+                                    My Domains
+                                </a>
+                            </li>
+                            <li menuItemName="Domains Divider" class="nav-divider" id="Primary_Navbar-Domains-Domains_Divider">
+                                <a href="">
+                                    -----
+                                </a>
+                            </li>
+                            <li menuItemName="Renew Domains" id="Primary_Navbar-Domains-Renew_Domains">
+                                <a href="/clients/cart.php?gid=renewals">
+                                    Renew Domains
+                                </a>
+                            </li>
+                            <li menuItemName="Register a New Domain" id="Primary_Navbar-Domains-Register_a_New_Domain">
+                                <a href="/clients/cart.php?a=add&domain=register">
+                                    Register a New Domain
+                                </a>
+                            </li>
+                            <li menuItemName="Transfer a Domain to Us" id="Primary_Navbar-Domains-Transfer_a_Domain_to_Us">
+                                <a href="/clients/cart.php?a=add&domain=transfer">
+                                    Transfer Domains to Us
+                                </a>
+                            </li>
+                            <li menuItemName="Domains Divider 2" class="nav-divider" id="Primary_Navbar-Domains-Domains_Divider_2">
+                                <a href="">
+                                    -----
+                                </a>
+                            </li>
+                            <li menuItemName="Domain Search" id="Primary_Navbar-Domains-Domain_Search">
+                                <a href="/clients/domainchecker.php">
+                                    Domain Search
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li menuItemName="Billing" class="dropdown" id="Primary_Navbar-Billing">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            Billing
+                            &nbsp;<b class="caret"></b>        </a>
+                        <ul class="dropdown-menu">
+                            <li menuItemName="My Invoices" id="Primary_Navbar-Billing-My_Invoices">
+                                <a href="/clients/clientarea.php?action=invoices">
+                                    My Invoices
+                                </a>
+                            </li>
+                            <li menuItemName="My Quotes" id="Primary_Navbar-Billing-My_Quotes">
+                                <a href="/clients/clientarea.php?action=quotes">
+                                    My Quotes
+                                </a>
+                            </li>
+                            <li menuItemName="Billing Divider" class="nav-divider" id="Primary_Navbar-Billing-Billing_Divider">
+                                <a href="">
+                                    -----
+                                </a>
+                            </li>
+                            <li menuItemName="Mass Payment" id="Primary_Navbar-Billing-Mass_Payment">
+                                <a href="/clients/clientarea.php?action=masspay&all=true">
+                                    Mass Payment
+                                </a>
+                            </li>
+                            <li menuItemName="Manage Credit Card" id="Primary_Navbar-Billing-Manage_Credit_Card">
+                                <a href="/clients/clientarea.php?action=creditcard">
+                                    Manage Credit Card
+                                </a>
+                            </li>
+                            <li menuItemName="Add Funds" id="Primary_Navbar-Billing-Add_Funds">
+                                <a href="/clients/clientarea.php?action=addfunds">
+                                    Add Funds
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li menuItemName="Support" class="dropdown" id="Primary_Navbar-Support">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            Support
+                            &nbsp;<b class="caret"></b>        </a>
+                        <ul class="dropdown-menu">
+                            <li menuItemName="Tickets" id="Primary_Navbar-Support-Tickets">
+                                <a href="/clients/supporttickets.php">
+                                    Tickets
+                                </a>
+                            </li>
+                            <li menuItemName="Announcements" id="Primary_Navbar-Support-Announcements">
+                                <a href="/clients/index.php?rp=/announcements">
+                                    Announcements
+                                </a>
+                            </li>
+                            <li menuItemName="Knowledgebase" id="Primary_Navbar-Support-Knowledgebase">
+                                <a href="/clients/index.php?rp=/knowledgebase">
+                                    Knowledgebase
+                                </a>
+                            </li>
+                            <li menuItemName="Downloads" id="Primary_Navbar-Support-Downloads">
+                                <a href="/clients/index.php?rp=/download">
+                                    Downloads
+                                </a>
+                            </li>
+                            <li menuItemName="Network Status" id="Primary_Navbar-Support-Network_Status">
+                                <a href="/clients/serverstatus.php">
+                                    Network Status
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li menuItemName="Open Ticket" class="" id="Primary_Navbar-Open_Ticket">
+                        <a href="/clients/submitticket.php">
+                            Open Ticket
+                        </a>
+                    </li>
+
+
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+
+                    <li menuItemName="Account" class="dropdown account" id="Secondary_Navbar-Account">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            Hello, Pleb!
+                            &nbsp;<b class="caret"></b>        </a>
+                        <ul class="dropdown-menu">
+                            <li menuItemName="Edit Account Details" id="Secondary_Navbar-Account-Edit_Account_Details">
+                                <a href="/clients/clientarea.php?action=details">
+                                    Edit Account Details
+                                </a>
+                            </li>
+                            <li menuItemName="Manage Credit Card" id="Secondary_Navbar-Account-Manage_Credit_Card">
+                                <a href="/clients/clientarea.php?action=creditcard">
+                                    Manage Credit Card
+                                </a>
+                            </li>
+                            <li menuItemName="Contacts/Sub-Accounts" id="Secondary_Navbar-Account-Contacts_Sub-Accounts">
+                                <a href="/clients/clientarea.php?action=contacts">
+                                    Contacts/Sub-Accounts
+                                </a>
+                            </li>
+                            <li menuItemName="Change Password" id="Secondary_Navbar-Account-Change_Password">
+                                <a href="/clients/clientarea.php?action=changepw">
+                                    Change Password
+                                </a>
+                            </li>
+                            <li menuItemName="Security Settings" id="Secondary_Navbar-Account-Security_Settings">
+                                <a href="/clients/clientarea.php?action=security">
+                                    Security Settings
+                                </a>
+                            </li>
+                            <li menuItemName="Email History" id="Secondary_Navbar-Account-Email_History">
+                                <a href="/clients/clientarea.php?action=emails">
+                                    Email History
+                                </a>
+                            </li>
+                            <li menuItemName="Divider" class="nav-divider" id="Secondary_Navbar-Account-Divider">
+                                <a href="">
+                                    -----
+                                </a>
+                            </li>
+                            <li menuItemName="Logout" id="Secondary_Navbar-Account-Logout">
+                                <a href="/clients/logout.php">
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                </ul>
+
+            </div><!-- /.navbar-collapse -->
+        </div>
+    </nav>
+
+</section>
+
+
+
+
+<section id="main-body">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-md-9 pull-md-right">
+                <div class="header-lined">
+                    <h1>My Emails <small>Your email history with us</small></h1>
+                    <ol class="breadcrumb">
+                        <li>
+                            <a href="/clients/index.php">            Portal Home
+                            </a>        </li>
+                        <li>
+                            <a href="/clients/clientarea.php">            Client Area
+                            </a>        </li>
+                        <li class="active">
+                            My Emails
+                        </li>
+                    </ol>
+                </div>
+
+            </div>
+            <div class="col-md-3 pull-md-left sidebar">
+                <div menuItemName="My Account" class="panel panel-sidebar panel-default panel-actions">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <i class="fa fa-user"></i>&nbsp;                My Account
+                            <i class="fa fa-chevron-up panel-minimise pull-right"></i>
+                        </h3>
+                    </div>
+                    <div class="list-group">
+                        <a menuItemName="My Details" href="/clients/clientarea.php?action=details" class="list-group-item" id="Primary_Sidebar-My_Account-My_Details">
+                            My Details
+                        </a>
+                        <a menuItemName="Billing Information" href="/clients/clientarea.php?action=creditcard" class="list-group-item" id="Primary_Sidebar-My_Account-Billing_Information">
+                            Billing Information
+                        </a>
+                        <a menuItemName="Contacts/Sub-Accounts" href="/clients/clientarea.php?action=contacts" class="list-group-item" id="Primary_Sidebar-My_Account-Contacts_Sub-Accounts">
+                            Contacts/Sub-Accounts
+                        </a>
+                        <a menuItemName="Change Password" href="/clients/clientarea.php?action=changepw" class="list-group-item" id="Primary_Sidebar-My_Account-Change_Password">
+                            Change Password
+                        </a>
+                        <a menuItemName="Security Settings" href="/clients/clientarea.php?action=security" class="list-group-item" id="Primary_Sidebar-My_Account-Security_Settings">
+                            Security Settings
+                        </a>
+                        <a menuItemName="Email History" href="/clients/clientarea.php?action=emails" class="list-group-item active" id="Primary_Sidebar-My_Account-Email_History">
+                            Email History
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+            <!-- Container for main page display content -->
+            <div class="col-md-9 pull-md-right main-content">
+
+
+                <link rel="stylesheet" type="text/css" href="/clients/assets/css/dataTables.bootstrap.css">
+                <link rel="stylesheet" type="text/css" href="/clients/assets/css/dataTables.responsive.css">
+                <script type="text/javascript" charset="utf8" src="/clients/assets/js/jquery.dataTables.min.js"></script>
+                <script type="text/javascript" charset="utf8" src="/clients/assets/js/dataTables.bootstrap.min.js"></script>
+                <script type="text/javascript" charset="utf8" src="/clients/assets/js/dataTables.responsive.min.js"></script>
+
+
+                <script type="text/javascript">
+                    var alreadyReady = false; // The ready function is being called twice on page load.
+                    jQuery(document).ready( function () {
+                        var table = jQuery("#tableEmailsList").DataTable({
+                            "dom": '<"listtable"fit>pl',        "responsive": true,
+                            "oLanguage": {
+                                "sEmptyTable":     "No Records Found",
+                                "sInfo":           "Showing _START_ to _END_ of _TOTAL_ entries",
+                                "sInfoEmpty":      "Showing 0 to 0 of 0 entries",
+                                "sInfoFiltered":   "(filtered from _MAX_ total entries)",
+                                "sInfoPostFix":    "",
+                                "sInfoThousands":  ",",
+                                "sLengthMenu":     "Show _MENU_ entries",
+                                "sLoadingRecords": "Loading...",
+                                "sProcessing":     "Processing...",
+                                "sSearch":         "",
+                                "sZeroRecords":    "No Records Found",
+                                "oPaginate": {
+                                    "sFirst":    "First",
+                                    "sLast":     "Last",
+                                    "sNext":     "Next",
+                                    "sPrevious": "Previous"
+                                }
+                            },
+                            "pageLength": 10,
+                            "order": [
+                                [ 0, "asc" ]
+                            ],
+                            "lengthMenu": [
+                                [10, 25, 50, -1],
+                                [10, 25, 50, "All"]
+                            ],
+                            "aoColumnDefs": [
+                                {
+                                    "bSortable": false,
+                                    "aTargets": [ -1 ]
+                                },
+                                {
+                                    "sType": "string",
+                                    "aTargets": [  ]
+                                }
+                            ],
+                            "stateSave": true
+                        });
+
+                        alreadyReady = true;
+                    } );
+                </script>
+
+                <script type="text/javascript">
+                    jQuery(document).ready( function ()
+                    {
+                        var table = jQuery('#tableEmailsList').removeClass('hidden').DataTable();
+                        table.order(0, 'desc');
+                        table.draw();
+                        jQuery('#tableLoading').addClass('hidden');
+                    });
+                </script>
+                <div class="table-container clearfix">
+                    <table id="tableEmailsList" class="table table-list hidden">
+                        <thead>
+                        <tr>
+                            <th>Date Sent</th>
+                            <th>Message Subject</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr onclick="popupWindow('viewemail.php?id=176057', 'emailWin', '650', '450')">
+                            <td class="text-center"><span class="hidden">2017-05-31 15:54:58</span>Wednesday, May 31st, 2017 (15:54)</td>
+                            <td>CrownCloud - New VPS Information</td>
+                            <td class="text-center"><input type="button" class="btn btn-info btn-sm" value="View Message" onclick="popupWindow('viewemail.php?id=176057', 'emailWin', '650', '450', 'scrollbars=1,')" /></td>
+                        </tr>
+                        <tr onclick="popupWindow('viewemail.php?id=176049', 'emailWin', '650', '450')">
+                            <td class="text-center"><span class="hidden">2017-05-31 15:15:13</span>Wednesday, May 31st, 2017 (15:15)</td>
+                            <td>Invoice Payment Confirmation</td>
+                            <td class="text-center"><input type="button" class="btn btn-info btn-sm" value="View Message" onclick="popupWindow('viewemail.php?id=176049', 'emailWin', '650', '450', 'scrollbars=1,')" /></td>
+                        </tr>
+                        <tr onclick="popupWindow('viewemail.php?id=176044', 'emailWin', '650', '450')">
+                            <td class="text-center"><span class="hidden">2017-05-31 15:06:06</span>Wednesday, May 31st, 2017 (15:06)</td>
+                            <td>Customer Invoice</td>
+                            <td class="text-center"><input type="button" class="btn btn-info btn-sm" value="View Message" onclick="popupWindow('viewemail.php?id=176044', 'emailWin', '650', '450', 'scrollbars=1,')" /></td>
+                        </tr>
+                        <tr onclick="popupWindow('viewemail.php?id=176045', 'emailWin', '650', '450')">
+                            <td class="text-center"><span class="hidden">2017-05-31 15:06:06</span>Wednesday, May 31st, 2017 (15:06)</td>
+                            <td>Order Confirmation</td>
+                            <td class="text-center"><input type="button" class="btn btn-info btn-sm" value="View Message" onclick="popupWindow('viewemail.php?id=176045', 'emailWin', '650', '450', 'scrollbars=1,')" /></td>
+                        </tr>
+                        <tr onclick="popupWindow('viewemail.php?id=176043', 'emailWin', '650', '450')">
+                            <td class="text-center"><span class="hidden">2017-05-31 15:06:05</span>Wednesday, May 31st, 2017 (15:06)</td>
+                            <td>Welcome</td>
+                            <td class="text-center"><input type="button" class="btn btn-info btn-sm" value="View Message" onclick="popupWindow('viewemail.php?id=176043', 'emailWin', '650', '450', 'scrollbars=1,')" /></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-center" id="tableLoading">
+                        <p><i class="fa fa-spinner fa-spin"></i> Loading...</p>
+                    </div>
+                </div>
+
+
+
+            </div><!-- /.main-content -->
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    </div>
+</section>
+
+<section id="footer">
+    <div class="container">
+        <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
+        <p>Copyright &copy; 2017 CrownCloud - Internet Services. All Rights Reserved.</p>
+    </div>
+</section>
+
+<div class="modal system-modal fade" id="modalAjax" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content panel panel-primary">
+            <div class="modal-header panel-heading">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">Title</h4>
+            </div>
+            <div class="modal-body panel-body">
+                Loading...
+            </div>
+            <div class="modal-footer panel-footer">
+                <div class="pull-left loader">
+                    <i class="fa fa-circle-o-notch fa-spin"></i> Loading...
+                </div>
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary modal-submit">
+                    Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+</html>

@@ -10,7 +10,7 @@ from urlparse import urlparse
 
 from mechanize import Browser
 
-from cloudomate import wallet
+from cloudomate import wallet as wallet_util
 
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
@@ -78,10 +78,9 @@ class Hoster(object):
         print('Purchasing %s instance: %s' % (type(self).__name__, vps_option.name))
         amount, address = self.register(user_settings, vps_option)
         print('Paying %s BTC to %s' % (amount, address))
-        w = wallet.Wallet()
-        fee = wallet.get_network_fee()
+        fee = wallet_util.get_network_fee()
         print('Calculated fee: %s' % fee)
-        w.pay(address, amount, fee)
+        wallet.pay(address, amount, fee)
         print('Done purchasing')
 
     def register(self, user_settings, vps_option):
@@ -121,8 +120,8 @@ class Hoster(object):
                                 "Est. Price (mBTC)", "Price"))
 
         currencies = set(item.currency for item in self.configurations)
-        rates = wallet.get_rates(currencies)
-        transaction_fee = wallet.get_network_fee()
+        rates = wallet_util.get_rates(currencies)
+        transaction_fee = wallet_util.get_network_fee()
         for i, item in enumerate(self.configurations):
             if item.currency is not None:
                 item_price = self.gateway.estimate_price(item.price * rates[item.currency])
@@ -132,17 +131,6 @@ class Hoster(object):
                 price_string = 'est. unavailable'
             print(row_format.format(i, item.name, str(item.cpu), str(item.ram), str(item.storage), str(item.bandwidth),
                                     str(item.connection), price_string, '{0} {1}'.format(item.currency, item.price)))
-
-    @staticmethod
-    def _print_row(i, item, item_names):
-        row_format = "{:<5}" + "{:15}" * len(item_names)
-        values = [i]
-        for key in item_names.keys():
-            if key in item:
-                values.append(item[key])
-            else:
-                values.append("")
-        print(row_format.format(*values))
 
     @staticmethod
     def _create_browser():

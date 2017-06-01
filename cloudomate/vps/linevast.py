@@ -5,7 +5,7 @@ import urllib
 
 from bs4 import BeautifulSoup
 
-from cloudomate.gateway.bitpay import extract_info
+from cloudomate.gateway import bitpay
 from cloudomate.vps.clientarea import ClientArea
 from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.vpsoption import VpsOption
@@ -26,6 +26,7 @@ class LineVast(Hoster):
         'password',
     ]
     clientarea_url = 'https://panel.linevast.de/clientarea.php'
+    gateway = bitpay
 
     def __init__(self):
         super(LineVast, self).__init__()
@@ -53,7 +54,7 @@ class LineVast(Hoster):
             sys.exit(1)
         self.br.select_form(nr=0)
         page = self.br.submit()
-        amount, address = extract_info(page.geturl())
+        amount, address = self.gateway.extract_info(page.geturl())
         return amount, address
 
     def fill_in_server_form(self):
@@ -110,22 +111,25 @@ class LineVast(Hoster):
         names = table.findAll('div', {'class': 'plans-title'})
         i = 0
         for plan in details.findAll('div', {'class': 'plans-content'})[1:]:
-            option = self.parse_openvz_option(plan)
-            option.name = names[i].text.strip() + ' OVZ'
+            name = names[i].text.strip() + ' OVZ'
+            option = self.parse_openvz_option(plan, name)
             i = i + 1
             yield option
 
     @staticmethod
-    def parse_openvz_option(plan):
+    def parse_openvz_option(plan, name):
         elements = plan.findAll("div", {'class': 'info'})
-        option = VpsOption()
-        option.storage = elements[0].text.split(' GB')[0]
-        option.cpu = elements[1].text.split(' vCore')[0]
-        option.ram = elements[2].text.split(' GB')[0]
-        option.bandwidth = 'unmetered'
-        option.connection = str(int(elements[4].text.split(' GB')[0]) * 1000)
-        option.price = plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')
-        option.purchase_url = plan.a['href']
+        option = VpsOption(
+            name=name,
+            storage=elements[0].text.split(' GB')[0],
+            cpu=elements[1].text.split(' vCore')[0],
+            ram=elements[2].text.split(' GB')[0],
+            bandwidth='unmetered',
+            currency='EUR',
+            connection=str(int(elements[4].text.split(' GB')[0]) * 1000),
+            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')),
+            purchase_url=plan.a['href'],
+        )
         return option
 
     def parse_kvm_hosting(self, page):
@@ -135,22 +139,25 @@ class LineVast(Hoster):
         names = table.findAll('div', {'class': 'plans-title'})
         i = 0
         for plan in details.findAll('div', {'class': 'plans-content'})[1:]:
-            option = self.parse_kvm_option(plan)
-            option.name = names[i].text.strip() + ' KVM'
+            name = names[i].text.strip() + ' KVM'
+            option = self.parse_kvm_option(plan, name)
             i = i + 1
             yield option
 
     @staticmethod
-    def parse_kvm_option(plan):
+    def parse_kvm_option(plan, name):
         elements = plan.findAll("div", {'class': 'info'})
-        option = VpsOption()
-        option.storage = elements[0].text.split(' GB')[0]
-        option.cpu = elements[1].text.split(' vCore')[0]
-        option.ram = elements[3].text.split(' GB')[0]
-        option.bandwidth = 'unmetered'
-        option.connection = str(int(elements[4].text.split(' GB')[0]) * 1000)
-        option.price = plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')
-        option.purchase_url = plan.a['href']
+        option = VpsOption(
+            name=name,
+            storage=elements[0].text.split(' GB')[0],
+            cpu=elements[1].text.split(' vCore')[0],
+            ram=elements[3].text.split(' GB')[0],
+            currency='EUR',
+            bandwidth='unmetered',
+            connection=str(int(elements[4].text.split(' GB')[0]) * 1000),
+            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')),
+            purchase_url=plan.a['href'],
+        )
         return option
 
     def get_status(self, user_settings):

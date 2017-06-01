@@ -1,3 +1,4 @@
+import re
 import sys
 
 from bs4 import BeautifulSoup
@@ -40,11 +41,11 @@ class CrownCloud(Hoster):
         """
         self.br.open("https://crowncloud.net")
         self.br.open(vps_option.purchase_url)
-        self.br.select_form(nr=2)
+        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'frmConfigureProduct')
         self.fill_in_server_form()
         self.br.submit()
         self.br.open('https://crowncloud.net/clients/cart.php?a=view')
-        self.br.select_form(nr=2)
+        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'frmCheckout')
         self.fill_in_user_form(user_settings)
         promobutton = self.br.form.find_control(type="submitbutton", nr=0)
         promobutton.disabled = True
@@ -124,15 +125,15 @@ class CrownCloud(Hoster):
         price = float(price.split('/')[0])
 
         return VpsOption(
-            name = elements[0].text,
-            ram = ram,
-            storage = float(elements[2].text.split('G')[0]),
-            cpu = int(elements[3].text.split('v')[0]),
-            bandwidth = CrownCloud.beautiful_bandwidth(elements[4].text),
-            connection = int(elements[7].text.split('G')[0]) * 1000,
-            price = price,
-            currency = determine_currency(elements[8].text),
-            purchase_url = elements[9].find('a')['href']
+            name=elements[0].text,
+            ram=ram,
+            storage=float(elements[2].text.split('G')[0]),
+            cpu=int(elements[3].text.split('v')[0]),
+            bandwidth=CrownCloud.beautiful_bandwidth(elements[4].text),
+            connection=int(elements[7].text.split('G')[0]) * 1000,
+            price=price,
+            currency=determine_currency(elements[8].text),
+            purchase_url=elements[9].find('a')['href']
         )
 
     def get_status(self, user_settings):
@@ -140,9 +141,38 @@ class CrownCloud(Hoster):
         clientarea.print_services()
 
     def set_rootpw(self, user_settings):
+        print("CrownCloud does not support changing root password through their configuration panel.")
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.set_rootpw()
+        (ip, user, rootpw) = self._extract_vps_information(clientarea)
+        print("IP: %s" % ip)
+        print("Root password: %s\n" % rootpw)
+
+        print("https://crownpanel.com")
+        print("Username: %s" % user)
+        print("Password: %s\n" % rootpw)
+
+    def _extract_vps_information(self, clientarea):
+        emails = clientarea.get_emails()
+        for email in emails:
+            if 'New VPS Information' in email['title']:
+                page = self.br.open("https://crowncloud.net/clients/viewemail.php?id=" + email['id'])
+                (ip, user, rootpw) = self._extract_email_info(page.get_data())
+                return ip, user, rootpw
+        return None
+
+    @staticmethod
+    def _extract_email_info(data):
+        soup = BeautifulSoup(data, 'lxml')
+        text = soup.find('td', {'class': 'bodyContent'}).text
+        ip_match = re.search(r'Main IP: (\d+\.\d+\.\d+\.\d+)', text)
+        user_match = re.search(r'Username: (\w+)', text)
+        rootpw = re.search(r'Root Password: (\w+)You', text)
+        return ip_match.group(1), user_match.group(1), rootpw.group(1)
 
     def get_ip(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        print(clientarea.get_client_data_ip(self.client_data_url))
+        (ip, user, rootpw) = self._extract_vps_information(clientarea)
+        if not ip:
+            print("No active IP found")
+            sys.exit(2)
+        print(ip)

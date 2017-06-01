@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Client Area - Pulse Servers</title>
+
+    <!-- Styling -->
+<link href="//fonts.googleapis.com/css?family=Open+Sans:400,600|Raleway:400,700" rel="stylesheet">
+<link href="/billing/templates/six/css/all.min.css?v=5cadc6" rel="stylesheet">
+<link href="/billing/templates/six/css/custom.css" rel="stylesheet">
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+<script type="text/javascript">
+    var csrfToken = '96b221263a0eaaf62e3d0befd917344ea70b8d6f',
+        markdownGuide = 'Markdown Guide',
+        locale = 'en',
+        saved = 'saved',
+        saving = 'autosaving';
+</script>
+<script src="/billing/templates/six/js/scripts.min.js?v=5cadc6"></script>
+
+
+
+    
+
+</head>
+<body>
+
+
+
+<section id="header">
+    <div class="container">
+
+        <!-- Top Bar -->
+        <div id="top-nav">
+            <!-- Language -->
+                            <div class="pull-right nav">
+                    <a href="#" class="quick-nav" data-toggle="popover" id="languageChooser"><i class="fa fa-language"></i> Choose language <span class="caret"></span></a>
+                    <div id="languageChooserContent" class="hidden">
+                        <ul>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=arabic">العربية</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=azerbaijani">Azerbaijani</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=catalan">Català</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=chinese">中文</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=croatian">Hrvatski</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=czech">Čeština</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=danish">Dansk</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=dutch">Nederlands</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=english">English</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=estonian">Estonian</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=farsi">Persian</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=french">Français</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=german">Deutsch</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=hebrew">עברית</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=hungarian">Magyar</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=italian">Italiano</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=macedonian">Macedonian</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=norwegian">Norwegian</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=portugues">English</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=portuguese-br">Português</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=portuguese-pt">Português</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=romanian">Română</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=russian">Русский</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=spanish">Español</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=swedish">Svenska</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=turkish">Türkçe</a></li>
+                                                            <li><a href="/billing/clientarea.php?action=productdetails&amp;id=2044&amp;language=ukranian">Українська</a></li>
+                                                    </ul>
+                    </div>
+                </div>
+                        <!-- Login/Account Notifications -->
+                            <div class="pull-right nav">
+                    <a href="#" class="quick-nav" data-toggle="popover" id="accountNotifications" data-placement="bottom" title="Notifications"><i class="fa fa-info"></i> Notifications (2)</a>
+                    <div id="accountNotificationsContent" class="hidden">
+                                                    <div class="clientalert text-warning">You have 1 unpaid invoice(s). Pay them early for peace of mind. <a href="clientarea.php?action=masspay&all=true" class="btn btn-xs btn-warning">Pay Now</a></div>
+                                                    <div class="clientalert text-warning">You have 1 overdue invoice(s) with a total balance due of $10.00 USD. Pay them now to avoid any interruptions in service. <a href="clientarea.php?action=masspay&all=true" class="btn btn-xs btn-warning">Pay Now</a></div>
+                                            </div>
+                </div>
+                        <!-- Shopping Cart -->
+            <div class="pull-right nav">
+                <a href="/billing/cart.php?a=view" class="quick-nav"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs">View Cart (</span><span id="cartItemCount">0</span><span class="hidden-xs">)</span></a>
+            </div>
+
+            
+        </div>
+
+        <a href="/billing/index.php"><img src="/billing/templates/six/img/logo.png" alt="Pulse Servers" /></a>
+
+    </div>
+</section>
+
+<section id="main-menu">
+
+    <nav id="nav" class="navbar navbar-default navbar-main" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+                <ul class="nav navbar-nav">
+
+                        <li menuItemName="Home" id="Primary_Navbar-Home">
+        <a href="clientarea.php">
+                        Home
+                                </a>
+            </li>
+    <li menuItemName="Services" class="dropdown" id="Primary_Navbar-Services">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        Services
+                        &nbsp;<b class="caret"></b>        </a>
+                    <ul class="dropdown-menu">
+                            <li menuItemName="My Services" id="Primary_Navbar-Services-My_Services">
+                    <a href="clientarea.php?action=services">
+                                                My Services
+                                            </a>
+                </li>
+                            <li menuItemName="Services Divider" class="nav-divider" id="Primary_Navbar-Services-Services_Divider">
+                    <a href="">
+                                                -----
+                                            </a>
+                </li>
+                            <li menuItemName="Order New Services" id="Primary_Navbar-Services-Order_New_Services">
+                    <a href="cart.php">
+                                                Order New Services
+                                            </a>
+                </li>
+                            <li menuItemName="View Available Addons" id="Primary_Navbar-Services-View_Available_Addons">
+                    <a href="cart.php?gid=addons">
+                                                View Available Addons
+                                            </a>
+                </li>
+                        </ul>
+            </li>
+    <li menuItemName="Billing" class="dropdown" id="Primary_Navbar-Billing">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        Billing
+                        &nbsp;<b class="caret"></b>        </a>
+                    <ul class="dropdown-menu">
+                            <li menuItemName="My Invoices" id="Primary_Navbar-Billing-My_Invoices">
+                    <a href="clientarea.php?action=invoices">
+                                                My Invoices
+                                            </a>
+                </li>
+                            <li menuItemName="My Quotes" id="Primary_Navbar-Billing-My_Quotes">
+                    <a href="clientarea.php?action=quotes">
+                                                My Quotes
+                                            </a>
+                </li>
+                            <li menuItemName="Billing Divider" class="nav-divider" id="Primary_Navbar-Billing-Billing_Divider">
+                    <a href="">
+                                                -----
+                                            </a>
+                </li>
+                            <li menuItemName="Mass Payment" id="Primary_Navbar-Billing-Mass_Payment">
+                    <a href="clientarea.php?action=masspay&all=true">
+                                                Mass Payment
+                                            </a>
+                </li>
+                            <li menuItemName="Add Funds" id="Primary_Navbar-Billing-Add_Funds">
+                    <a href="clientarea.php?action=addfunds">
+                                                Add Funds
+                                            </a>
+                </li>
+                        </ul>
+            </li>
+    <li menuItemName="Support" class="dropdown" id="Primary_Navbar-Support">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        Support
+                        &nbsp;<b class="caret"></b>        </a>
+                    <ul class="dropdown-menu">
+                            <li menuItemName="Tickets" id="Primary_Navbar-Support-Tickets">
+                    <a href="supporttickets.php">
+                                                Tickets
+                                            </a>
+                </li>
+                            <li menuItemName="Announcements" id="Primary_Navbar-Support-Announcements">
+                    <a href="announcements.php">
+                                                Announcements
+                                            </a>
+                </li>
+                            <li menuItemName="Knowledgebase" id="Primary_Navbar-Support-Knowledgebase">
+                    <a href="knowledgebase.php">
+                                                Knowledgebase
+                                            </a>
+                </li>
+                            <li menuItemName="Downloads" id="Primary_Navbar-Support-Downloads">
+                    <a href="downloads.php">
+                                                Downloads
+                                            </a>
+                </li>
+                            <li menuItemName="Network Status" id="Primary_Navbar-Support-Network_Status">
+                    <a href="serverstatus.php">
+                                                Network Status
+                                            </a>
+                </li>
+                        </ul>
+            </li>
+    <li menuItemName="Open Ticket" id="Primary_Navbar-Open_Ticket">
+        <a href="submitticket.php">
+                        Open Ticket
+                                </a>
+            </li>
+    <li menuItemName="Affiliates" id="Primary_Navbar-Affiliates">
+        <a href="affiliates.php">
+                        Affiliates
+                                </a>
+            </li>
+
+
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+
+                        <li menuItemName="Account" class="dropdown" id="Secondary_Navbar-Account">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        Hello, Pleb!
+                        &nbsp;<b class="caret"></b>        </a>
+                    <ul class="dropdown-menu">
+                            <li menuItemName="Edit Account Details" id="Secondary_Navbar-Account-Edit_Account_Details">
+                    <a href="clientarea.php?action=details">
+                                                Edit Account Details
+                                            </a>
+                </li>
+                            <li menuItemName="Contacts/Sub-Accounts" id="Secondary_Navbar-Account-Contacts_Sub-Accounts">
+                    <a href="clientarea.php?action=contacts">
+                                                Contacts/Sub-Accounts
+                                            </a>
+                </li>
+                            <li menuItemName="Change Password" id="Secondary_Navbar-Account-Change_Password">
+                    <a href="clientarea.php?action=changepw">
+                                                Change Password
+                                            </a>
+                </li>
+                            <li menuItemName="Email History" id="Secondary_Navbar-Account-Email_History">
+                    <a href="clientarea.php?action=emails">
+                                                Email History
+                                            </a>
+                </li>
+                            <li menuItemName="Divider" class="nav-divider" id="Secondary_Navbar-Account-Divider">
+                    <a href="">
+                                                -----
+                                            </a>
+                </li>
+                            <li menuItemName="Logout" id="Secondary_Navbar-Account-Logout">
+                    <a href="logout.php">
+                                                Logout
+                                            </a>
+                </li>
+                        </ul>
+            </li>
+
+
+                </ul>
+
+            </div><!-- /.navbar-collapse -->
+        </div>
+    </nav>
+
+</section>
+
+
+    <div class="email-verification alert-warning">
+        <div class="container">
+            <i class="fa fa-warning"></i>
+            Please check your email and follow the link to verify your email address.
+            <div class="pull-right">
+                <button id="btnResendVerificationEmail" class="btn btn-default btn-sm">
+                    Resend Verification Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+<section id="main-body" class="container">
+
+    <div class="row">
+                                    <div class="col-md-9 pull-md-right">
+                    <div class="header-lined">
+    <h1>Manage Product</h1>
+    <ol class="breadcrumb">
+            <li>
+            <a href="index.php">            Portal Home
+            </a>        </li>
+            <li>
+            <a href="clientarea.php">            Client Area
+            </a>        </li>
+            <li>
+            <a href="clientarea.php?action=products">            My Products &amp; Services
+            </a>        </li>
+            <li class="active">
+                        Product Details
+                    </li>
+    </ol>
+</div>
+
+                </div>
+                        <div class="col-md-3 pull-md-left sidebar">
+                    <div menuItemName="Service Details Overview" class="panel panel-default panel-actions">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <i class="fa fa-star"></i>&nbsp;                Overview
+                            </h3>
+        </div>
+                            <div class="list-group list-group-tab-nav">
+                                                            <a menuItemName="Information" href="clientarea.php?action=productdetails&id=2044#tabOverview" class="list-group-item active" data-toggle="tab" id="Primary_Sidebar-Service_Details_Overview-Information">
+                                                                                    Information
+                        </a>
+                                                                                <a menuItemName="Addons" href="clientarea.php?action=productdetails&id=2044#tabAddons" class="list-group-item" data-toggle="tab" id="Primary_Sidebar-Service_Details_Overview-Addons">
+                                                                                    Addons
+                        </a>
+                                                </div>
+                    </div>
+        <div menuItemName="Service Details Actions" class="panel panel-default panel-actions">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                <i class="fa fa-wrench"></i>&nbsp;                Actions
+                            </h3>
+        </div>
+                            <div class="list-group list-group-tab-nav">
+                                                            <a menuItemName="Custom Module Button Reboot" href="clientarea.php?action=productdetails&id=2044&modop=custom&a=reboot" class="list-group-item" id="Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reboot">
+                                                                                    Reboot
+                        </a>
+                                                                                <a menuItemName="Custom Module Button Shutdown" href="clientarea.php?action=productdetails&id=2044&modop=custom&a=shutdown" class="list-group-item" id="Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Shutdown">
+                                                                                    Shutdown
+                        </a>
+                                                                                <a menuItemName="Custom Module Button Boot" href="clientarea.php?action=productdetails&id=2044&modop=custom&a=boot" class="list-group-item" id="Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Boot">
+                                                                                    Boot
+                        </a>
+                                                                                <a menuItemName="Upgrade/Downgrade" href="upgrade.php?type=package&amp;id=2044" class="list-group-item" id="Primary_Sidebar-Service_Details_Actions-Upgrade_Downgrade">
+                                                                                    Upgrade/Downgrade
+                        </a>
+                                                </div>
+                    </div>
+    
+            </div>
+                <!-- Container for main page display content -->
+        <div class="col-md-9 pull-md-right main-content">
+            
+
+
+
+<div class="tab-content margin-bottom">
+    <div class="tab-pane fade in active" id="tabOverview">
+
+        
+            <div class="product-details clearfix">
+
+                <div class="row">
+                    <div class="col-md-6">
+
+                        <div class="product-status product-status-active">
+                            <div class="product-icon text-center">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-database fa-stack-1x fa-inverse"></i>
+                                </span>
+                                <h3>Linux VPS 1</h3>
+                                <h4>Virtualized Dedicated Servers - Linux</h4>
+                            </div>
+                            <div class="product-status-text">
+                                Active
+                            </div>
+                        </div>
+
+                                                    <div class="row">
+                                                                    <div class="col-xs-12">
+                                        <a href="upgrade.php?type=package&amp;id=2044" class="btn btn-block btn-success">Upgrade</a>
+                                    </div>
+                                                                                            </div>
+                        
+                    </div>
+                    <div class="col-md-6 text-center">
+
+                        <h4>Registration Date</h4>
+                        05/24/2017
+
+                        
+                                                    <h4>Recurring Amount</h4>
+                            $10.00 USD
+                        
+                        <h4>Billing Cycle</h4>
+                        Monthly
+
+                        <h4>Next Due Date</h4>
+                        06/24/2017
+
+                        <h4>Payment Method</h4>
+                        Bitcoin
+
+                        
+                    </div>
+                </div>
+
+            </div>
+
+            
+                            <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <ul class="nav nav-tabs nav-tabs-overflow">
+                                                            <li class="active">
+                                    <a href="#domain" data-toggle="tab"><i class="fa fa-globe fa-fw"></i> Server Information</a>
+                                </li>
+                                                                                        <li>
+                                    <a href="#configoptions" data-toggle="tab"><i class="fa fa-cubes fa-fw"></i> Configurable Options</a>
+                                </li>
+                                                                                                            </ul>
+                    </div>
+                </div>
+                <div class="tab-content product-details-tab-container">
+                                            <div class="tab-pane fade in active text-center" id="domain">
+                                                            <div class="row">
+                                    <div class="col-sm-5 text-right">
+                                        <strong>Hostname</strong>
+                                    </div>
+                                    <div class="col-sm-7 text-left">
+                                        hostname
+                                    </div>
+                                </div>
+                                                                    <div class="row">
+                                        <div class="col-sm-5 text-right">
+                                            <strong>Primary IP</strong>
+                                        </div>
+                                        <div class="col-sm-7 text-left">
+                                            178.32.53.129
+                                        </div>
+                                    </div>
+                                                                                                                                    <div class="row">
+                                        <div class="col-sm-5 text-right">
+                                            <strong>Nameservers</strong>
+                                        </div>
+                                        <div class="col-sm-7 text-left">
+                                            ns1.pulseservers.com<br />ns2.pulseservers.com
+                                        </div>
+                                    </div>
+                                                                                                                        <div class="text-center module-client-area">
+                                    
+   
+   <table width="100%" cellspacing="0" cellpadding="0" class="frame">
+  <tr>
+    <td><table width="100%" border="0" cellpadding="10" cellspacing="0">
+      <tr>
+          <td align="left"><h4>Status:</h4><span style="color: #0C0"><strong>Online</strong></span></td>
+        </tr>
+       <tr>
+          <td style="text-align: left; font-size: 12px">
+          <h4>Disk:</h4>
+          <div class="progress" style="margin-bottom: 5px !important">
+  <div class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0" aria-valuemax="100" style="width: 2%;">
+  2%
+  </div>
+</div>479.4 MB of 30 GB Used / 29.5 GB Free</td>
+      </tr> 
+          
+ <tr>
+ <td style="text-align: left; font-size: 12px">
+ <h4>Memory:</h4>
+ <div class="progress" style="margin-bottom: 5px !important">
+  <div class="progress-bar" role="progressbar" aria-valuenow="7" aria-valuemin="0" aria-valuemax="100" style="width: 7%;">
+  7%
+  </div>
+</div>69.3 MB of 1 GB Used / 954.7 MB Free</td>
+      </tr> 
+        <tr>
+          <td style="text-align: left; font-size: 12px"><h4>Bandwidth:</h4>
+ <div class="progress" style="margin-bottom: 5px !important">
+  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+  0%
+  </div>
+</div>89.2 MB of 100 TB Used / 100 TB Free</td>
+        </tr>
+        <tr>
+          <td align="left">
+          <h4>Options:</h4>
+     <p><input type="button" class="btn btn-default btn-block" value="Reboot" onClick="window.location='clientarea.php?action=productdetails&id=2044&serveraction=custom&a=reboot'" /></p>
+     <p><input type="button" class="btn btn-default btn-block" value="Shutdown" onClick="window.location='clientarea.php?action=productdetails&id=2044&serveraction=custom&a=shutdown'" /></p>
+     <p><input type="button" class="btn btn-default btn-block" value="Boot" onClick="window.location='clientarea.php?action=productdetails&id=2044&serveraction=custom&a=boot'" /></p>
+     <p><input type="button" class="btn btn-default btn-block" value="Serial Console" onClick="window.open('console.php?id=2044', '_blank','width=830,height=750,status=no,location=no,toolbar=no,scrollbars=1,menubar=no')" /></p>
+     <p><input type="button" class="btn btn-default btn-block" value="Root Password" onClick="window.open('rootpassword.php?id=2044', '_blank','width=400,height=200,status=no,location=no,toolbar=no,menubar=no')" /></p>
+     
+     <p><input type="button" class="btn btn-default btn-block" value="Hostname" onClick="window.open('changehostname.php?id=2044', '_blank','width=400,height=200,status=no,location=no,toolbar=no,menubar=no')" /></p>
+     
+	 
+	 <tr>
+          <td><input type="button" class="btn btn-default btn-block" value="Graphs" onClick="window.open('graphs.php?id=2044', '_blank','width=800,height=800,status=no,location=no,toolbar=no,scrollbars=1,menubar=no')" /></td>
+        </tr>
+     </td>
+        </tr>
+        <tr>
+          <td align="left"><h4>Assigned IP's</h4>178.32.53.129</td>
+        </tr>
+        </table>
+        </td>
+        </tr>
+        </table>
+  
+  
+                                </div>
+                                                    </div>
+                                                                <div class="tab-pane fade text-center" id="configoptions">
+                                                            <div class="row">
+                                    <div class="col-sm-5">
+                                        <strong>Operating System</strong>
+                                    </div>
+                                    <div class="col-sm-7 text-left">
+                                        Ubuntu 14.04                                    </div>
+                                </div>
+                                                            <div class="row">
+                                    <div class="col-sm-5">
+                                        <strong>Location</strong>
+                                    </div>
+                                    <div class="col-sm-7 text-left">
+                                        Western Europe                                    </div>
+                                </div>
+                                                    </div>
+                                                                            </div>
+                        <script src="/billing/assets/js/bootstrap-tabdrop.js"></script>
+            <script type="text/javascript">
+                jQuery('.nav-tabs-overflow').tabdrop();
+            </script>
+
+        
+    </div>
+    <div class="tab-pane fade in" id="tabDownloads">
+
+        <h3>Downloads</h3>
+
+        <div class="alert alert-info text-center">
+        The following download items are available for your product/service
+</div>
+
+
+        <div class="row">
+                    </div>
+
+    </div>
+    <div class="tab-pane fade in" id="tabAddons">
+
+        <h3>Addons</h3>
+
+                    <div class="alert alert-info text-center">
+        Addons are available for your product/service. <a href="cart.php?gid=addons">Click here to view &amp; order &raquo;</a>
+</div>
+
+        
+        <div class="row">
+                    </div>
+
+    </div>
+    <div class="tab-pane fade in" id="tabChangepw">
+
+        <h3>Change Password</h3>
+
+        
+        <form class="form-horizontal using-password-strength" method="post" action="/billing/clientarea.php?action=productdetails#tabChangepw" role="form">
+<input type="hidden" name="token" value="96b221263a0eaaf62e3d0befd917344ea70b8d6f" />
+            <input type="hidden" name="id" value="2044" />
+            <input type="hidden" name="modulechangepassword" value="true" />
+
+            <div id="newPassword1" class="form-group has-feedback">
+                <label for="inputNewPassword1" class="col-sm-5 control-label">New Password</label>
+                <div class="col-sm-6">
+                    <input type="password" class="form-control" id="inputNewPassword1" name="newpw" autocomplete="off" />
+                    <span class="form-control-feedback glyphicon"></span>
+                    <br />
+
+<div class="progress" id="passwordStrengthBar">
+    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <span class="sr-only">New Password Rating: 0%</span>
+    </div>
+</div>
+
+    <div class="alert alert-info">
+        <strong>Tips for a good password</strong><br />Use both upper and lowercase characters<br />Include at least one symbol (# $ ! % &amp; etc...)<br />Don't use dictionary words
+</div>
+
+
+<script type="text/javascript">
+jQuery("#inputNewPassword1").keyup(function() {
+    var pwStrengthErrorThreshold = 50;
+    var pwStrengthWarningThreshold = 75;
+
+    var $newPassword1 = jQuery("#newPassword1");
+    var pw = jQuery("#inputNewPassword1").val();
+    var pwlength=(pw.length);
+    if(pwlength>5)pwlength=5;
+    var numnumeric=pw.replace(/[0-9]/g,"");
+    var numeric=(pw.length-numnumeric.length);
+    if(numeric>3)numeric=3;
+    var symbols=pw.replace(/\W/g,"");
+    var numsymbols=(pw.length-symbols.length);
+    if(numsymbols>3)numsymbols=3;
+    var numupper=pw.replace(/[A-Z]/g,"");
+    var upper=(pw.length-numupper.length);
+    if(upper>3)upper=3;
+    var pwstrength=((pwlength*10)-20)+(numeric*10)+(numsymbols*15)+(upper*10);
+    if (pwstrength < 0) pwstrength = 0;
+    if (pwstrength > 100) pwstrength = 100;
+
+    $newPassword1.removeClass('has-error has-warning has-success');
+    jQuery("#inputNewPassword1").next('.form-control-feedback').removeClass('glyphicon-remove glyphicon-warning-sign glyphicon-ok');
+    jQuery("#passwordStrengthBar .progress-bar").removeClass("progress-bar-danger progress-bar-warning progress-bar-success").css("width", pwstrength + "%").attr('aria-valuenow', pwstrength);
+    jQuery("#passwordStrengthBar .progress-bar .sr-only").html('New Password Rating: ' + pwstrength + '%');
+    if (pwstrength < pwStrengthErrorThreshold) {
+        $newPassword1.addClass('has-error');
+        jQuery("#inputNewPassword1").next('.form-control-feedback').addClass('glyphicon-remove');
+        jQuery("#passwordStrengthBar .progress-bar").addClass("progress-bar-danger");
+    } else if (pwstrength < pwStrengthWarningThreshold) {
+        $newPassword1.addClass('has-warning');
+        jQuery("#inputNewPassword1").next('.form-control-feedback').addClass('glyphicon-warning-sign');
+        jQuery("#passwordStrengthBar .progress-bar").addClass("progress-bar-warning");
+    } else {
+        $newPassword1.addClass('has-success');
+        jQuery("#inputNewPassword1").next('.form-control-feedback').addClass('glyphicon-ok');
+        jQuery("#passwordStrengthBar .progress-bar").addClass("progress-bar-success");
+    }
+    validatePassword2();
+});
+
+function validatePassword2() {
+    var password1 = jQuery("#inputNewPassword1").val();
+    var password2 = jQuery("#inputNewPassword2").val();
+    var $newPassword2 = jQuery("#newPassword2");
+
+    if (password2 && password1 !== password2) {
+        $newPassword2.removeClass('has-success')
+            .addClass('has-error');
+        jQuery("#inputNewPassword2").next('.form-control-feedback').removeClass('glyphicon-ok').addClass('glyphicon-remove');
+        jQuery("#inputNewPassword2Msg").html('<p class="help-block">The passwords entered do not match</p>');
+        jQuery('input[type="submit"]').attr('disabled', 'disabled');    } else {
+        if (password2) {
+            $newPassword2.removeClass('has-error')
+                .addClass('has-success');
+            jQuery("#inputNewPassword2").next('.form-control-feedback').removeClass('glyphicon-remove').addClass('glyphicon-ok');
+            jQuery('.main-content input[type="submit"]').removeAttr('disabled');        } else {
+            $newPassword2.removeClass('has-error has-success');
+            jQuery("#inputNewPassword2").next('.form-control-feedback').removeClass('glyphicon-remove glyphicon-ok');
+        }
+        jQuery("#inputNewPassword2Msg").html('');
+    }
+}
+
+jQuery(document).ready(function(){
+    jQuery('.using-password-strength input[type="submit"]').attr('disabled', 'disabled');    jQuery("#inputNewPassword2").keyup(function() {
+        validatePassword2();
+    });
+});
+
+</script>
+
+                </div>
+            </div>
+            <div id="newPassword2" class="form-group has-feedback">
+                <label for="inputNewPassword2" class="col-sm-5 control-label">Confirm New Password</label>
+                <div class="col-sm-6">
+                    <input type="password" class="form-control" id="inputNewPassword2" name="confirmpw" autocomplete="off" />
+                    <span class="form-control-feedback glyphicon"></span>
+                    <div id="inputNewPassword2Msg">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-6 col-sm-6">
+                    <input class="btn btn-primary" type="submit" value="Save Changes" />
+                    <input class="btn" type="reset" value="Cancel" />
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+
+
+        </div><!-- /.main-content -->
+            </div>
+    <div class="clearfix"></div>
+</section>
+
+<section id="footer">
+    <p>Copyright &copy; 2017 Pulse Servers. All Rights Reserved.</p>
+</section>
+
+<div class="modal system-modal fade" id="modalAjax" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content panel panel-primary">
+            <div class="modal-header panel-heading">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">Title</h4>
+            </div>
+            <div class="modal-body panel-body">
+                Loading...
+            </div>
+            <div class="modal-footer panel-footer">
+                <div class="pull-left loader">
+                    <i class="fa fa-circle-o-notch fa-spin"></i> Loading...
+                </div>
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary modal-submit">
+                    Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+</html>
