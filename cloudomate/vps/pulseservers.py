@@ -1,4 +1,5 @@
 import sys
+from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
@@ -177,12 +178,19 @@ class Pulseservers(Hoster):
         clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        raise NotImplementedError
-        # TODO
-        # clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        # clientarea.set_rootpw()
-        pass
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.set_rootpw_rootpassword_php()
 
     def get_ip(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         print(clientarea.get_ip())
+
+    def info(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        data = clientarea.get_service_info()
+        self._print_info_dict(OrderedDict([
+            ('Hostname', data[0]),
+            ('IP address', data[1]),
+            ('Nameserver 1', data[2].split('.com')[0] + '.com'),
+            ('Nameserver 2', data[2].split('.com')[1]),
+        ]))

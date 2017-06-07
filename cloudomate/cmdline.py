@@ -31,6 +31,7 @@ def execute(cmd=sys.argv[1:]):
     add_parser_status(subparsers)
     add_parser_setrootpw(subparsers)
     add_parser_get_ip(subparsers)
+    add_parser_info(subparsers)
 
     args = parser.parse_args(cmd)
     args.func(args)
@@ -88,6 +89,15 @@ def add_parser_get_ip(subparsers):
     parser_get_ip.set_defaults(func=get_ip)
 
 
+def add_parser_info(subparsers):
+    parser_info = subparsers.add_parser("info", help="Get information of the specified service.")
+    parser_info.add_argument("provider", help="The specified provider", nargs="?", choices=providers)
+    parser_info.add_argument("-n", "--number", help="The number of the service to change the password for")
+    parser_info.add_argument("-e", "--email", help="The login email address")
+    parser_info.add_argument("-pw", "--password", help="The login password")
+    parser_info.set_defaults(func=info)
+
+
 def add_parser_setrootpw(subparsers):
     parser_setrootpw = subparsers.add_parser("setrootpw", help="Set the root password of the last activated service.")
     parser_setrootpw.add_argument("provider", help="The specified provider", choices=providers)
@@ -110,6 +120,13 @@ def get_ip(args):
     user_settings = _get_user_settings(args, provider)
     p = providers[provider]
     p.get_ip(user_settings)
+
+
+def info(args):
+    provider = _get_provider(args)
+    user_settings = _get_user_settings(args, provider)
+    p = providers[provider]
+    p.info(user_settings)
 
 
 def status(args):
