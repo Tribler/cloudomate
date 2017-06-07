@@ -175,4 +175,4 @@ class CrownCloud(Hoster):
         if not ip:
             print("No active IP found")
             sys.exit(2)
-        print(ip)
+        return ip

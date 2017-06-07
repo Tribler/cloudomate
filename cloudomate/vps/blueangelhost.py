@@ -138,4 +138,4 @@ class BlueAngelHost(Hoster):
 
     def get_ip(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        print(clientarea.get_client_data_ip(self.client_data_url))
+        return clientarea.get_client_data_ip(self.client_data_url)
