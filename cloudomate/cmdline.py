@@ -1,7 +1,6 @@
+import subprocess
 import sys
 from argparse import ArgumentParser
-
-import subprocess
 
 from cloudomate.util.config import UserOptions
 from cloudomate.vps.blueangelhost import BlueAngelHost
@@ -97,6 +96,8 @@ def add_parser_ssh(subparsers):
     parser_ssh.add_argument("-n", "--number", help="The number of the service to SSH into")
     parser_ssh.add_argument("-e", "--email", help="The login email address")
     parser_ssh.add_argument("-pw", "--password", help="The login password")
+    parser_ssh.add_argument("-p", "--rootpw", help="The root password used to login")
+    parser_ssh.add_argument("-u", "--user", help="The user password used to login", default="root")
     parser_ssh.set_defaults(func=ssh)
 
 
@@ -257,8 +258,9 @@ def ssh(args):
     provider = _get_provider(args)
     user_settings = _get_user_settings(args, provider.name)
     ip = provider.get_ip(user_settings)
+    user = user_settings.get('user')
     try:
-        subprocess.call(['sshpass', '-p', user_settings.get('rootpw'), 'ssh', 'root@' + ip])
+        subprocess.call(['sshpass', '-p', user_settings.get('rootpw'), 'ssh', user + '@' + ip])
     except OSError, e:
         print(e)
         print('Install sshpass to use this command')
