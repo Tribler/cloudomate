@@ -2,6 +2,7 @@ import itertools
 import json
 import sys
 import urllib
+from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
@@ -191,7 +192,7 @@ class LineVast(Hoster):
             print("Setting password failed")
             sys.exit(2)
         else:
-            print("Setting password successful")
+            print("Password changed successfully")
 
     @staticmethod
     def _extract_vi_from_links(links):
@@ -219,3 +220,14 @@ class LineVast(Hoster):
     def get_ip(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         print(clientarea.get_ip())
+
+    def info(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        data = clientarea.get_service_info()
+        self._print_info_dict(OrderedDict([
+            ('Hostname', data[0]),
+            ('IP address', data[1]),
+            ('Control panel', 'https://vm.linevast.de/'),
+            ('Username', data[2]),
+            ('Password', data[3]),
+        ]))

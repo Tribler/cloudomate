@@ -165,8 +165,13 @@ class RockHoster(Hoster):
 
     def set_rootpw(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.set_rootpw()
+        clientarea.set_rootpw_client_data()
 
     def get_ip(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         print(clientarea.get_client_data_ip(self.client_data_url))
+
+    def info(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        info_dict = clientarea.get_client_data_info_dict(self.client_data_url)
+        self._print_info_dict(info_dict)

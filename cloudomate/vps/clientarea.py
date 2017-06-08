@@ -1,7 +1,10 @@
+# coding=utf-8
 import json
 import re
 import sys
 import time
+import urllib
+from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
@@ -60,7 +63,7 @@ class ClientArea(object):
             print(row_format.format(
                 str(i),
                 service['product'],
-                service['price'].encode('utf-8'),
+                service['price'].replace(u'€', ''),
                 service['term'],
                 service['next_due_date'],
                 service['status'],
@@ -109,13 +112,25 @@ class ClientArea(object):
         :param client_data_url: the URL pointing towards the clientarea's client_data.php
         :return: the IP address
         """
+        data = self.get_client_data(client_data_url)
+        return data['mainip']
+
+    def get_client_data(self, client_data_url):
         service = self.get_specified_service()
         self._ensure_active(service)
         vserverid = self._get_vserverid(service['url'])
         millis = int(round(time.time() * 1000))
         page = self.browser.open(client_data_url + '?vserverid=%s&_=%s' % (vserverid, millis))
-        data = json.loads(page.get_data())
-        return data['mainip']
+        return json.loads(page.get_data())
+
+    def get_client_data_info_dict(self, client_data_url):
+        data = self.get_client_data(client_data_url)
+        return OrderedDict([
+            ('Used bandwidth', data['bandwidthused'] + ' / ' + data['bandwidthtotal']),
+            ('Used memory', data['memoryused'] + ' / ' + data['memorytotal']),
+            ('Used storage', data['hddused'] + ' / ' + data['hddtotal']),
+            ('IP address', data['mainip']),
+        ])
 
     def get_specified_service(self):
         """
@@ -134,9 +149,9 @@ class ClientArea(object):
             print("Wrong index: %s not between 0 and %s" % (number, len(self.services) - 1))
             sys.exit(2)
 
-    def set_rootpw(self):
+    def set_rootpw_client_data(self):
         """
-        Set the rootpassword for the appropriate service.
+        Set the rootpassword for the appropriate service through client_data.php.
         :return: 
         """
         password = self.user_settings.get('rootpw')
@@ -144,7 +159,6 @@ class ClientArea(object):
         self._ensure_active(service)
         millis = int(round(time.time() * 1000))
 
-        print("Changing password for %s" % service['id'])
         vserverid = self._get_vserverid(service['url'])
         url = self.clientarea_url + '?action=productdetails&id=%s&vserverid=%s&modop=custom&a=ChangeRootPassword' \
                                     '&newrootpassword=%s&ajax=1&ac=Custom_ChangeRootPassword&_=%s' \
@@ -155,6 +169,26 @@ class ClientArea(object):
             print("Password changed successfully")
         else:
             print(response_json['msg'])
+
+    def set_rootpw_rootpassword_php(self):
+        """
+        Set the rootpassword for the appropriate service through rootpassword.php.
+        :return: 
+        """
+        password = self.user_settings.get('rootpw')
+        service = self.get_specified_or_active_service()
+        self._ensure_active(service)
+        data = {
+            'newrootpassword': password,
+            'rootpassword': 'Change'
+        }
+        data = urllib.urlencode(data)
+        url = self.clientarea_url.replace('clientarea', 'rootpassword') + '?id=' + service['id']
+        page = self.browser.open(url, data)
+        if 'Password Updated' in page.get_data():
+            print("Password changed successfully")
+        else:
+            print("Setting password failed")
 
     @staticmethod
     def _ensure_active(service):
@@ -168,7 +202,7 @@ class ClientArea(object):
         info like ip address, hostname, passwords...
         :return: 
         """
-        service = self.get_specified_service()
+        service = self.get_specified_or_active_service()
         self._ensure_active(service)
         page = self.browser.open(service['url'])
         return self._extract_service_info(page.get_data())
@@ -180,6 +214,15 @@ class ClientArea(object):
         If no number is specified, the IP address of first active service is returned.
         :return: the chosen IP address
         """
+        service = self.get_specified_or_active_service()
+        page = self.browser.open(service['url'])
+        return self._extract_service_info(page.get_data())[1]
+
+    def get_specified_or_active_service(self):
+        """
+        Get either the specified (by number) service or the first active service.
+        :return: the service
+        """
         service = self.get_specified_service()
         if service['status'] != 'active' and 'number' not in self.user_settings.config:
             for s in self.services:
@@ -187,8 +230,7 @@ class ClientArea(object):
                     service = s
                     break
         self._ensure_active(service)
-        page = self.browser.open(service['url'])
-        return self._extract_service_info(page.get_data())[1]
+        return service
 
     @staticmethod
     def _extract_service_info(html):
