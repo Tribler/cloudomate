@@ -183,7 +183,7 @@ class Pulseservers(Hoster):
 
     def get_ip(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        print(clientarea.get_ip())
+        return clientarea.get_ip()
 
     def info(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)

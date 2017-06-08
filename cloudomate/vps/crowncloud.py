@@ -176,7 +176,7 @@ class CrownCloud(Hoster):
         if not ip:
             print("No active IP found")
             sys.exit(2)
-        print(ip)
+        return ip
 
     def info(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)

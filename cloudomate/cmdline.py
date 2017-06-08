@@ -1,3 +1,4 @@
+import subprocess
 import sys
 from argparse import ArgumentParser
 
@@ -31,6 +32,7 @@ def execute(cmd=sys.argv[1:]):
     add_parser_status(subparsers)
     add_parser_setrootpw(subparsers)
     add_parser_get_ip(subparsers)
+    add_parser_ssh(subparsers)
     add_parser_info(subparsers)
 
     args = parser.parse_args(cmd)
@@ -81,12 +83,23 @@ def add_parser_status(subparsers):
 
 
 def add_parser_get_ip(subparsers):
-    parser_get_ip = subparsers.add_parser("getip", help="Get the ip of the specified service.")
+    parser_get_ip = subparsers.add_parser("getip", help="Get the IP address of the specified service.")
     parser_get_ip.add_argument("provider", help="The specified provider", nargs="?", choices=providers)
-    parser_get_ip.add_argument("-n", "--number", help="The number of the service to change the password for")
+    parser_get_ip.add_argument("-n", "--number", help="The number of the service get the IP address for")
     parser_get_ip.add_argument("-e", "--email", help="The login email address")
     parser_get_ip.add_argument("-pw", "--password", help="The login password")
     parser_get_ip.set_defaults(func=get_ip)
+
+
+def add_parser_ssh(subparsers):
+    parser_ssh = subparsers.add_parser("ssh", help="SSH into an active service.")
+    parser_ssh.add_argument("provider", help="The specified provider", nargs="?", choices=providers)
+    parser_ssh.add_argument("-n", "--number", help="The number of the service to SSH into")
+    parser_ssh.add_argument("-e", "--email", help="The login email address")
+    parser_ssh.add_argument("-pw", "--password", help="The login password")
+    parser_ssh.add_argument("-p", "--rootpw", help="The root password used to login")
+    parser_ssh.add_argument("-u", "--user", help="The user password used to login", default="root")
+    parser_ssh.set_defaults(func=ssh)
 
 
 def add_parser_info(subparsers):
@@ -110,31 +123,28 @@ def add_parser_setrootpw(subparsers):
 
 def set_rootpw(args):
     provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider)
-    p = providers[provider]
-    p.set_rootpw(user_settings)
+    user_settings = _get_user_settings(args, provider.name)
+    provider.set_rootpw(user_settings)
 
 
 def get_ip(args):
     provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider)
-    p = providers[provider]
-    p.get_ip(user_settings)
+    user_settings = _get_user_settings(args, provider.name)
+    ip = provider.get_ip(user_settings)
+    print(ip)
 
 
 def info(args):
     provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider)
-    p = providers[provider]
-    p.info(user_settings)
+    user_settings = _get_user_settings(args, provider.name)
+    provider.info(user_settings)
 
 
 def status(args):
     provider = _get_provider(args)
-    print("Getting status for %s." % provider)
-    user_settings = _get_user_settings(args, provider)
-    p = providers[provider]
-    p.get_status(user_settings)
+    print("Getting status for %s." % provider.name)
+    user_settings = _get_user_settings(args, provider.name)
+    provider.get_status(user_settings)
 
 
 def options(args):
@@ -146,7 +156,7 @@ def purchase(args):
     if "provider" not in vars(args):
         sys.exit(2)
     provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider)
+    user_settings = _get_user_settings(args, provider.name)
     if not _check_provider(provider, user_settings):
         print("Missing option")
         sys.exit(2)
@@ -154,8 +164,7 @@ def purchase(args):
 
 
 def _check_provider(provider, config):
-    p = providers[provider]
-    return config.verify_options(p.required_settings)
+    return config.verify_options(provider.required_settings)
 
 
 def _get_user_settings(args, provider=None):
@@ -174,8 +183,7 @@ def _merge_arguments(config, args):
             config.put(key, args[key])
 
 
-def _purchase(provider, vps_option, user_settings):
-    p = providers[provider]
+def _purchase(p, vps_option, user_settings):
     configurations = p.options()
     if not 0 <= vps_option < len(configurations):
         print('Specified configuration %s is not in range 0-%s' % (vps_option, len(configurations)))
@@ -196,7 +204,7 @@ def _purchase(provider, vps_option, user_settings):
     else:
         choice = _confirmation("Purchase this option?", default="no")
     if choice:
-        _register(provider, vps_option, user_settings)
+        _register(p, vps_option, user_settings)
     else:
         return False
 
@@ -240,17 +248,15 @@ def _list_providers():
         print("   {:15}{:30}".format(provider, providers[provider].website))
 
 
-def _options(provider):
-    print("Options for %s:\n" % provider)
-    p = providers[provider]
+def _options(p):
+    print("Options for %s:\n" % p.name)
     p.options()
     p.print_configurations()
 
 
-def _register(provider, vps_option, user_settings):
+def _register(p, vps_option, user_settings):
     # For now use standard wallet implementation through Electrum
     wallet = Wallet()
-    p = providers[provider]
     p.purchase(user_settings=user_settings, vps_option=vps_option, wallet=wallet)
 
 
@@ -260,7 +266,19 @@ def _get_provider(args):
         _print_unknown_provider(provider)
         _list_providers()
         sys.exit(2)
-    return provider
+    return providers[provider]
+
+
+def ssh(args):
+    provider = _get_provider(args)
+    user_settings = _get_user_settings(args, provider.name)
+    ip = provider.get_ip(user_settings)
+    user = user_settings.get('user')
+    try:
+        subprocess.call(['sshpass', '-p', user_settings.get('rootpw'), 'ssh', user + '@' + ip])
+    except OSError, e:
+        print(e)
+        print('Install sshpass to use this command')
 
 
 if __name__ == '__main__':
