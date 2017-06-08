@@ -33,6 +33,7 @@ def execute(cmd=sys.argv[1:]):
     add_parser_setrootpw(subparsers)
     add_parser_get_ip(subparsers)
     add_parser_ssh(subparsers)
+    add_parser_info(subparsers)
 
     args = parser.parse_args(cmd)
     args.func(args)
@@ -101,6 +102,15 @@ def add_parser_ssh(subparsers):
     parser_ssh.set_defaults(func=ssh)
 
 
+def add_parser_info(subparsers):
+    parser_info = subparsers.add_parser("info", help="Get information of the specified service.")
+    parser_info.add_argument("provider", help="The specified provider", nargs="?", choices=providers)
+    parser_info.add_argument("-n", "--number", help="The number of the service to change the password for")
+    parser_info.add_argument("-e", "--email", help="The login email address")
+    parser_info.add_argument("-pw", "--password", help="The login password")
+    parser_info.set_defaults(func=info)
+
+
 def add_parser_setrootpw(subparsers):
     parser_setrootpw = subparsers.add_parser("setrootpw", help="Set the root password of the last activated service.")
     parser_setrootpw.add_argument("provider", help="The specified provider", choices=providers)
@@ -124,6 +134,12 @@ def get_ip(args):
     print(ip)
 
 
+def info(args):
+    provider = _get_provider(args)
+    user_settings = _get_user_settings(args, provider.name)
+    provider.info(user_settings)
+
+
 def status(args):
     provider = _get_provider(args)
     print("Getting status for %s." % provider.name)
@@ -141,14 +157,13 @@ def purchase(args):
         sys.exit(2)
     provider = _get_provider(args)
     user_settings = _get_user_settings(args, provider.name)
-    if not _check_provider(provider.name, user_settings):
+    if not _check_provider(provider, user_settings):
         print("Missing option")
         sys.exit(2)
     _purchase(provider, args.option, user_settings)
 
 
 def _check_provider(provider, config):
-    provider = providers[provider]
     return config.verify_options(provider.required_settings)
 
 

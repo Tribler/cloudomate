@@ -1,4 +1,5 @@
 import sys
+from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
@@ -129,9 +130,17 @@ class CCIHosting(Hoster):
 
     def set_rootpw(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.set_rootpw()
+        clientarea.set_rootpw_rootpassword_php()
 
     def get_ip(self, user_settings):
-        raise NotImplementedError
-        # clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        # print(clientarea.get_client_data_ip(self.client_data_url))
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        return clientarea.get_ip()
+
+    def info(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        data = clientarea.get_service_info()
+        self._print_info_dict(OrderedDict([
+            ('Hostname', data[0]),
+            ('IP address', data[1]),
+            ('Nameservers', data[2]),
+        ]))

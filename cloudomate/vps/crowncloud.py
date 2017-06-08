@@ -1,5 +1,6 @@
 import re
 import sys
+from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
@@ -176,3 +177,14 @@ class CrownCloud(Hoster):
             print("No active IP found")
             sys.exit(2)
         return ip
+
+    def info(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        (ip, user, rootpw) = self._extract_vps_information(clientarea)
+
+        self._print_info_dict(OrderedDict([
+            ('IP address', ip),
+            ('Control panel', 'https://crownpanel.com/'),
+            ('Username', user),
+            ('Password', rootpw),
+        ]))
