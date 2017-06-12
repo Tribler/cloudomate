@@ -2,12 +2,12 @@ from bs4 import BeautifulSoup
 
 from cloudomate.gateway import bitpay
 from cloudomate.vps.clientarea import ClientArea
-from cloudomate.vps.hoster import Hoster
+from cloudomate.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
 
 
-class BlueAngelHost(Hoster):
+class BlueAngelHost(SolusvmHoster):
     name = "blueangelhost"
     website = "https://www.blueangelhost.com/"
     required_settings = [
@@ -40,57 +40,27 @@ class BlueAngelHost(Hoster):
         :return: 
         """
         self.br.open(vps_option.purchase_url)
-        self.br.select_form(nr=2)
-        self.fill_in_server_form(user_settings)
-        self.br.submit()
+        self.server_form(user_settings)
         self.br.open('https://www.billing.blueangelhost.com/cart.php?a=view')
-        self.br.follow_link(text_regex='Checkout')
-        self.br.select_form(nr=2)
-        self.fill_in_user_form(user_settings)
-        self.br.submit()
+        self.br.follow_link(text_regex=r'Checkout')
+        self.br.select_form(name='orderfrm')
+        self.br.form['customfield[4]'] = ['Google']
+        self.user_form(self.br, user_settings, self.gateway.name)
         self.br.select_form(nr=0)
         page = self.br.submit()
-        url = page.geturl()
-        amount, address = self.gateway.extract_info(url)
-        return amount, address
+        return self.gateway.extract_info(page.geturl())
 
-    def fill_in_server_form(self, user_settings):
+    def server_form(self, user_settings):
         """
         Fills in the form containing server configuration
         :param user_settings: settings
         :return: 
         """
-        self.br.form['hostname'] = user_settings.get('hostname')
-        self.br.form['rootpw'] = user_settings.get('rootpw')
-        self.br.form['ns1prefix'] = user_settings.get('ns1')
-        self.br.form['ns2prefix'] = user_settings.get('ns2')
+        self.select_form_id(self.br, 'frmConfigureProduct')
+        self.fill_in_server_form(self.br.form, user_settings)
         self.br.form['configoption[72]'] = ['87']  # Ubuntu
         self.br.form['configoption[73]'] = ['91']  # 64 bit
-        self.br.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
-        self.br.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
-        self.br.form.method = "POST"
-
-    def fill_in_user_form(self, user_settings):
-        """
-        Fills in the form with user information
-        :param user_settings: settings
-        :return: 
-        """
-        self.br.form['firstname'] = user_settings.get('firstname')
-        self.br.form['lastname'] = user_settings.get('lastname')
-        self.br.form['email'] = user_settings.get('email')
-        self.br.form['phonenumber'] = user_settings.get('phonenumber')
-        self.br.form['companyname'] = user_settings.get('companyname')
-        self.br.form['address1'] = user_settings.get('address')
-        self.br.form['city'] = user_settings.get('city')
-        self.br.form['country'] = [user_settings.get('countrycode')]
-        self.br.form['state'] = user_settings.get('state')
-        self.br.form['postcode'] = user_settings.get('zipcode')
-        self.br.form['customfield[4]'] = ['Google']
-        self.br.form['password'] = user_settings.get('password')
-        self.br.form['password2'] = user_settings.get('password')
-        self.br.form['paymentmethod'] = ['bitpay']
-        self.br.find_control('accepttos').items[0].selected = True
+        self.br.submit()
 
     def start(self):
         blue_page = self.br.open('https://www.blueangelhost.com/openvz-vps/')

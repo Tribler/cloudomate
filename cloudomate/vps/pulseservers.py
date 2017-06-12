@@ -1,16 +1,15 @@
-import sys
 from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
 from cloudomate.gateway import coinbase
 from cloudomate.vps.clientarea import ClientArea
-from cloudomate.vps.hoster import Hoster
+from cloudomate.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
 
 
-class Pulseservers(Hoster):
+class Pulseservers(SolusvmHoster):
     """
     PulseServers contains the logic to view hosting configurations and to 
     purchase servers at Pulseservers.
@@ -102,76 +101,26 @@ class Pulseservers(Hoster):
         :return: 
         """
         self.br.open(vps_option.purchase_url)
-        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
-
-        self.fill_in_server_form(user_settings)
-        self.br.submit()
+        self.server_form(user_settings)
         self.br.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
-        # redirects to https://www.pulseservers.com/billing/cart.php?a=view
-
         self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
-        self.fill_in_user_form(user_settings)
-
         promobutton = self.br.form.find_control(name="validatepromo")
         promobutton.disabled = True
-
-        page = self.br.submit()
-
-        if 'checkout' in page.geturl():
-            contents = BeautifulSoup(page.read(), 'lxml')
-            errors = contents.find('div', {'class': 'errorbox'})
-            print(errors)
-            print(page.read())
-            sys.exit(1)
-
-        print(page.read())
-
+        self.user_form(self.br, user_settings, self.gateway.name, errorbox_class='errorbox')
         self.br.select_form(nr=0)
         page = self.br.submit()
+        return self.gateway.extract_info(page.geturl())
 
-        amount, address = self.gateway.extract_info(page.geturl())
-        return amount, address
-
-    def fill_in_server_form(self, user_settings):
+    def server_form(self, user_settings):
         """
         Fill in the form with user information
         :param user_settings: settings
         :return: 
         """
-        # <div id="configproducterror" class="errorbox"></div>
+        self.select_form_id(self.br, 'orderfrm')
+        self.fill_in_server_form(self.br.form, user_settings, nameservers=False)
         self.br.form['billingcycle'] = ['monthly']
-        self.br.form['hostname'] = user_settings.get('hostname')
-        self.br.form['rootpw'] = user_settings.get('rootpw')
-        # OS
-        # self.br.form['configoption[3]'] = ['2']
-        # Location
-        # self.br.form['configoption[9]'] = ['63']
-        self.br.form.new_control('text', 'ajax', {'name': 'ajax', 'value': 1})
-        self.br.form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
-        self.br.form.method = "POST"
-
-    def fill_in_user_form(self, user_settings):
-        """
-        Fill in form with registration information
-        :param user_settings: user info
-        :return: 
-        """
-        self.br.form['firstname'] = user_settings.get("firstname")
-        self.br.form['lastname'] = user_settings.get("lastname")
-        self.br.form['email'] = user_settings.get("email")
-        self.br.form['phonenumber'] = user_settings.get("phonenumber")
-        self.br.form['companyname'] = user_settings.get("companyname")
-        self.br.form['address1'] = user_settings.get("address")
-        self.br.form['city'] = user_settings.get("city")
-
-        countrycode = user_settings.get("countrycode")
-        self.br.form['country'] = [countrycode]
-        self.br.form['state'] = user_settings.get("state")
-        self.br.form['postcode'] = user_settings.get("zipcode")
-        self.br.form['password'] = user_settings.get("password")
-        self.br.form['password2'] = user_settings.get("password")
-        self.br.form['paymentmethod'] = ['coinbase']
-        self.br.find_control('accepttos').items[0].selected = True
+        self.br.submit()
 
     def get_status(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)

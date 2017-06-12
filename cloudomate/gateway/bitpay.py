@@ -1,6 +1,8 @@
 import json
 import urllib
 
+name = 'bitpay'
+
 
 def extract_info(url):
     """
