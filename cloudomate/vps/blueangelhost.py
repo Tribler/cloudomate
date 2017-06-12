@@ -42,16 +42,13 @@ class BlueAngelHost(SolusvmHoster):
         self.br.open(vps_option.purchase_url)
         self.server_form(user_settings)
         self.br.open('https://www.billing.blueangelhost.com/cart.php?a=view')
-        self.br.follow_link(text_regex='Checkout')
-        self.br.select_form(nr=2)
-        self.fill_in_user_form(self.br, user_settings, self.gateway.name)
+        self.br.follow_link(text_regex=r'Checkout')
+        self.br.select_form(name='orderfrm')
         self.br.form['customfield[4]'] = ['Google']
-        self.br.submit()
+        self.user_form(self.br, user_settings, self.gateway.name)
         self.br.select_form(nr=0)
         page = self.br.submit()
-        url = page.geturl()
-        amount, address = self.gateway.extract_info(url)
-        return amount, address
+        return self.gateway.extract_info(page.geturl())
 
     def server_form(self, user_settings):
         """
@@ -59,7 +56,7 @@ class BlueAngelHost(SolusvmHoster):
         :param user_settings: settings
         :return: 
         """
-        self.br.select_form(nr=2)
+        self.select_form_id(self.br, 'frmConfigureProduct')
         self.fill_in_server_form(self.br.form, user_settings)
         self.br.form['configoption[72]'] = ['87']  # Ubuntu
         self.br.form['configoption[73]'] = ['91']  # 64 bit

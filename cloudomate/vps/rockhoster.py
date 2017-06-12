@@ -41,13 +41,11 @@ class RockHoster(SolusvmHoster):
         self.br.open(vps_option.purchase_url)
         self.server_form(user_settings)
         self.br.open('https://rockhoster.com/cloud/cart.php?a=view')
-        self.br.follow_link(text_regex=r"Checkout")
+        self.br.follow_link(text_regex=r'Checkout')
         self.br.select_form(nr=4)
-        self.fill_in_user_form(self.br, user_settings, self.gateway.name)
-        self.br.submit()
+        self.user_form(self.br, user_settings, self.gateway.name)
         page = self.br.follow_link(url_regex="coinbase")
-        amount, address = self.gateway.extract_info(page.geturl())
-        return amount, address
+        return self.gateway.extract_info(page.geturl())
 
     def server_form(self, user_settings):
         """
@@ -55,8 +53,8 @@ class RockHoster(SolusvmHoster):
         :param user_settings: settings
         :return: 
         """
-        self.br.select_form(nr=4)
-        self.fill_in_server_form(self.br.form, user_settings)
+        self.select_form_id(self.br, 'frmConfigureProduct')
+        self.fill_in_server_form(self.br.form, user_settings, nameservers=False)
         self.br.form['configoption[20]'] = ['53']  # Paris
         self.br.form['configoption[2]'] = ['13']
         self.br.submit()

@@ -1,3 +1,6 @@
+import sys
+from bs4 import BeautifulSoup
+
 from cloudomate.vps.hoster import Hoster
 
 
@@ -37,9 +40,11 @@ class SolusvmHoster(Hoster):
         form.new_control('text', 'a', {'name': 'a', 'value': 'confproduct'})
         form.method = "POST"
 
-    def fill_in_user_form(self, br, user_settings, payment_method):
+    @staticmethod
+    def user_form(br, user_settings, payment_method, errorbox_class='checkout-error-feedback'):
         """
         Fills in the form with user information.
+        :param errorbox_class: the class of the div containing error messages.
         :param payment_method: the payment method, typically coinbase or bitpay
         :param br: browser
         :param user_settings: settings
@@ -59,3 +64,20 @@ class SolusvmHoster(Hoster):
         br.form['password2'] = user_settings.get("password")
         br.form['paymentmethod'] = [payment_method]
         br.find_control('accepttos').items[0].selected = True
+
+        page = br.submit()
+        if 'checkout' in page.geturl():
+            contents = BeautifulSoup(page.read(), 'lxml')
+            errors = contents.find('div', {'class': errorbox_class}).text
+            print(errors.strip())
+            sys.exit(2)
+
+    @staticmethod
+    def select_form_id(browser, form_id):
+        """
+        Selects the form with specified id.
+        :param browser: the browser
+        :param form_id: the form element id
+        :return: 
+        """
+        browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == form_id)

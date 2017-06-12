@@ -44,27 +44,20 @@ class CrownCloud(SolusvmHoster):
         self.br.open(vps_option.purchase_url)
         self.server_form(user_settings)
         self.br.open('https://crowncloud.net/clients/cart.php?a=view')
-        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'frmCheckout')
-        self.fill_in_user_form(self.br, user_settings, self.gateway.name)
+        self.select_form_id(self.br, 'frmCheckout')
         promobutton = self.br.form.find_control(type="submitbutton", nr=0)
         promobutton.disabled = True
-        page = self.br.submit()
-        if "checkout" in page.geturl():
-            soup = BeautifulSoup(page.get_data(), 'lxml')
-            errors = soup.findAll('div', {'class': 'errorbox'})
-            print(errors[0].text)
-            sys.exit(1)
+        self.user_form(self.br, user_settings, self.gateway.name, errorbox_class='errorbox')
         self.br.select_form(nr=0)
         page = self.br.submit()
-        amount, address = self.gateway.extract_info(page.geturl())
-        return amount, address
+        return self.gateway.extract_info(page.geturl())
 
     def server_form(self, user_settings):
         """
         Fills in the form containing server configuration.
         :return: 
         """
-        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'frmConfigureProduct')
+        self.select_form_id(self.br, 'orderfrm')
         self.fill_in_server_form(self.br.form, user_settings, nameservers=False, rootpw=False, hostname=False)
         self.br.form['configoption[1]'] = ['56']
         self.br.form['configoption[8]'] = ['52']

@@ -1,4 +1,3 @@
-import sys
 from collections import OrderedDict
 
 from bs4 import BeautifulSoup
@@ -105,22 +104,12 @@ class Pulseservers(SolusvmHoster):
         self.server_form(user_settings)
         self.br.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
         self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
-        self.fill_in_user_form(self.br, user_settings, self.gateway.name)
         promobutton = self.br.form.find_control(name="validatepromo")
         promobutton.disabled = True
-        page = self.br.submit()
-        if 'checkout' in page.geturl():
-            contents = BeautifulSoup(page.read(), 'lxml')
-            errors = contents.find('div', {'class': 'errorbox'})
-            print(errors)
-            print(page.read())
-            sys.exit(1)
-
+        self.user_form(self.br, user_settings, self.gateway.name, errorbox_class='errorbox')
         self.br.select_form(nr=0)
         page = self.br.submit()
-
-        amount, address = self.gateway.extract_info(page.geturl())
-        return amount, address
+        return self.gateway.extract_info(page.geturl())
 
     def server_form(self, user_settings):
         """
@@ -128,7 +117,7 @@ class Pulseservers(SolusvmHoster):
         :param user_settings: settings
         :return: 
         """
-        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'orderfrm')
+        self.select_form_id(self.br, 'orderfrm')
         self.fill_in_server_form(self.br.form, user_settings, nameservers=False)
         self.br.form['billingcycle'] = ['monthly']
         self.br.submit()

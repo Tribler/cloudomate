@@ -42,26 +42,19 @@ class LineVast(SolusvmHoster):
         self.br.open(vps_option.purchase_url)
         self.server_form(user_settings)
         self.br.open('https://panel.linevast.de/cart.php?a=view')
-        self.br.follow_link(text_regex=r"Checkout")
+        self.br.follow_link(text_regex=r'Checkout')
         self.br.select_form(name='orderfrm')
-        self.fill_in_user_form(self.br, user_settings, self.gateway.name)
-        page = self.br.submit()
-        if 'checkout' in page.geturl():
-            contents = BeautifulSoup(page.read(), 'lxml')
-            errors = contents.find('div', {'class': 'checkout-error-feedback'}).text
-            print(errors)
-            sys.exit(1)
+        self.user_form(self.br, user_settings, self.gateway.name)
         self.br.select_form(nr=0)
         page = self.br.submit()
-        amount, address = self.gateway.extract_info(page.geturl())
-        return amount, address
+        return self.gateway.extract_info(page.geturl())
 
     def server_form(self, user_settings):
         """
         Fills in the form containing server configuration.
         :return: 
         """
-        self.br.select_form(nr=2)
+        self.select_form_id(self.br, 'frmConfigureProduct')
         self.fill_in_server_form(self.br.form, user_settings, rootpw=False, hostname=False, nameservers=False)
         self.br.form['configoption[61]'] = ['657']  # Paris
         self.br.submit()

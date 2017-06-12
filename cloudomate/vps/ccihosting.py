@@ -45,19 +45,10 @@ class CCIHosting(SolusvmHoster):
         self.br.open('https://www.ccihosting.com/accounts/cart.php?a=confdomains')
         self.br.follow_link(text_regex="Checkout")
         self.br.select_form(nr=2)
-        self.fill_in_user_form(self.br, user_settings, self.gateway.name)
-        page = self.br.submit()
-        if "checkout" in page.geturl():
-            soup = BeautifulSoup(page.get_data(), 'lxml')
-            errors = soup.findAll('div', {'class': 'checkout-error-feedback'})
-            print(errors[0].text)
-            sys.exit(1)
+        self.user_form(self.br, user_settings, self.gateway.name)
         self.br.select_form(nr=0)
         coinbase_url = self.br.form.attrs.get('action')
-
-        amount, address = self.gateway.extract_info(coinbase_url)
-
-        return amount, address
+        return self.gateway.extract_info(coinbase_url)
 
     def server_form(self, user_settings):
         """
@@ -65,7 +56,7 @@ class CCIHosting(SolusvmHoster):
         :param user_settings: settings
         :return: 
         """
-        self.br.select_form(nr=2)
+        self.select_form_id(self.br, 'frmConfigureProduct')
         self.fill_in_server_form(self.br.form, user_settings)
         self.br.form['configoption[214]'] = ['1193']  # Ubuntu
         self.br.submit()
