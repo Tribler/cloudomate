@@ -2,6 +2,8 @@ import urllib
 
 from bs4 import BeautifulSoup
 
+name = 'coinbase'
+
 
 def extract_info(url):
     """
