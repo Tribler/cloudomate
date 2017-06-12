@@ -11,24 +11,23 @@ from cloudomate.wallet import get_rate
 
 
 class TestCoinbase(unittest.TestCase):
+    # test url from https://developers.coinbase.com/docs/merchants/payment-pages
     TEST_URL = 'https://www.coinbase.com/checkouts/2b30a03995ec62f15bdc54e8428caa87'
     amount = None
     address = None
+    rate = None
 
     @classmethod
     def setUpClass(cls):
-        html_file = open(os.path.join(os.path.dirname(__file__), 'resources/coinbase.html'), 'r')
-        data = html_file.read()
-        with patch.object(urllib, 'open', return_value=data):
-            cls.amount, cls.address = coinbase.extract_info(cls.TEST_URL)
+        cls.amount, cls.address = coinbase.extract_info(cls.TEST_URL)
+        cls.rate = get_rate()
 
     def test_address(self):
         self.assertTrue(validate(self.address))
 
     def test_amount(self):
         # default donation is $1, so see if exchange rate is close
-        rate = get_rate()
-        self.assertTrue(0.99 * rate < self.amount < 1.01 * rate)
+        self.assertTrue(0.95 * self.rate < self.amount < 1.05 * self.rate)
 
 
 class TestBitPay(unittest.TestCase):
