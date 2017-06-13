@@ -10,6 +10,7 @@ from cloudomate.vps.linevast import LineVast
 from cloudomate.vps.pulseservers import Pulseservers
 from cloudomate.vps.rockhoster import RockHoster
 from cloudomate.wallet import Wallet
+from cloudomate.vps.cinfu import Cinfu
 
 commands = ["options", "purchase", "list"]
 providers = {
@@ -19,6 +20,7 @@ providers = {
     "blueangelhost": BlueAngelHost(),
     "ccihosting": CCIHosting(),
     "linevast": LineVast(),
+    "cinfu": Cinfu(),
 }
 
 
