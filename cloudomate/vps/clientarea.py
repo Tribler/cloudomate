@@ -29,10 +29,9 @@ class ClientArea(object):
         :return: The clientarea homepage on succesful login.
         """
         self.browser.open(self.clientarea_url)
-        if len(list(self.browser.forms())) > 1:
-            self.browser.select_form(nr=1)
-        else:
-            self.browser.select_form(nr=0)
+        for form in list(self.browser.forms()):
+            if 'dologin' in form.action:
+                self.browser.form = form
         self.browser.form['username'] = email
         self.browser.form['password'] = password
         page = self.browser.submit()
@@ -214,9 +213,7 @@ class ClientArea(object):
         If no number is specified, the IP address of first active service is returned.
         :return: the chosen IP address
         """
-        service = self.get_specified_or_active_service()
-        page = self.browser.open(service['url'])
-        return self._extract_service_info(page.get_data())[1]
+        return self.get_service_info()[1]
 
     def get_specified_or_active_service(self):
         """
