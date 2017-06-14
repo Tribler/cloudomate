@@ -9,6 +9,7 @@ from cloudomate.vps.crowncloud import CrownCloud
 from cloudomate.vps.linevast import LineVast
 from cloudomate.vps.pulseservers import Pulseservers
 from cloudomate.vps.rockhoster import RockHoster
+from cloudomate.vps.undergroundprivate import UndergroundPrivate
 from cloudomate.wallet import Wallet
 
 commands = ["options", "purchase", "list"]
@@ -19,6 +20,7 @@ providers = {
     "blueangelhost": BlueAngelHost(),
     "ccihosting": CCIHosting(),
     "linevast": LineVast(),
+    "underground": UndergroundPrivate(),
 }
 
 
