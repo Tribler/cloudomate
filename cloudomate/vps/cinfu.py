@@ -31,6 +31,23 @@ class Cinfu(SolusvmHoster):
     def __init__(self):
         super(Cinfu, self).__init__()
 
+    def get_status(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.print_services()
+
+    def set_rootpw(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.set_rootpw_client_data()
+
+    def get_ip(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        return clientarea.get_client_data_ip(self.client_data_url)
+
+    def info(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        info_dict = clientarea.get_client_data_info_dict(self.client_data_url)
+        self._print_info_dict(info_dict)
+
     def register(self, user_settings, vps_option):
         self.br.open(vps_option.purchase_url)
         self.server_form(user_settings)
@@ -42,7 +59,7 @@ class Cinfu(SolusvmHoster):
         print page.geturl
         return self.get_bitcoin_info(page.get_data())
 
-    def get_bitcoin_info(self,br):
+    def get_bitcoin_info(self, br):
         soup = BeautifulSoup(br, 'lxml')
         info = soup.find('div', {'class': 'payment-btn-container'})
         btcinfo = info.find('a').text
@@ -52,9 +69,6 @@ class Cinfu(SolusvmHoster):
         amount = float(amount.split('=')[1])
         address = tempaddress.split(':')[1]
         return amount, address
-
-
-
 
     def server_form(self, user_settings):
         """
