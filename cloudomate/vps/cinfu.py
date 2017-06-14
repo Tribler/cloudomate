@@ -11,7 +11,7 @@ from cloudomate.wallet import determine_currency
 class Cinfu(SolusvmHoster):
     name = "cinfu"
     website = "https://www.cinfu.com/"
-    clientarea_url = ""
+    clientarea_url = "https://panel.cinfu.com/clientarea.php"
     required_settings = [
         'firstname',
         'lastname',
@@ -31,6 +31,42 @@ class Cinfu(SolusvmHoster):
     def __init__(self):
         super(Cinfu, self).__init__()
 
+    def register(self, user_settings, vps_option):
+        self.br.open(vps_option.purchase_url)
+        self.server_form(user_settings)
+        self.br.open('https://panel.cinfu.com/cart.php?a=view')
+        self.br.follow_link(text_regex="Checkout")
+        self.br.select_form(nr=4)
+        self.user_form(self.br, user_settings, 'bitcoin')
+        page = self.br.response()
+        print page.geturl
+        return self.get_bitcoin_info(page.get_data())
+
+    def get_bitcoin_info(self,br):
+        soup = BeautifulSoup(br, 'lxml')
+        info = soup.find('div', {'class': 'payment-btn-container'})
+        btcinfo = info.find('a').text
+        tempamount = btcinfo.split('?')[1]
+        tempaddress = btcinfo.split('?')[0]
+        amount = tempamount.split('X')[0]
+        amount = float(amount.split('=')[1])
+        address = tempaddress.split(':')[1]
+        return amount, address
+
+
+
+
+    def server_form(self, user_settings):
+        """
+                Fills in the form containing server configuration
+                :param user_settings: settings
+                :return: 
+                """
+        self.select_form_id(self.br, 'frmConfigureProduct')
+        self.fill_in_server_form(self.br.form, user_settings, nameservers=False)
+        self.br.form['configoption[234]'] = ['1522']  # Ubuntu
+        self.br.submit()
+
     def start(self):
         cinfu_page = self.br.open('https://www.cinfu.com/vps/')
         return self.parse_options(cinfu_page)
@@ -38,8 +74,6 @@ class Cinfu(SolusvmHoster):
     def parse_options(self, page):
         soup = BeautifulSoup(page, 'lxml')
         tables = soup.findAll('table', {'class': 'table1'})
-
-        # table = soup.find('table', {'class': 'table1'})
         options = list(self.parse_german_options(tables[0]))
         options = itertools.chain(options, self.parse_bulg_usa_options(tables[1]), self.parse_french_options(tables[2]),
                                   self.parse_bulg_usa_options(tables[3]), self.parse_dutch_options(tables[4]))
@@ -161,7 +195,8 @@ class Cinfu(SolusvmHoster):
         for k in range(8):
             yield self.fill_options(names[k], ram[k], storage[k], cpu[k], price[k], link[k])
 
-    def fill_options(self, names, rams, storages, cpus, prices, links):
+    @staticmethod
+    def fill_options(names, rams, storages, cpus, prices, links):
         return VpsOption(
             name=names,
             price=float(prices.split('$')[1]),
@@ -174,7 +209,8 @@ class Cinfu(SolusvmHoster):
             purchase_url=links
         )
 
-    def fill_array(self, array, type, item, link):
+    @staticmethod
+    def fill_array(array, type, item, link):
         if link:
             temp = item.findAll(type)
             i = 0
@@ -191,6 +227,3 @@ class Cinfu(SolusvmHoster):
                 else:
                     array[i] = name.text
                 i = i + 1
-
-
-Cinfu().start()
