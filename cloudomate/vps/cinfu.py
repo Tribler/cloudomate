@@ -36,6 +36,8 @@ class Cinfu(SolusvmHoster):
 
     def parse_options(self, page):
         soup = BeautifulSoup(page, 'lxml')
+        tables = soup.findAll('table', {'class': 'table1'})
+        print tables[1]
         table = soup.find('table', {'class': 'table1'})
         return list(self.parse_german_options(table))
 
@@ -66,10 +68,10 @@ class Cinfu(SolusvmHoster):
                     self.fill_array(link, 'td', item, True)
                 j = j + 1
         for k in range(8):
-            yield self.fill_german_options(names[k],ram[k],storage[k],cpu[k],price[k],link[k])
+            yield self.fill_options(names[k],ram[k],storage[k],cpu[k],price[k],link[k])
 
 
-    def fill_german_options(self, names, rams, storages, cpus, prices,links):
+    def fill_options(self, names, rams, storages, cpus, prices,links):
         return VpsOption(
             name=names,
             price=float(prices.split('$')[1]),
