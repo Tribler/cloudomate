@@ -1,4 +1,5 @@
 import itertools
+from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
@@ -25,7 +26,6 @@ class LegionBox(SolusvmHoster):
         'rootpw']
 
     clientarea_url = 'https://legionbox.com/billing/clientarea.php'
-    # client_data_url = 'https://rockhoster.com/cloud/modules/servers/solusvmpro/get_client_data.php'
     gateway = coinbase
 
     def __init__(self):
@@ -64,7 +64,7 @@ class LegionBox(SolusvmHoster):
 
     def set_rootpw(self, user_settings):
         clientarea = LegionBoxClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.set_rootpw_client_data()
+        clientarea.set_rootpw_rootpassword_php()
 
     def get_ip(self, user_settings):
         clientarea = LegionBoxClientArea(self.br, self.clientarea_url, user_settings)
@@ -72,8 +72,12 @@ class LegionBox(SolusvmHoster):
 
     def info(self, user_settings):
         clientarea = LegionBoxClientArea(self.br, self.clientarea_url, user_settings)
-        info_dict = clientarea.get_client_data_info_dict(self.client_data_url)
-        self._print_info_dict(info_dict)
+        data = clientarea.get_service_info()
+        self._print_info_dict(OrderedDict([
+            ('Name', data[1]),
+            ('Date due', data[0]),
+            ('IP address', data[2]),
+        ]))
 
     def register(self, user_settings, vps_option):
         """
@@ -109,6 +113,10 @@ class LegionBox(SolusvmHoster):
 
 
 class LegionBoxClientArea(ClientArea):
+    """
+    Custom ClientArea methods are used because LegionBox uses a presumably older version of SolusVM than other
+    providers.
+    """
     def _extract_services(self, html):
         soup = BeautifulSoup(html, 'lxml')
         rows = soup.find('table', {'class': 'table'}).tbody.findAll('tr')
