@@ -6,6 +6,7 @@ from cloudomate.util.config import UserOptions
 from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
 from cloudomate.vps.crowncloud import CrownCloud
+from cloudomate.vps.legionbox import LegionBox
 from cloudomate.vps.linevast import LineVast
 from cloudomate.vps.pulseservers import Pulseservers
 from cloudomate.vps.rockhoster import RockHoster
@@ -19,6 +20,7 @@ providers = {
     "blueangelhost": BlueAngelHost(),
     "ccihosting": CCIHosting(),
     "linevast": LineVast(),
+    "legionbox": LegionBox(),
 }
 
 
