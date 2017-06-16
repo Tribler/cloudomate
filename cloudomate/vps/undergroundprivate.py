@@ -31,6 +31,36 @@ class UndergroundPrivate(SolusvmHoster):
     def __init__(self):
         super(UndergroundPrivate, self).__init__()
 
+    def purchase(self, user_settings, vps_option, wallet):
+        self.br.open(vps_option.purchase_url)
+        self.server_form(user_settings)
+        self.br.open('https://www.clientlogin.sx/cart.php?a=view')
+        self.br.form = list(self.br.forms())[2]
+        promobutton = self.br.form.find_control(name="validatepromo")
+        promobutton.disabled = True
+        self.user_form(self.br, user_settings, 'blockchainv2', errorbox_class='errorbox', acceptos=False)
+        html = self.br.response()
+        btcsoup = BeautifulSoup(html, 'lxml')
+        url = btcsoup.find('iframe')['src']
+        page = self.br.open(url)
+        soup = BeautifulSoup(page.get_data(), 'lxml')
+        info = soup.findAll('input')
+        amount = info[0]['value']
+        address = info[1]['value']
+        return amount, address
+
+
+    def server_form(self, user_settings):
+        """
+        Fills in the form containing server configuration
+        :param user_settings: settings
+        :return: 
+        """
+        self.br.form = list(self.br.forms())[1]
+        self.fill_in_server_form(self.br.form, user_settings)
+        self.br.form['configoption[7]'] = ['866']  # Ubuntu
+        self.br.submit()
+
     def start(self):
         france_page = self.br.open('https://undergroundprivate.com/franceoffshore.html')
         options = list(self.parse_f_options(france_page))
