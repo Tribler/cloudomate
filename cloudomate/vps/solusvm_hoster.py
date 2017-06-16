@@ -41,7 +41,7 @@ class SolusvmHoster(Hoster):
         form.method = "POST"
 
     @staticmethod
-    def user_form(br, user_settings, payment_method, errorbox_class='checkout-error-feedback'):
+    def user_form(br, user_settings, payment_method, errorbox_class='checkout-error-feedback', acceptos=True):
         """
         Fills in the form with user information.
         :param errorbox_class: the class of the div containing error messages.
@@ -63,7 +63,8 @@ class SolusvmHoster(Hoster):
         br.form['password'] = user_settings.get("password")
         br.form['password2'] = user_settings.get("password")
         br.form['paymentmethod'] = [payment_method]
-        br.find_control('accepttos').items[0].selected = True
+        if acceptos:
+            br.find_control('accepttos').items[0].selected = True
 
         page = br.submit()
         if 'checkout' in page.geturl():
