@@ -103,7 +103,7 @@ class Pulseservers(SolusvmHoster):
         self.br.open(vps_option.purchase_url)
         self.server_form(user_settings)
         self.br.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
-        self.br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'mainfrm')
+        self.select_form_id(self.br, 'mainfrm')
         promobutton = self.br.form.find_control(name="validatepromo")
         promobutton.disabled = True
         self.user_form(self.br, user_settings, self.gateway.name, errorbox_class='errorbox')
