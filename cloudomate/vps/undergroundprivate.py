@@ -1,4 +1,6 @@
 import itertools
+
+import sys
 from bs4 import BeautifulSoup
 
 from cloudomate.gateway import coinbase
@@ -11,7 +13,7 @@ from cloudomate.wallet import determine_currency
 class UndergroundPrivate(SolusvmHoster):
     name = "underground"
     website = "https://undergroundprivate.com"
-    clientarea_url = ""
+    clientarea_url = "https://www.clientlogin.sx/clientarea.php"
     required_settings = [
         'firstname',
         'lastname',
@@ -31,8 +33,28 @@ class UndergroundPrivate(SolusvmHoster):
     def __init__(self):
         super(UndergroundPrivate, self).__init__()
 
-    def purchase(self, user_settings, vps_option, wallet):
-        self.br.open(vps_option.purchase_url)
+    def get_status(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.print_services()
+
+    def set_rootpw(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.set_rootpw_client_data()
+
+    def get_ip(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        return clientarea.get_client_data_ip(self.client_data_url)
+
+    def info(self, user_settings):
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        info_dict = clientarea.get_client_data_info_dict(self.client_data_url)
+        self._print_info_dict(info_dict)
+
+    def register(self, user_settings, vps_option):
+        page = self.br.open(vps_option.purchase_url)
+        if 'add' in page.geturl():
+            print 'Out of Stock'
+            sys.exit(2)
         self.server_form(user_settings)
         self.br.open('https://www.clientlogin.sx/cart.php?a=view')
         self.br.form = list(self.br.forms())[2]
