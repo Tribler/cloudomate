@@ -67,13 +67,17 @@ class BlueAngelHost(SolusvmHoster):
     def start(self):
         blue_page = self.br.open('https://www.blueangelhost.com/openvz-vps/')
         html = blue_page.get_data()
-        self.br.set_cookie('PRID=' + self._extract_cookie(html))
+        cookie = self._extract_cookie(html)
+        if cookie:
+            self.br.set_cookie('PRID=' + self._extract_cookie(html))
         blue_page = self.br.open('https://www.blueangelhost.com/openvz-vps/')
         return self.parse_options(blue_page)
 
     @staticmethod
     def _extract_cookie(html):
         match = re.search('String\.fromCharCode\((\d+)\)\+String\.fromCharCode\((\d+)\)', html)
+        if not match:
+            return None
         return ''.join(map(unichr, [int(match.group(1)), int(match.group(2))]))
 
     def parse_options(self, page):
