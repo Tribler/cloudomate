@@ -1,5 +1,6 @@
 import unittest
 
+from cloudomate.vps.legionbox import LegionBox
 from mock.mock import MagicMock
 from parameterized import parameterized
 
@@ -11,6 +12,7 @@ from cloudomate.vps.crowncloud import CrownCloud
 from cloudomate.vps.linevast import LineVast
 from cloudomate.vps.pulseservers import Pulseservers
 from cloudomate.vps.rockhoster import RockHoster
+from cloudomate.vps.undergroundprivate import UndergroundPrivate
 from cloudomate.vps.vpsoption import VpsOption
 
 providers = [
@@ -20,6 +22,8 @@ providers = [
     (CrownCloud,),
     (BlueAngelHost,),
     (LineVast,),
+    (LegionBox,),
+    (UndergroundPrivate,),
 ]
 
 
