@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 
 import cloudomate.gateway.bitpay
 from cloudomate.vps.clientarea import ClientArea
-from cloudomate.vps.hoster import Hoster
 from cloudomate.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
@@ -106,7 +105,7 @@ class CrownCloud(SolusvmHoster):
 
     def get_status(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.print_services()
+        return clientarea.print_services()
 
     def set_rootpw(self, user_settings):
         print("CrownCloud does not support changing root password through their configuration panel.")
@@ -148,10 +147,9 @@ class CrownCloud(SolusvmHoster):
     def info(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         (ip, user, rootpw) = self._extract_vps_information(clientarea)
-
-        self._print_info_dict(OrderedDict([
+        return OrderedDict([
             ('IP address', ip),
             ('Control panel', 'https://crownpanel.com/'),
             ('Username', user),
             ('Password', rootpw),
-        ]))
+        ])

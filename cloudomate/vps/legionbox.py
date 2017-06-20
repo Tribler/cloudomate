@@ -73,11 +73,11 @@ class LegionBox(SolusvmHoster):
     def info(self, user_settings):
         clientarea = LegionBoxClientArea(self.br, self.clientarea_url, user_settings)
         data = clientarea.get_service_info()
-        self._print_info_dict(OrderedDict([
+        return OrderedDict([
             ('Name', data[1]),
             ('Date due', data[0]),
             ('IP address', data[2]),
-        ]))
+        ])
 
     def register(self, user_settings, vps_option):
         """
@@ -117,6 +117,7 @@ class LegionBoxClientArea(ClientArea):
     Custom ClientArea methods are used because LegionBox uses a presumably older version of SolusVM than other
     providers.
     """
+
     def _extract_services(self, html):
         soup = BeautifulSoup(html, 'lxml')
         rows = soup.find('table', {'class': 'table'}).tbody.findAll('tr')

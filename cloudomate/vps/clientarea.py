@@ -69,6 +69,7 @@ class ClientArea(object):
                 service['id'],
             ))
             i = i + 1
+        return self.services
 
     def _services(self):
         if self.services is not None:
@@ -166,8 +167,10 @@ class ClientArea(object):
         response_json = json.loads(response.get_data())
         if response_json['success'] is True:
             print("Password changed successfully")
+            return True
         else:
             print(response_json['msg'])
+            return False
 
     def set_rootpw_rootpassword_php(self):
         """
