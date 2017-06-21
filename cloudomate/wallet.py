@@ -2,9 +2,10 @@
 
 import json
 import subprocess
+import urllib2
+from mechanize import Browser
 
 from forex_python.bitcoin import BtcConverter
-from mechanize import Browser
 
 AVG_TX_SIZE = 226
 SATOSHI_TO_BTC = 0.00000001
@@ -38,8 +39,14 @@ def get_rate(currency='USD'):
     b = BtcConverter()
     factor = b.get_latest_price(currency)
     if factor is None:
-        return None
+        factor = fallback_get_rate(currency)
     return 1.0 / factor
+
+
+def fallback_get_rate(currency):
+    # Sometimes the method above gets rate limited, in this case use
+    # https: // blockchain.info / tobtc?currency = USD & value = 500
+    return float(urllib2.urlopen('https://blockchain.info/tobtc?currency={0}&value=1'.format(currency)).read())
 
 
 def get_rates(currencies):

@@ -94,7 +94,7 @@ class LineVast(SolusvmHoster):
             ram=elements[2].text.split(' GB')[0],
             bandwidth='unmetered',
             currency='EUR',
-            connection=str(int(elements[4].text.split(' GB')[0]) * 1000),
+            connection=int(elements[4].text.split(' GB')[0]) * 1000,
             price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')),
             purchase_url=plan.a['href'],
         )
@@ -122,7 +122,7 @@ class LineVast(SolusvmHoster):
             ram=elements[3].text.split(' GB')[0],
             currency='EUR',
             bandwidth='unmetered',
-            connection=str(int(elements[4].text.split(' GB')[0]) * 1000),
+            connection=int(elements[4].text.split(' GB')[0]) * 1000,
             price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')),
             purchase_url=plan.a['href'],
         )
