@@ -133,6 +133,11 @@ class Hoster(object):
                                 "Connection (Mbps)",
                                 "Est. Price (mBTC)", "Price"))
 
+        for i, item, estimated_price, price_string in self.get_configurations():
+            print(row_format.format(i, item.name, str(item.cpu), str(item.ram), str(item.storage), str(item.bandwidth),
+                                    str(item.connection), price_string, '{0} {1}'.format(item.currency, item.price)))
+
+    def get_configurations(self):
         currencies = set(item.currency for item in self.configurations)
         rates = wallet_util.get_rates(currencies)
         transaction_fee = wallet_util.get_network_fee()
@@ -143,8 +148,7 @@ class Hoster(object):
                 price_string = str(round(1000 * estimated_price, 2))
             else:
                 price_string = 'est. unavailable'
-            print(row_format.format(i, item.name, str(item.cpu), str(item.ram), str(item.storage), str(item.bandwidth),
-                                    str(item.connection), price_string, '{0} {1}'.format(item.currency, item.price)))
+            yield i, item, estimated_price, price_string
 
     @staticmethod
     def _create_browser():
