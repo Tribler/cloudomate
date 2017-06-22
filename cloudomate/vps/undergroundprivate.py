@@ -33,7 +33,7 @@ class UndergroundPrivate(SolusvmHoster):
 
     def get_status(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.print_services()
+        return clientarea.print_services()
 
     def set_rootpw(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
@@ -45,8 +45,7 @@ class UndergroundPrivate(SolusvmHoster):
 
     def info(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        info_dict = clientarea.get_client_data_info_dict(self.client_data_url)
-        self._print_info_dict(info_dict)
+        return clientarea.get_client_data_info_dict(self.client_data_url)
 
     def register(self, user_settings, vps_option):
         page = self.br.open(vps_option.purchase_url)

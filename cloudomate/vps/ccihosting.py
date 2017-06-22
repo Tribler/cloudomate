@@ -90,7 +90,7 @@ class CCIHosting(SolusvmHoster):
 
     def get_status(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.print_services()
+        return clientarea.print_services()
 
     def set_rootpw(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
@@ -103,8 +103,8 @@ class CCIHosting(SolusvmHoster):
     def info(self, user_settings):
         clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         data = clientarea.get_service_info()
-        self._print_info_dict(OrderedDict([
+        return OrderedDict([
             ('Hostname', data[0]),
             ('IP address', data[1]),
             ('Nameservers', data[2]),
-        ]))
+        ])

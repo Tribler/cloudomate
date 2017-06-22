@@ -141,7 +141,8 @@ def get_ip(args):
 def info(args):
     provider = _get_provider(args)
     user_settings = _get_user_settings(args, provider.name)
-    provider.info(user_settings)
+    print("Info for " + provider.name)
+    _print_info_dict(provider.info(user_settings))
 
 
 def status(args):
@@ -279,10 +280,17 @@ def ssh(args):
     ip = provider.get_ip(user_settings)
     user = user_settings.get('user')
     try:
-        subprocess.call(['sshpass', '-p', user_settings.get('rootpw'), 'ssh', user + '@' + ip])
+        subprocess.call(['sshpass', '-p', user_settings.get('rootpw'), 'ssh', '-o', 'StrictHostKeyChecking=no',
+                         user + '@' + ip])
     except OSError, e:
         print(e)
         print('Install sshpass to use this command')
+
+
+def _print_info_dict(info_dict):
+    row_format = "{:<25}{:<30}"
+    for key in info_dict:
+        print(row_format.format(key, info_dict[key]))
 
 
 if __name__ == '__main__':

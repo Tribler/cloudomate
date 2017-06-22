@@ -118,12 +118,6 @@ class Hoster(object):
         """
         raise NotImplementedError('Abstract method implementation')
 
-    def _print_info_dict(self, info_dict):
-        print("Info for " + self.name)
-        row_format = "{:<25}{:<30}"
-        for key in info_dict:
-            print(row_format.format(key, info_dict[key]))
-
     def print_configurations(self):
         """
         Print parsed VPS configurations.
