@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='cloudomate',
 
-    version='0.1.6',
+    version='0.1.7',
 
     description='Automate buying VPS instances with Bitcoin',
     long_description=long_description,
