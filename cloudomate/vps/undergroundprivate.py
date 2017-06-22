@@ -84,10 +84,10 @@ class UndergroundPrivate(SolusvmHoster):
         self.br.submit()
 
     def start(self):
-        france_page = self.br.open('https://undergroundprivate.com/franceoffshore.html')
-        options = list(self.parse_f_options(france_page))
         russia_page = self.br.open('https://undergroundprivate.com/russiaoffshorevps.html')
-        options = itertools.chain(options, self.parse_r_options(russia_page))
+        options = list(self.parse_r_options(russia_page))
+        # france_page = self.br.open('https://undergroundprivate.com/franceoffshore.html')
+        # options = itertools.chain(options, self.parse_f_options(france_page))
         return options
 
     def parse_france_options(self, info):
