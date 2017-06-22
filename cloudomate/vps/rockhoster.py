@@ -1,6 +1,7 @@
 import itertools
 
 from bs4 import BeautifulSoup
+from mechanize._form_controls import ControlNotFoundError
 
 from cloudomate.gateway import coinbase
 from cloudomate.vps.clientarea import ClientArea
@@ -55,8 +56,12 @@ class RockHoster(SolusvmHoster):
         """
         self.select_form_id(self.br, 'frmConfigureProduct')
         self.fill_in_server_form(self.br.form, user_settings, nameservers=False)
-        self.br.form['configoption[20]'] = ['53']  # Paris
-        self.br.form['configoption[2]'] = ['13']
+        try:
+            self.br.form['configoption[20]'] = ['53']  # Paris
+            self.br.form['configoption[2]'] = ['13']
+        except ControlNotFoundError:
+            self.br.form['configoption[19]'] = ['51']  # Paris
+            self.br.form['configoption[16]'] = ['41']  # Ubuntu 14.04
         self.br.submit()
 
     def start(self):
