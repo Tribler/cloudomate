@@ -39,7 +39,7 @@ def get_rate(currency='USD'):
     b = BtcConverter()
     factor = b.get_latest_price(currency)
     if factor is None:
-        factor = fallback_get_rate(currency)
+        factor = 1.0 / fallback_get_rate(currency)
     return 1.0 / factor
 
 
