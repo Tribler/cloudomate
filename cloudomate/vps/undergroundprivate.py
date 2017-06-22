@@ -1,5 +1,3 @@
-import itertools
-
 import sys
 from bs4 import BeautifulSoup
 
@@ -71,7 +69,6 @@ class UndergroundPrivate(SolusvmHoster):
         address = info[1]['value']
         return amount, address
 
-
     def server_form(self, user_settings):
         """
         Fills in the form containing server configuration
@@ -90,7 +87,8 @@ class UndergroundPrivate(SolusvmHoster):
         # options = itertools.chain(options, self.parse_f_options(france_page))
         return options
 
-    def parse_france_options(self, info):
+    @staticmethod
+    def parse_france_options(info):
         return VpsOption(
             name=info[0].text.strip(),
             price=float(info[1].find('span').text.split('$')[1]),
@@ -119,7 +117,8 @@ class UndergroundPrivate(SolusvmHoster):
             if info[1].find('span').text.split('$')[1] != '-':
                 yield self.parse_russia_options(info)
 
-    def parse_russia_options(self, info):
+    @staticmethod
+    def parse_russia_options(info):
         return VpsOption(
             name=info[0].text.strip(),
             price=float(info[1].find('span').text.split('$')[1]),
