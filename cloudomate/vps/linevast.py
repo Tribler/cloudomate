@@ -5,6 +5,7 @@ import urllib
 from collections import OrderedDict
 
 from bs4 import BeautifulSoup
+from mechanize import ControlNotFoundError
 
 from cloudomate.gateway import bitpay
 from cloudomate.vps.clientarea import ClientArea
@@ -56,7 +57,10 @@ class LineVast(SolusvmHoster):
         """
         self.select_form_id(self.br, 'frmConfigureProduct')
         self.fill_in_server_form(self.br.form, user_settings, rootpw=False, hostname=False, nameservers=False)
-        self.br.form['configoption[61]'] = ['657']  # Paris
+        try:
+            self.br.form['configoption[61]'] = ['657']  # Ubuntu 16.04
+        except ControlNotFoundError:
+            self.br.form['configoption[125]'] = ['549']  # Ubuntu 16.04
         self.br.submit()
 
     def start(self):
