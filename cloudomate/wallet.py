@@ -97,7 +97,7 @@ class Wallet:
 
     def __init__(self, wallet_command=None):
         if wallet_command is None:
-            wallet_command = ['electrum']
+            wallet_command = ['/usr/bin/env', 'electrum']
         self.command = wallet_command
         self.wallet_handler = ElectrumWalletHandler(wallet_command)
 
@@ -166,7 +166,7 @@ class ElectrumWalletHandler(object):
         :param wallet_command: command to call wallet
         """
         if wallet_command is None:
-            wallet_command = ['electrum']
+            wallet_command = ['/usr/bin/env' 'electrum']
         self.command = wallet_command
         subprocess.call(self.command + ['daemon', 'start'])
         subprocess.call(self.command + ['daemon', 'load_wallet'])
