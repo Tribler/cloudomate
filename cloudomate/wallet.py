@@ -168,14 +168,10 @@ class ElectrumWalletHandler(object):
         if wallet_command is None:
             wallet_command = ['electrum']
         self.command = wallet_command
-
-    def __enter__(self):
-        # things that can go wrong, unable to start daemon status?
-        # other things
         subprocess.call(self.command + ['daemon', 'start'])
         subprocess.call(self.command + ['daemon', 'load_wallet'])
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __del__(self):
         subprocess.call(self.command + ['daemon', 'stop'])
 
     def create_transaction(self, amount, address, fee):
