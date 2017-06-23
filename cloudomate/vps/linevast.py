@@ -72,8 +72,8 @@ class LineVast(SolusvmHoster):
         openvz_hosting_page = self.br.open("https://linevast.de/angebote/linux-openvz-vserver-mieten.html")
         options = self.parse_openvz_hosting(openvz_hosting_page.get_data())
 
-        kvm_hosting_page = self.br.open("https://linevast.de/angebote/kvm-vserver-mieten.html")
-        options = itertools.chain(options, self.parse_kvm_hosting(kvm_hosting_page.get_data()))
+        # kvm_hosting_page = self.br.open("https://linevast.de/angebote/kvm-vserver-mieten.html")
+        # options = itertools.chain(options, self.parse_kvm_hosting(kvm_hosting_page.get_data()))
         return options
 
     def parse_openvz_hosting(self, page):
