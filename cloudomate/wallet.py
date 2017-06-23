@@ -147,16 +147,16 @@ class Wallet:
         tx_fee = 0 if fee is None else fee
         if self.get_balance() < amount + tx_fee:
             print('Not enough funds')
-        with self.wallet_handler:
-            transaction_hex = self.wallet_handler.create_transaction(amount, address, fee)
-            success, transaction_hash = self.wallet_handler.broadcast(transaction_hex)
-            if not success:
-                print('Transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash))
-            else:
-                print('Transaction successful')
-            print(transaction_hex)
-            print(success)
-            print(transaction_hash)
+            return
+        transaction_hex = self.wallet_handler.create_transaction(amount, address, fee)
+        success, transaction_hash = self.wallet_handler.broadcast(transaction_hex)
+        if not success:
+            print('Transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash))
+        else:
+            print('Transaction successful')
+        print(transaction_hex)
+        print(success)
+        print(transaction_hash)
 
 
 class ElectrumWalletHandler(object):
@@ -175,14 +175,10 @@ class ElectrumWalletHandler(object):
             else:
                 wallet_command = ['/usr/bin/env', 'electrum']
         self.command = wallet_command
-
-    def __enter__(self):
-        # things that can go wrong, unable to start daemon status?
-        # other things
         subprocess.call(self.command + ['daemon', 'start'])
         subprocess.call(self.command + ['daemon', 'load_wallet'])
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __del__(self):
         subprocess.call(self.command + ['daemon', 'stop'])
 
     def create_transaction(self, amount, address, fee):
