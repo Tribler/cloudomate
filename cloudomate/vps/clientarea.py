@@ -236,7 +236,7 @@ class ClientArea(object):
     def _extract_service_info(html):
         soup = BeautifulSoup(html, 'lxml')
         domain = soup.find('div', {'id': 'domain'})
-        cols = domain.findAll('div', {'class': 'row'})
+        cols = domain.findAll('div', {'class': 'row'}, recursive=False)
         info = []
         for col in cols:
             data = col.find('div', {'class': 'text-left'})
