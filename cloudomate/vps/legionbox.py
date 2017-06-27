@@ -59,24 +59,23 @@ class LegionBox(SolusvmHoster):
         )
 
     def get_status(self, user_settings):
-        clientarea = LegionBoxClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        clientarea = LegionBoxClientArea(self.br, self.clientarea_url, user_settings)
-        clientarea.set_rootpw_rootpassword_php()
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea.set_rootpw_client_data()
 
     def get_ip(self, user_settings):
-        clientarea = LegionBoxClientArea(self.br, self.clientarea_url, user_settings)
-        return clientarea.get_service_info()[2]
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        return clientarea.get_service_info()[1]
 
     def info(self, user_settings):
-        clientarea = LegionBoxClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
         data = clientarea.get_service_info()
         return OrderedDict([
-            ('Name', data[1]),
-            ('Date due', data[0]),
-            ('IP address', data[2]),
+            ('Hostname', data[0]),
+            ('IP', data[1]),
         ])
 
     def register(self, user_settings, vps_option):
@@ -110,39 +109,3 @@ class LegionBox(SolusvmHoster):
         self.br.form['configoption[11]'] = ['49']  # Ubuntu 14.10
         self.br.form.action = 'https://legionbox.com/billing/cart.php'
         self.br.submit()
-
-
-class LegionBoxClientArea(ClientArea):
-    """
-    Custom ClientArea methods are used because LegionBox uses a presumably older version of SolusVM than other
-    providers.
-    """
-
-    def _extract_services(self, html):
-        soup = BeautifulSoup(html, 'lxml')
-        rows = soup.find('table', {'class': 'table'}).tbody.findAll('tr')
-        self.services = []
-        for row in rows:
-            tds = row.findAll('td', recursive=False)
-            status = tds[4].span['class'][-1]
-
-            self.services.append({
-                'id': tds[5].div.a['href'].split('id=')[1],
-                'product': tds[0].strong.text.split(' - ')[1],
-                'price': tds[1].text,
-                'term': tds[2].text,
-                'next_due_date': tds[3].text,
-                'status': status,
-                'url': self.clientarea_url + tds[5].div.a['href'].split('.php')[1],
-            })
-        return self.services
-
-    @staticmethod
-    def _extract_service_info(html):
-        soup = BeautifulSoup(html, 'lxml')
-        domain = soup.find('div', {'id': 'tab1'}).find('div', {'class': 'col70'}).div
-        info = []
-        for content in domain.findAll('h4', recursive=False):
-            if content.nextSibling:
-                info.append(content.nextSibling.strip())
-        return info
