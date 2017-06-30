@@ -80,8 +80,9 @@ class Hoster(object):
         print('Paying %s BTC to %s' % (amount, address))
         fee = wallet_util.get_network_fee()
         print('Calculated fee: %s' % fee)
-        wallet.pay(address, amount, fee)
+        transaction_hash = wallet.pay(address, amount, fee)
         print('Done purchasing')
+        return transaction_hash
 
     def register(self, user_settings, vps_option):
         raise NotImplementedError('Abstract method implementation')

@@ -157,6 +157,7 @@ class Wallet:
         print(transaction_hex)
         print(success)
         print(transaction_hash)
+        return transaction_hash
 
 
 class ElectrumWalletHandler(object):
