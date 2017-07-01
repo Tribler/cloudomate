@@ -176,11 +176,14 @@ class ElectrumWalletHandler(object):
             else:
                 wallet_command = ['/usr/bin/env', 'electrum']
         self.command = wallet_command
-        subprocess.call(self.command + ['daemon', 'start'])
+        self.not_running_before = 'not running' in subprocess.check_output(self.command + ['daemon', 'status'])
+        if self.not_running_before:
+            subprocess.call(self.command + ['daemon', 'start'])
         subprocess.call(self.command + ['daemon', 'load_wallet'])
 
     def __del__(self):
-        subprocess.call(self.command + ['daemon', 'stop'])
+        if self.not_running_before:
+            subprocess.call(self.command + ['daemon', 'stop'])
 
     def create_transaction(self, amount, address, fee):
         """
