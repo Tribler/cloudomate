@@ -176,7 +176,8 @@ class ElectrumWalletHandler(object):
             else:
                 wallet_command = ['/usr/bin/env', 'electrum']
         self.command = wallet_command
-        self.not_running_before = 'not running' in subprocess.check_output(self.command + ['daemon', 'status'])
+        p, e = subprocess.Popen(self.command + ['daemon', 'status'], stdout=subprocess.PIPE).communicate()
+        self.not_running_before = 'not running' in p
         if self.not_running_before:
             subprocess.call(self.command + ['daemon', 'start'])
         subprocess.call(self.command + ['daemon', 'load_wallet'])
