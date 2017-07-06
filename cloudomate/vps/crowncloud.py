@@ -64,6 +64,8 @@ class CrownCloud(SolusvmHoster):
             self.br.form['configoption[8]'] = ['52']
             self.br.form['configoption[9]'] = '0'
         except FormNotFoundError:
+            self.select_form_id(self.br, 'frmConfigureProduct')
+            self.fill_in_server_form(self.br.form, user_settings, nameservers=False, rootpw=False, hostname=False)
             print("Using classic form")
             pass
         self.br.submit()
