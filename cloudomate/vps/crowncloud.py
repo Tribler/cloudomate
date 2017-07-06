@@ -9,6 +9,7 @@ from cloudomate.vps.clientarea import ClientArea
 from cloudomate.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
+from mechanize._mechanize import FormNotFoundError
 
 
 class CrownCloud(SolusvmHoster):
@@ -56,11 +57,15 @@ class CrownCloud(SolusvmHoster):
         Fills in the form containing server configuration.
         :return: 
         """
-        self.select_form_id(self.br, 'orderfrm')
-        self.fill_in_server_form(self.br.form, user_settings, nameservers=False, rootpw=False, hostname=False)
-        self.br.form['configoption[1]'] = ['56']
-        self.br.form['configoption[8]'] = ['52']
-        self.br.form['configoption[9]'] = '0'
+        try:
+            self.select_form_id(self.br, 'orderfrm')
+            self.fill_in_server_form(self.br.form, user_settings, nameservers=False, rootpw=False, hostname=False)
+            self.br.form['configoption[1]'] = ['56']
+            self.br.form['configoption[8]'] = ['52']
+            self.br.form['configoption[9]'] = '0'
+        except FormNotFoundError:
+            print("Using classic form")
+            pass
         self.br.submit()
 
     def start(self):
