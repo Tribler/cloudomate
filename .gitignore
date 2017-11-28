@@ -1,5 +1,6 @@
 # general things to ignore
 build/
+env/
 dist/
 *.egg-info/
 *.egg
@@ -9,3 +10,4 @@ __pycache__/
 *~
 .idea/*
 .pypirc
+*.sublime-project

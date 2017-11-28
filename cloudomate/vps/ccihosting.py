@@ -1,7 +1,4 @@
-import sys
 from collections import OrderedDict
-
-from bs4 import BeautifulSoup
 
 from cloudomate.gateway import coinbase
 from cloudomate.vps.clientarea import ClientArea
@@ -41,50 +38,61 @@ class CCIHosting(SolusvmHoster):
         :return: 
         """
         self.br.open(vps_option.purchase_url)
-        self.server_form(user_settings)
+        self.server_form(user_settings)  # Add item to cart
         self.br.open('https://www.ccihosting.com/accounts/cart.php?a=confdomains')
-        self.br.follow_link(text_regex="Checkout")
-        self.br.select_form(nr=2)
+
+        summary = self.br.get_current_page().find('div', class_='summary-container')
+        self.br.follow_link(summary.find('a', class_='btn-checkout'))
+
+        self.br.select_form(selector='form[name=orderfrm]')
         self.user_form(self.br, user_settings, self.gateway.name)
-        self.br.select_form(nr=0)
-        coinbase_url = self.br.form.attrs.get('action')
+
+        coinbase_url = self.br.get_current_page().find('form')['action']
         return self.gateway.extract_info(coinbase_url)
 
     def server_form(self, user_settings):
         """
-        Fills in the form containing server configuration
+        Using a form does for some reason not work, so use post request
         :param user_settings: settings
         :return: 
         """
-        self.select_form_id(self.br, 'frmConfigureProduct')
-        self.fill_in_server_form(self.br.form, user_settings)
-        self.br.form['configoption[214]'] = ['1193']  # Ubuntu
-        self.br.submit()
+        self.br.post('https://www.ccihosting.com/accounts/cart.php', {
+            'ajax': '1',
+            'a': 'confproduct',
+            'configure': 'true',
+            'i': '0',
+            'billingcycle': 'monthly',
+            'hostname': user_settings.get('hostname'),
+            'rootpw': user_settings.get('rootpw'),
+            'ns1prefix': user_settings.get('ns1'),
+            'ns2prefix': user_settings.get('ns2'),
+            'configoption[214]': '1193',  # Ubuntu 16.04
+            'configoption[258]': '955',
+        })
 
     def start(self):
-        cci_page = self.br.open('http://www.ccihosting.com/vps.php')
-        return self.parse_options(cci_page)
+        self.br.open('https://www.ccihosting.com/offshore-vps.html')
+        return self.parse_options(self.br.get_current_page())
 
     def parse_options(self, page):
-        soup = BeautifulSoup(page, 'lxml')
-        tables = soup.findAll('div', {'class': 'box5'})
+        tables = page.findAll('div', class_='p_table')
         for column in tables:
             yield self.parse_cci_options(column)
 
     @staticmethod
     def parse_cci_options(column):
-        price = column.find('div', {'class': 'PriceTag'}).find('span').text.split('U')[0]
-        planinfo = column.find('ul')
-        info = planinfo.findAll('li')
+        header = column.find('div', class_='phead')
+        price = column.find('span', class_='starting-price')
+        info = column.find('ul').findAll('li')
         return VpsOption(
-            name=column.find('div', {'class': 'boxtitle'}).text.split('S')[1].strip(),
-            price=float(price.split('$')[1]),
-            currency=determine_currency(price),
-            cpu=int(info[1].text.split("CPU")[0]),
-            ram=float(info[2].text.split("G")[0]),
-            storage=float(info[3].text.split("G")[0]),
-            bandwidth=float(info[4].text.split("T")[0]),
-            connection=int(info[5].text.split("G")[0]) * 1000,
+            name=header.find('h2').contents[0],
+            price=float(price.contents[0]),
+            currency=determine_currency(price.previous_sibling.strip()),
+            cpu=int(info[1].find('strong').contents[0]),
+            ram=float(info[2].find('strong').contents[0]),
+            storage=float(info[3].find('strong').contents[0]),
+            bandwidth=info[4].find('strong').contents[0].lower(),
+            connection=10,
             purchase_url=column.find('a')['href']
         )
 

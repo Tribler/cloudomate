@@ -1,11 +1,13 @@
-import itertools
 import json
 import sys
-import urllib
-from collections import OrderedDict
+import itertools
+import urllib.error
+import urllib.parse
+import urllib.request
 
-from bs4 import BeautifulSoup
-from mechanize import ControlNotFoundError
+from mechanicalsoup.utils import LinkNotFoundError
+
+from collections import OrderedDict
 
 from cloudomate.gateway import bitpay
 from cloudomate.vps.clientarea import ClientArea
@@ -35,7 +37,7 @@ class LineVast(SolusvmHoster):
 
     def register(self, user_settings, vps_option):
         """
-        Register RockHoster provider, pay through CoinBase
+        Register Linevast provider, pay through CoinBase
         :param user_settings: 
         :param vps_option: 
         :return: 
@@ -43,46 +45,53 @@ class LineVast(SolusvmHoster):
         self.br.open(vps_option.purchase_url)
         self.server_form(user_settings)
         self.br.open('https://panel.linevast.de/cart.php?a=view')
-        self.br.follow_link(text_regex=r'Checkout')
-        self.br.select_form(name='orderfrm')
+
+        summary = self.br.get_current_page().find('div', class_='summary-container')
+        self.br.follow_link(summary.find('a', class_='btn-checkout'))
+
+        form = self.br.select_form(selector='form#frmCheckout')
+        form['acceptdomainwiderruf1'] = True
+        form['acceptdomainwiderruf2'] = True
         self.user_form(self.br, user_settings, self.gateway.name)
-        self.br.select_form(nr=0)
-        page = self.br.submit()
-        return self.gateway.extract_info(page.geturl())
+
+        self.br.select_form(nr=0)  # Go to payment form
+        self.br.submit_selected()
+
+        return self.gateway.extract_info(self.br.get_url())
 
     def server_form(self, user_settings):
         """
         Fills in the form containing server configuration.
         :return: 
         """
-        self.select_form_id(self.br, 'frmConfigureProduct')
-        self.fill_in_server_form(self.br.form, user_settings, rootpw=False, hostname=False, nameservers=False)
+        form = self.br.select_form('form#frmConfigureProduct')
+        self.fill_in_server_form(form, user_settings, rootpw=False, hostname=False, nameservers=False)
         try:
-            self.br.form['configoption[61]'] = ['657']  # Ubuntu 16.04
-        except ControlNotFoundError:
-            self.br.form['configoption[125]'] = ['549']  # Ubuntu 16.04
-        self.br.submit()
+            form['configoption[61]'] = '657'  # Ubuntu 16.04
+        except LinkNotFoundError:
+            form['configoption[125]'] = '549'  # Ubuntu 16.04
+        self.br.submit_selected()
 
     def start(self):
         """
         Linux (OpenVZ) and Windows (KVM) pages are slightly different, therefore their pages are parsed by different 
-        methoods. Windows configurations allow a selection of Linux distributions, but not vice-versa.
+        methods. Windows configurations allow a selection of Linux distributions, but not vice-versa.
         :return: possible configurations.
         """
-        openvz_hosting_page = self.br.open("https://linevast.de/angebote/linux-openvz-vserver-mieten.html")
-        options = self.parse_openvz_hosting(openvz_hosting_page.get_data())
+        self.br.open("https://linevast.de/en/offers/ddos-protected-vps-hosting.html")
+        options = self.parse_openvz_hosting(self.br.get_current_page())
 
-        # kvm_hosting_page = self.br.open("https://linevast.de/angebote/kvm-vserver-mieten.html")
-        # options = itertools.chain(options, self.parse_kvm_hosting(kvm_hosting_page.get_data()))
+        self.br.open("https://linevast.de/en/offers/windows-vps-hosting.html")
+        options = itertools.chain(options, self.parse_kvm_hosting(self.br.get_current_page()))
+
         return options
 
     def parse_openvz_hosting(self, page):
-        soup = BeautifulSoup(page, "lxml")
-        table = soup.find('table', {'class': 'plans-block'})
+        table = page.find('table', {'class': 'plans-block'})
         details = table.tbody.tr
         names = table.findAll('div', {'class': 'plans-title'})
         i = 0
-        for plan in details.findAll('div', {'class': 'plans-content'})[1:]:
+        for plan in details.findAll('div', {'class': 'plans-content'}):
             name = names[i].text.strip() + ' OVZ'
             option = self.parse_openvz_option(plan, name)
             i = i + 1
@@ -99,18 +108,17 @@ class LineVast(SolusvmHoster):
             bandwidth='unmetered',
             currency='EUR',
             connection=int(elements[4].text.split(' GB')[0]) * 1000,
-            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')),
+            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace('\u20AC', '')),
             purchase_url=plan.a['href'],
         )
         return option
 
     def parse_kvm_hosting(self, page):
-        soup = BeautifulSoup(page, "lxml")
-        table = soup.find('table', {'class': 'plans-block'})
+        table = page.find('table', {'class': 'plans-block'})
         details = table.tbody.tr
         names = table.findAll('div', {'class': 'plans-title'})
         i = 0
-        for plan in details.findAll('div', {'class': 'plans-content'})[1:]:
+        for plan in details.findAll('div', {'class': 'plans-content'}):
             name = names[i].text.strip() + ' KVM'
             option = self.parse_kvm_option(plan, name)
             i = i + 1
@@ -127,7 +135,7 @@ class LineVast(SolusvmHoster):
             currency='EUR',
             bandwidth='unmetered',
             connection=int(elements[4].text.split(' GB')[0]) * 1000,
-            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')),
+            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace('\u20AC', '')),
             purchase_url=plan.a['href'],
         )
         return option
@@ -157,7 +165,7 @@ class LineVast(SolusvmHoster):
             'opt': user_settings.get('rootpw'),
             'vi': vi
         }
-        data = urllib.urlencode(data)
+        data = urllib.parse.urlencode(data)
         page = self.br.open("https://vm.linevast.de/_vm_remote.php", data)
         if not self._check_set_rootpw(page.get_data()):
             print("Setting password failed")

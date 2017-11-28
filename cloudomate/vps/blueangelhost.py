@@ -1,6 +1,4 @@
-import re
-
-from bs4 import BeautifulSoup
+import itertools
 
 from cloudomate.gateway import bitpay
 from cloudomate.vps.clientarea import ClientArea
@@ -36,7 +34,7 @@ class BlueAngelHost(SolusvmHoster):
 
     def register(self, user_settings, vps_option):
         """
-        Register RockHoster provider, pay through CoinBase
+        Register BlueAngelHost provider, pay through CoinBase
         :param user_settings: 
         :param vps_option: 
         :return: 
@@ -44,13 +42,17 @@ class BlueAngelHost(SolusvmHoster):
         self.br.open(vps_option.purchase_url)
         self.server_form(user_settings)
         self.br.open('https://www.billing.blueangelhost.com/cart.php?a=view')
-        self.br.follow_link(text_regex=r'Checkout')
-        self.br.select_form(name='orderfrm')
-        self.br.form['customfield[4]'] = ['Google']
+
+        summary = self.br.get_current_page().find('div', class_='summary-container')
+        self.br.follow_link(summary.find('a', class_='btn-checkout'))
+
+        self.br.select_form(selector='form[name=orderfrm]')
+        self.br.get_current_form()['customfield[4]'] = 'Google'
         self.user_form(self.br, user_settings, self.gateway.name)
+
         self.br.select_form(nr=0)
-        page = self.br.submit()
-        return self.gateway.extract_info(page.geturl())
+        self.br.submit_selected()
+        return self.gateway.extract_info(self.br.get_url())
 
     def server_form(self, user_settings):
         """
@@ -58,46 +60,43 @@ class BlueAngelHost(SolusvmHoster):
         :param user_settings: settings
         :return: 
         """
-        self.select_form_id(self.br, 'frmConfigureProduct')
-        self.fill_in_server_form(self.br.form, user_settings)
-        self.br.form['configoption[72]'] = ['87']  # Ubuntu
-        self.br.form['configoption[73]'] = ['91']  # 64 bit
-        self.br.submit()
+        form = self.br.select_form('form#frmConfigureProduct')
+        self.fill_in_server_form(form, user_settings)
+        form['configoption[72]'] = '87'  # Ubuntu
+        form['configoption[73]'] = '91'  # 64 bit
+        self.br.submit_selected()
 
     def start(self):
-        blue_page = self.br.open('https://www.blueangelhost.com/openvz-vps/')
-        html = blue_page.get_data()
-        cookie = self._extract_cookie(html)
-        if cookie:
-            self.br.set_cookie('PRID=' + self._extract_cookie(html))
-        blue_page = self.br.open('https://www.blueangelhost.com/openvz-vps/')
-        return self.parse_options(blue_page)
+        self.br.open("https://www.blueangelhost.com/openvz-vps/")
+        options = self.parse_options(self.br.get_current_page())
 
-    @staticmethod
-    def _extract_cookie(html):
-        match = re.search('String\.fromCharCode\((\d+)\)\+String\.fromCharCode\((\d+)\)', html)
-        if not match:
-            return None
-        return ''.join(map(unichr, [int(match.group(1)), int(match.group(2))]))
+        self.br.open("https://www.blueangelhost.com/kvm-vps/")
+        options = itertools.chain(options, self.parse_options(self.br.get_current_page(), is_kvm=True))
 
-    def parse_options(self, page):
-        soup = BeautifulSoup(page, 'lxml')
-        month = soup.find('div', {'id': 'monthly_price'})
+        return options
+
+    def parse_options(self, page, is_kvm=False):
+        month = page.find('div', {'id': 'monthly_price'})
         details = month.findAll('div', {'class': 'plan_table'})
         for column in details:
-            yield self.parse_blue_options(column)
+            yield self.parse_blue_options(column, is_kvm=is_kvm)
 
     @staticmethod
-    def parse_blue_options(column):
+    def parse_blue_options(column, is_kvm=False):
+        if is_kvm:
+            split_char = ' '
+        else:
+            split_char = ':'
+
         price = column.find('div', {'class': 'plan_price_m'}).text.strip()
         currency = determine_currency(price)
         price = price.split('$')[1].split('/')[0]
         planinfo = column.find('ul', {'class': 'plan_info_list'})
         info = planinfo.findAll('li')
-        cpu = info[0].text.split(":")[1].strip()
-        ram = info[1].text.split(":")[1].strip()
-        storage = info[2].text.split(":")[1].strip()
-        connection = info[3].text.split(":")[1].strip()
+        cpu = info[0].text.split(split_char)[1].strip()
+        ram = info[1].text.split(split_char)[1].strip()
+        storage = info[2].text.split(split_char)[1].strip()
+        connection = info[3].text.split(split_char)[1].strip()
         bandwidth = info[4].text.split("h")[1].strip()
 
         return VpsOption(

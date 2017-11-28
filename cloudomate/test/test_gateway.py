@@ -1,7 +1,9 @@
 import json
 import os
 import unittest
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from mock import patch
 

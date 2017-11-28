@@ -29,9 +29,9 @@ def _long_to_bytes(n, length, byteorder):
     http://bugs.python.org/issue16580#msg177208
     """
     if byteorder == 'little':
-        indexes = range(length)
+        indexes = list(range(length))
     else:
-        indexes = reversed(range(length))
+        indexes = reversed(list(range(length)))
     return bytearray((n >> i * 8) & 0xff for i in indexes)
 
 
@@ -46,7 +46,7 @@ def decode_base58(bitcoin_address, length):
         try:
             n = n * 58 + digits58.index(char)
         except:
-            msg = u"Character not part of Bitcoin's base58: '%s'"
+            msg = "Character not part of Bitcoin's base58: '%s'"
             raise ValueError(msg % (char,))
     try:
         return n.to_bytes(length, 'big')

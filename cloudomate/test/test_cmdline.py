@@ -67,7 +67,7 @@ class TestCmdLine(unittest.TestCase):
     def _check_exit_code(self, exit_code, method, args):
         try:
             method(args)
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(e.code, exit_code)
 
     def test_execute_options_no_provider(self):

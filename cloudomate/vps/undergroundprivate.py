@@ -1,4 +1,5 @@
 import sys
+
 from bs4 import BeautifulSoup
 
 from cloudomate.gateway import coinbase
@@ -49,20 +50,28 @@ class UndergroundPrivate(SolusvmHoster):
 
     def register(self, user_settings, vps_option):
         page = self.br.open(vps_option.purchase_url)
-        if 'add' in page.geturl():
-            print 'Out of Stock'
+        if 'add' in page.url:
+            print('Out of Stock')
             sys.exit(2)
         self.server_form(user_settings)
+
         self.br.open('https://www.clientlogin.sx/cart.php?a=view')
-        self.br.form = list(self.br.forms())[2]
-        promobutton = self.br.form.find_control(name="validatepromo")
-        promobutton.disabled = True
+        self.select_form_id(self.br, 'frmCheckout')
+        form = self.br.get_current_form()
+
+        soup = self.br.get_current_page()
+        submit = soup.select('button#btnCompleteOrder')[0]
+        form.choose_submit(submit)
+
+        #promobutton = form.find_control(name="validatepromo")
+        #promobutton.disabled = True
         self.user_form(self.br, user_settings, 'blockchainv2', errorbox_class='errorbox', acceptos=False)
-        html = self.br.response()
-        btcsoup = BeautifulSoup(html, 'lxml')
+        #html = self.br.response()
+        #btcsoup = BeautifulSoup(html, 'lxml')
+        btcsoup = self.br.get_current_page()
         url = btcsoup.find('iframe')['src']
         page = self.br.open(url)
-        soup = BeautifulSoup(page.get_data(), 'lxml')
+        soup = BeautifulSoup(page.text, 'lxml')
         info = soup.findAll('input')
         amount = info[0]['value']
         address = info[1]['value']
@@ -74,10 +83,17 @@ class UndergroundPrivate(SolusvmHoster):
         :param user_settings: settings
         :return: 
         """
-        self.br.form = list(self.br.forms())[1]
-        self.fill_in_server_form(self.br.form, user_settings)
-        self.br.form['configoption[7]'] = ['866']  # Ubuntu
-        self.br.submit()
+        self.select_form_id(self.br, 'orderfrm')
+        form = self.br.get_current_form()
+        self.fill_in_server_form(form, user_settings)
+        form['configoption[7]'] = '866'  # Ubuntu
+
+        form.form['action'] = 'https://www.clientlogin.sx/cart.php'
+        form.form['method'] = 'get'
+        form.new_control('hidden', 'a', 'confproduct')
+        form.new_control('hidden', 'ajax', '1')
+        
+        self.br.submit_selected()
 
     def start(self):
         russia_page = self.br.open('https://undergroundprivate.com/russiaoffshorevps.html')
@@ -101,7 +117,7 @@ class UndergroundPrivate(SolusvmHoster):
         )
 
     def parse_f_options(self, page):
-        soup = BeautifulSoup(page, 'lxml')
+        soup = BeautifulSoup(page.text, 'lxml')
         tables = soup.findAll('div', {'class': 'small-12 large-4 medium-4 columns '})
         for table in tables[:5]:
             info = table.findAll('li')
@@ -109,7 +125,7 @@ class UndergroundPrivate(SolusvmHoster):
                 yield self.parse_france_options(info)
 
     def parse_r_options(self, page):
-        soup = BeautifulSoup(page, 'lxml')
+        soup = BeautifulSoup(page.text, 'lxml')
         tables = soup.findAll('div', {'class': 'small-12 large-4 medium-4 columns '})
         for table in tables[:5]:
             info = table.findAll('li')

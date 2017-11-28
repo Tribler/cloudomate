@@ -32,8 +32,8 @@ setup(
 
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
 
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
 
         'Operating System :: POSIX :: Linux',
         'Operating System :: MacOS',
@@ -43,7 +43,7 @@ setup(
 
     packages=find_packages(exclude=['docs', 'test']),
 
-    install_requires=['appdirs', 'mechanize', 'bs4', 'mock', 'forex_python', 'parameterized'],
+    install_requires=['appdirs', 'lxml', 'MechanicalSoup', 'bs4', 'mock', 'forex-python', 'parameterized'],
 
     extras_require={
         'dev': [],

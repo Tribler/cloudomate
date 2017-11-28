@@ -3,7 +3,9 @@ import json
 import re
 import sys
 import time
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 from collections import OrderedDict
 
 from bs4 import BeautifulSoup
@@ -29,13 +31,11 @@ class ClientArea(object):
         :return: The clientarea homepage on succesful login.
         """
         self.browser.open(self.clientarea_url)
-        for form in list(self.browser.forms()):
-            if 'dologin' in form.action:
-                self.browser.form = form
-        self.browser.form['username'] = email
-        self.browser.form['password'] = password
-        page = self.browser.submit()
-        if "incorrect=true" in page.geturl():
+        self.browser.select_form('.logincontainer form')
+        self.browser['username'] = email
+        self.browser['password'] = password
+        page = self.browser.submit_selected()
+        if "incorrect=true" in page.url:
             print("Login failure")
             sys.exit(2)
         self.home_page = page
@@ -55,27 +55,27 @@ class ClientArea(object):
         """
         self._services()
         row_format = "{:5}" + "{:15}" * 5
-        print(row_format.format('#', 'Product', 'Price', 'Term', 'Next due date', 'Status', 'Id'))
+        print((row_format.format('#', 'Product', 'Price', 'Term', 'Next due date', 'Status', 'Id')))
 
         i = 0
         for service in self.services:
-            print(row_format.format(
+            print((row_format.format(
                 str(i),
                 service['product'],
-                service['price'].replace(u'€', ''),
+                service['price'].replace('€', ''),
                 service['term'],
                 service['next_due_date'],
                 service['status'],
                 service['id'],
-            ))
+            )))
             i = i + 1
         return self.services
 
     def _services(self):
         if self.services is not None:
             return
-        services_page = self.browser.open(self.clientarea_url + "?action=services")
-        return self._extract_services(services_page.get_data())
+        response = self.browser.open(self.clientarea_url + "?action=services")
+        return self._extract_services(response.content)
 
     def _extract_services(self, html):
         soup = BeautifulSoup(html, 'lxml')
@@ -102,7 +102,7 @@ class ClientArea(object):
 
     def _get_vserverid(self, url):
         page = self.browser.open(url)
-        match = re.search(r'vserverid = (\d+)', page.get_data())
+        match = re.search(r'vserverid = (\d+)', page.text)
         return match.group(1)
 
     def get_client_data_ip(self, client_data_url):
@@ -146,7 +146,7 @@ class ClientArea(object):
     def _verify_number(self, number):
         self._services()
         if not 0 <= number < len(self.services):
-            print("Wrong index: %s not between 0 and %s" % (number, len(self.services) - 1))
+            print(("Wrong index: %s not between 0 and %s" % (number, len(self.services) - 1)))
             sys.exit(2)
 
     def set_rootpw_client_data(self):
@@ -164,12 +164,12 @@ class ClientArea(object):
                                     '&newrootpassword=%s&ajax=1&ac=Custom_ChangeRootPassword&_=%s' \
                                     % (service['id'], vserverid, password, millis)
         response = self.browser.open(url)
-        response_json = json.loads(response.get_data())
+        response_json = json.loads(response.text)
         if response_json['success'] is True:
             print("Password changed successfully")
             return True
         else:
-            print(response_json['msg'])
+            print((response_json['msg']))
             return False
 
     def set_rootpw_rootpassword_php(self):
@@ -184,7 +184,7 @@ class ClientArea(object):
             'newrootpassword': password,
             'rootpassword': 'Change'
         }
-        data = urllib.urlencode(data)
+        data = urllib.parse.urlencode(data)
         url = self.clientarea_url.replace('clientarea', 'rootpassword') + '?id=' + service['id']
         page = self.browser.open(url, data)
         if 'Password Updated' in page.get_data():
@@ -195,7 +195,7 @@ class ClientArea(object):
     @staticmethod
     def _ensure_active(service):
         if service['status'] != 'active':
-            print("Service is %s" % service['status'])
+            print(("Service is %s" % service['status']))
             sys.exit(2)
 
     def get_service_info(self):
@@ -207,7 +207,7 @@ class ClientArea(object):
         service = self.get_specified_or_active_service()
         self._ensure_active(service)
         page = self.browser.open(service['url'])
-        return self._extract_service_info(page.get_data())
+        return self._extract_service_info(page.text)
 
     def get_ip(self):
         """

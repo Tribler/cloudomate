@@ -1,7 +1,7 @@
 import itertools
 
 from bs4 import BeautifulSoup
-from mechanize._form_controls import ControlNotFoundError
+from mechanicalsoup import LinkNotFoundError
 
 from cloudomate.gateway import coinbase
 from cloudomate.vps.clientarea import ClientArea
@@ -59,7 +59,7 @@ class RockHoster(SolusvmHoster):
         try:
             self.br.form['configoption[20]'] = ['53']  # Paris
             self.br.form['configoption[2]'] = ['13']
-        except ControlNotFoundError:
+        except LinkNotFoundError:
             self.br.form['configoption[19]'] = ['51']  # Paris
             self.br.form['configoption[16]'] = ['41']  # Ubuntu 14.04
         self.br.submit()

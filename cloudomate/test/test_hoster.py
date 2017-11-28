@@ -1,6 +1,5 @@
 import unittest
 
-from cloudomate.vps.legionbox import LegionBox
 from mock.mock import MagicMock
 from parameterized import parameterized
 
@@ -9,6 +8,7 @@ from cloudomate import wallet
 from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
 from cloudomate.vps.crowncloud import CrownCloud
+from cloudomate.vps.legionbox import LegionBox
 from cloudomate.vps.linevast import LineVast
 from cloudomate.vps.pulseservers import Pulseservers
 from cloudomate.vps.rockhoster import RockHoster

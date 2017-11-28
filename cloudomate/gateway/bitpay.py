@@ -1,5 +1,7 @@
 import json
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 
 name = 'bitpay'
 
@@ -12,8 +14,8 @@ def extract_info(url):
     """
     bitpay_id = url.split("=")[1]
     url = "https://bitpay.com/invoiceData/" + bitpay_id + "?poll=false"
-    response = urllib.urlopen(url)
-    data = json.loads(response.read())
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read().decode('utf-8'))
     amount = float(data['invoice']['buyerTotalBtcAmount'])
     address = data['invoice']['bitcoinAddress']
     return amount, address
