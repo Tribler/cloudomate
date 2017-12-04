@@ -3,6 +3,7 @@ import sys
 from argparse import ArgumentParser
 
 from cloudomate.util.config import UserOptions
+from cloudomate.util.fakeuserscraper import UserScraper
 from cloudomate.vps.blueangelhost import BlueAngelHost
 from cloudomate.vps.ccihosting import CCIHosting
 from cloudomate.vps.crowncloud import CrownCloud
@@ -77,6 +78,7 @@ def add_parser_purchase(subparsers):
     parser_purchase.add_argument("-ns1", "--ns1", help="ns1")
     parser_purchase.add_argument("-ns2", "--ns2", help="ns2")
     parser_purchase.add_argument("--hostname", help="hostname")
+    parser_purchase.add_argument("--randomuser", action="store_true", help="Use random user info")
 
 
 def add_parser_status(subparsers):
@@ -163,6 +165,10 @@ def purchase(args):
         sys.exit(2)
     provider = _get_provider(args)
     user_settings = _get_user_settings(args, provider.name)
+
+    if args.randomuser:
+        _merge_random_user_data(user_settings)
+
     if not _check_provider(provider, user_settings):
         print("Missing option")
         sys.exit(2)
@@ -172,6 +178,11 @@ def purchase(args):
 def _check_provider(provider, config):
     return config.verify_options(provider.required_settings)
 
+def _merge_random_user_data(user_settings):
+    usergenerator = UserScraper()
+    randomuser = usergenerator.get_user()
+    for key in randomuser.keys():
+        user_settings.config[key] = randomuser[key]
 
 def _get_user_settings(args, provider=None):
     user_settings = UserOptions()
