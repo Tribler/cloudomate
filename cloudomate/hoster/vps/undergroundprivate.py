@@ -1,11 +1,10 @@
 import sys
 
 from bs4 import BeautifulSoup
-
 from cloudomate.gateway import coinbase
-from cloudomate.vps.clientarea import ClientArea
-from cloudomate.vps.solusvm_hoster import SolusvmHoster
-from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
+from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
 
 

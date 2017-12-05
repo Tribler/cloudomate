@@ -1,18 +1,16 @@
+import itertools
 import json
 import sys
-import itertools
 import urllib.error
 import urllib.parse
 import urllib.request
-
-from mechanicalsoup.utils import LinkNotFoundError
-
 from collections import OrderedDict
 
 from cloudomate.gateway import bitpay
-from cloudomate.vps.clientarea import ClientArea
-from cloudomate.vps.solusvm_hoster import SolusvmHoster
-from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
+from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.vpsoption import VpsOption
+from mechanicalsoup.utils import LinkNotFoundError
 
 
 class LineVast(SolusvmHoster):

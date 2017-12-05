@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
 from cloudomate.gateway import coinbase
-from cloudomate.vps.clientarea import ClientArea
-from cloudomate.vps.solusvm_hoster import SolusvmHoster
-from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
+from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
 
 
@@ -38,7 +38,7 @@ class Pulseservers(SolusvmHoster):
         Open browser to hoster website and return parsed options
         :return: parsed options
         """
-        self.br.open('https://pulseservers.com/vps-linux.html')  # Website is not fully secure (causing a crash), so ssl is not used
+        self.br.open('https://pulseservers.com/vps-linux.html')
         return self.parse_options(self.br.get_current_page())
 
     def parse_options(self, site):

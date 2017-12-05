@@ -1,7 +1,6 @@
 import unittest
 
-
-from cloudomate.vps.linevast import LineVast
+from cloudomate.hoster.vps.linevast import LineVast
 
 
 class TestLinevast(unittest.TestCase):

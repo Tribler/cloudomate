@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from cloudomate.vps.crowncloud import CrownCloud
+from cloudomate.hoster.vps.crowncloud import CrownCloud
 
 
 class TestCrownCloud(unittest.TestCase):
