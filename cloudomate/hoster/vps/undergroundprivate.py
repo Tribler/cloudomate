@@ -1,9 +1,9 @@
-import sys
-
 from bs4 import BeautifulSoup
+
+from cloudomate.exceptions.vps_out_of_stock import VPSOutOfStockException
 from cloudomate.gateway import coinbase
-from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
 
@@ -51,7 +51,7 @@ class UndergroundPrivate(SolusvmHoster):
         page = self.br.open(vps_option.purchase_url)
         if 'add' in page.url:
             print('Out of Stock')
-            sys.exit(2)
+            raise VPSOutOfStockException(vps_option)
         self.server_form(user_settings)
 
         self.br.open('https://www.clientlogin.sx/cart.php?a=view')
@@ -62,11 +62,7 @@ class UndergroundPrivate(SolusvmHoster):
         submit = soup.select('button#btnCompleteOrder')[0]
         form.choose_submit(submit)
 
-        #promobutton = form.find_control(name="validatepromo")
-        #promobutton.disabled = True
         self.user_form(self.br, user_settings, 'blockchainv2', errorbox_class='errorbox', acceptos=False)
-        #html = self.br.response()
-        #btcsoup = BeautifulSoup(html, 'lxml')
         btcsoup = self.br.get_current_page()
         url = btcsoup.find('iframe')['src']
         page = self.br.open(url)
@@ -97,6 +93,7 @@ class UndergroundPrivate(SolusvmHoster):
     def start(self):
         russia_page = self.br.open('https://undergroundprivate.com/russiaoffshorevps.html')
         options = list(self.parse_r_options(russia_page))
+
         # france_page = self.br.open('https://undergroundprivate.com/franceoffshore.html')
         # options = itertools.chain(options, self.parse_f_options(france_page))
         return options

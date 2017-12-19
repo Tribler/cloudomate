@@ -1,9 +1,16 @@
+import random
+import string
+
+import random
+import string
+
 from mechanicalsoup import StatefulBrowser
 
 
 class UserScraper:
     """
-    Scrapes fakeaddressgenerator.com for fake user data,
+    Scrapes fakeaddressgenerator.com for fake user data also adds some basic additional information for server
+    configuration.
     """
 
     attributes = [
@@ -23,9 +30,9 @@ class UserScraper:
     }
 
     def __init__(self, country='NL'):
+        self.country_code = country
         self.br = StatefulBrowser()
         self.page = UserScraper.pages.get(country)
-
 
     def get_user(self):
         self.br.open(self.page)
@@ -33,6 +40,14 @@ class UserScraper:
 
         for attr in self.attributes:
             attrs[attr] = self._get_attribute(attr)
+
+        attrs['country_code'] = self.country_code
+        attrs['password'] = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+        attrs['email'] = self._get_attribute('Username') + '@email.com'
+        attrs['rootpw'] = attrs['password']
+        attrs['ns1'] = 'ns1'
+        attrs['ns2'] = 'ns2'
+        attrs['hostname'] = self._get_attribute('Username') + '.hostname.com'
 
         return self._map_to_config(attrs)
 
@@ -52,13 +67,19 @@ class UserScraper:
             'Phone Number': 'phonenumber',
             'Company': 'companyname',
             'Username': 'username',
+            'country_code': 'countrycode',
+            'password': 'password',
+            'email': 'email',
+            'rootpw': 'rootpw',
+            'ns1': 'ns1',
+            'ns2': 'ns2',
+            'hostname': 'hostname',
         }
 
         for attr in attrs.keys():
             if attr in mapping.keys():
                 config[mapping[attr]] = attrs[attr]
         return config
-
 
     def _get_attribute(self, attribute):
         return self.br.get_current_page()\

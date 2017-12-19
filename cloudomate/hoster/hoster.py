@@ -73,3 +73,6 @@ class Hoster(object):
         os.close(fd)
 
         webbrowser.open(path)
+
+    def print_configurations(self):
+        raise NotImplementedError('Abstract method implementation')
