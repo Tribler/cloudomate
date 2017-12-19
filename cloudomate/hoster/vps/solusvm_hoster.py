@@ -1,87 +1,149 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
+from abc import abstractmethod
 
 from bs4 import BeautifulSoup
+from future import standard_library
+from mechanicalsoup import LinkNotFoundError
+
+from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
 from cloudomate.hoster.vps.vps_hoster import VpsHoster
+from cloudomate.hoster.vps.vps_hoster import VpsStatus
+from cloudomate.hoster.vps.vps_hoster import VpsStatusResourceNone
+
+from builtins import super
+
+standard_library.install_aliases()
 
 
 class SolusvmHoster(VpsHoster):
-    def get_status(self, user_settings):
-        raise NotImplementedError('Abstract method implementation')
+    """
+    SolusvmHoster is the common superclass of all VPS hosters that make use of the Solusvm management package.
+    This makes it possible to fill in the registration form in a similar manner for all Solusvm subclasses.
+    """
 
-    def start(self):
-        raise NotImplementedError('Abstract method implementation')
+    def __init__(self, settings):
+        super().__init__(settings)
+        self._clientarea = None
 
-    def get_ip(self, user_settings):
-        raise NotImplementedError('Abstract method implementation')
+    def _create_clientarea(self):
+        if self._clientarea is None:
+            self._clientarea = ClientArea(self._browser, self.get_clientarea_url(), self._settings)
+        return self._clientarea
 
-    def info(self, user_settings):
-        raise NotImplementedError('Abstract method implementation')
+    '''
+    Methods that are the same for all subclasses
+    '''
 
-    def set_rootpw(self, user_settings):
-        raise NotImplementedError('Abstract method implementation')
+    def get_configuration(self):
+        clientarea = self._create_clientarea()
 
-    def register(self, user_settings, vps_option):
-        raise NotImplementedError('Abstract method implementation')
+        ip = clientarea.get_ip()
+        password = self._settings.get('server', 'root_password')
+
+        return VpsConfiguration(ip, password)
+
+    def get_status(self):
+        clientarea = self._create_clientarea()
+
+        service = clientarea.get_services_first()
+        online = True if service.status == 'active' else False
+        expiration = service.next_due
+
+        return VpsStatus(
+            VpsStatusResourceNone,
+            VpsStatusResourceNone,
+            VpsStatusResourceNone,
+            online,
+            expiration,
+            service
+        )
+
+    '''
+    Static methods that must be overwritten by subclasses
+    '''
 
     @staticmethod
-    def fill_in_server_form(form, user_settings, rootpw=True, nameservers=True, hostname=True):
-        """
-        Fills in the form containing server configuration.
-        :return: 
-        """
-        if hostname:
-            form['hostname'] = user_settings.get('hostname')
-        if rootpw:
-            form['rootpw'] = user_settings.get('rootpw')
-        if nameservers:
-            form['ns1prefix'] = user_settings.get('ns1')
-            form['ns2prefix'] = user_settings.get('ns2')
-        form.new_control('text', 'ajax', 1)
-        form.new_control('text', 'a', 'confproduct')
-        form.method = "POST"
+    @abstractmethod
+    def get_clientarea_url():
+        """Get the url of the clientarea for this hoster
 
-    @staticmethod
-    def user_form(browser, user_settings, payment_method, errorbox_class='checkout-error-feedback', accepttos=True):
+        :return: Returns the clientarea url
         """
-        Fills in the form with user information.
-        :param accepttos: indicates if a TOS checkbox has to be checked.
-        :param errorbox_class: the class of the div containing error messages.
-        :param payment_method: the payment method, typically coinbase or bitpay
-        :param browser: browser
-        :param user_settings: settings
-        :return: 
+        pass
+
+    '''
+    Methods that are used by subclasses to fill parts of the forms that are shared between hosters
+    '''
+
+    def _fill_server_form(self):
+        """Fills the server configuration form (should be currently selected) as much as possible
+
         """
-        form = browser.get_current_form()
-        form['firstname'] = user_settings.get("firstname")
-        form['lastname'] = user_settings.get("lastname")
-        form['email'] = user_settings.get("email")
-        form['phonenumber'] = user_settings.get("phonenumber")
-        form['companyname'] = user_settings.get("companyname")
-        form['address1'] = user_settings.get("address")
-        form['city'] = user_settings.get("city")
-        form['state'] = user_settings.get("state")
-        form['postcode'] = user_settings.get("zipcode")
-        form['country'] = user_settings.get('countrycode')
-        form['password'] = user_settings.get("password")
-        form['password2'] = user_settings.get("password")
-        form['paymentmethod'] = payment_method
-        if accepttos:
-            form['accepttos'] = True
+        form = self._browser.get_current_form()
 
-        page = browser.submit_selected()
+        try:
+            form['hostname'] = self._settings.get('server', 'hostname')
+        except LinkNotFoundError:
+            pass
 
+        try:
+            form['rootpw'] = self._settings.get('server', 'root_password')
+        except LinkNotFoundError:
+            # TODO: Properly handle this warning
+            print('Couldn\'t set root password')
+
+        try:
+            form['ns1prefix'] = self._settings.get('server', 'ns1')
+            form['ns2prefix'] = self._settings.get('server', 'ns2')
+        except LinkNotFoundError:
+            pass
+
+        # As an alternative to the default Ajax request
+        form.new_control('hidden', 'a', 'confproduct')
+        form.new_control('hidden', 'ajax', '1')
+        form.form['method'] = 'get'
+
+    def _fill_user_form(self, payment_method, errorbox_class='checkout-error-feedback'):
+        """Fills the user information form (should be currently selected) as much as possible
+
+        :param payment_method: the name of the payment method
+        :param errorbox_class: the class of the div element containing error messages
+        :return: the page received after submitted the form
+        """
+        form = self._browser.get_current_form()
+
+        form['firstname'] = self._settings.get('user', "firstname")
+        form['lastname'] = self._settings.get('user', "lastname")
+        form['email'] = self._settings.get('user', "email")
+        form['phonenumber'] = self._settings.get('user', "phonenumber")
+        form['companyname'] = self._settings.get('user', "companyname")
+        form['address1'] = self._settings.get('address', "address")
+        form['city'] = self._settings.get('address', "city")
+        form['state'] = self._settings.get('address', "state")
+        form['postcode'] = self._settings.get('address', "zipcode")
+        form['country'] = self._settings.get('address', 'countrycode')
+        form['password'] = self._settings.get('user', "password")
+        form['password2'] = self._settings.get('user', "password")
+        form['paymentmethod'] = payment_method.lower()
+
+        try:
+            form['accepttos'] = True  # Attempt to accept the terms and conditions
+        except LinkNotFoundError:
+            pass
+
+        page = self._browser.submit_selected()
+
+        # Error handling
         if 'checkout' in page.url:
             soup = BeautifulSoup(page.text, 'lxml')
             errors = soup.find('div', {'class': errorbox_class}).text
             print((errors.strip()))
             sys.exit(2)
 
-    @staticmethod
-    def select_form_id(browser, form_id):
-        """
-        Selects the form with specified id.
-        :param browser: the browser
-        :param form_id: the form element id
-        :return: 
-        """
-        browser.select_form('form#' + form_id)
+        return page

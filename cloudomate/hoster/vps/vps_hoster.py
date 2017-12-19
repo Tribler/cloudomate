@@ -1,6 +1,34 @@
-from cloudomate import wallet as wallet_util
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from abc import abstractmethod
+from collections import namedtuple
+
+from future import standard_library
 
 from cloudomate.hoster.hoster import Hoster
+
+standard_library.install_aliases()
+
+VpsConfiguration = namedtuple('VpsConfiguration', ['ip', 'root_password'])
+VpsOption = namedtuple('VpsOption', ['name',
+                                     'cores',
+                                     'memory',  # Memory in GB
+                                     'storage',  # Storage in GB
+                                     'bandwidth',  # Bandwidth in GB
+                                     'connection',  # Connection speed in Gbps
+                                     'price',  # Price in USD
+                                     'purchase_url'])
+VpsStatusResource = namedtuple('VpsStatusResource', ['used', 'total'])
+VpsStatusResourceNone = VpsStatusResource(-1, -1)
+VpsStatus = namedtuple('VpsStatus', ['memory',  # Memory VpsStatusResource in GB
+                                     'storage',  # Storage VpsStatusResource in GB
+                                     'bandwidth',  # Bandwidth VpsStatusResource in GB
+                                     'online',  # Boolean
+                                     'expiration',  # Python Datetime object
+                                     'clientarea'])  # Service info retrieved from the ClientArea (for overriding)
 
 
 class VpsHoster(Hoster):
@@ -8,96 +36,29 @@ class VpsHoster(Hoster):
     Abstract class for VPS Hosters.
     This class already implements some common methods.
     """
-    required_settings = None
-    configurations = None
-    client_area = None
 
-    def options(self):
-        """
-        Retrieve hosting options at Hoster.
-        :return: A list of hosting options
-        """
-        options = self.start()
-        self.configurations = list(options)
-        return self.configurations
 
-    def start(self):
-        raise NotImplementedError('Abstract method implementation')
+    @abstractmethod
+    def get_configuration(self):
+        """Get Hoster configuration.
 
-    def purchase(self, user_settings, options, wallet):
+        :return: Returns VpsConfiguration for the VPS Hoster instance
         """
-        Purchase a VPS
-        :param wallet: bitcoin wallet
-        :param user_settings: settings
-        :param options: server configuration
-        :return:
-        """
-        print(('Purchasing %s instance: %s' % (type(self).__name__, options.name)))
-        amount, address = self.register(user_settings, options)
-        print(('Paying %s BTC to %s' % (amount, address)))
-        fee = wallet_util.get_network_fee()
-        print(('Calculated fee: %s' % fee))
-        transaction_hash = wallet.pay(address, amount, fee)
-        print('Done purchasing')
-        return transaction_hash
+        pass
 
-    def register(self, user_settings, vps_option):
-        raise NotImplementedError('Abstract method implementation')
+    @classmethod
+    @abstractmethod
+    def get_options(cls):
+        """Get Hoster options.
 
-    def get_status(self, user_settings):
+        :return: Returns list of VpsOption objects
         """
-        Get the status of purchased services for specified provider.
-        :param user_settings: the user settings used to login.
-        :return: 
-        """
-        raise NotImplementedError('Abstract method implementation')
+        pass
 
-    def set_rootpw(self, user_settings):
-        """
-        Set the root password for the last purchased service of specified provider.
-        :param user_settings: the user settings including root password and login data.
-        :return: 
-        """
-        raise NotImplementedError('Abstract method implementation')
+    @abstractmethod
+    def get_status(self):
+        """Get Hoster configuration.
 
-    def get_ip(self, user_settings):
+        :return: Returns VpsStatus of the VPS Hoster instance
         """
-        Get the ip for the last purchased service of specified provider.
-        :param user_settings: the user settings including root password and login data.
-        :return: 
-        """
-        raise NotImplementedError('Abstract method implementation')
-
-    def info(self, user_settings):
-        """
-        Get information for the last purchased service of specified provider.
-        :param user_settings: the user settings including root password and login data.
-        :return: 
-        """
-        raise NotImplementedError('Abstract method implementation')
-
-    def print_configurations(self):
-        """
-        Print parsed VPS configurations.
-        """
-        row_format = "{:<5}" + "{:18}" * 8
-        print((row_format.format("#", "Name", "CPU (cores)", "RAM (GB)", "Storage (GB)", "Bandwidth (TB)",
-                                 "Connection (Mbps)",
-                                 "Est. Price (mBTC)", "Price")))
-
-        for i, item, estimated_price, price_string in self.get_configurations():
-            print((row_format.format(i, item.name, str(item.cpu), str(item.ram), str(item.storage), str(item.bandwidth),
-                                     str(item.connection), price_string, '{0} {1}'.format(item.currency, item.price))))
-
-    def get_configurations(self):
-        currencies = set(item.currency for item in self.configurations)
-        rates = wallet_util.get_rates(currencies)
-        transaction_fee = wallet_util.get_network_fee()
-        for i, item in enumerate(self.configurations):
-            if item.currency is not None:
-                item_price = self.gateway.estimate_price(item.price * rates[item.currency])
-                estimated_price = item_price + transaction_fee
-                price_string = str(round(1000 * estimated_price, 2))
-            else:
-                price_string = 'est. unavailable'
-            yield i, item, estimated_price, price_string
+        pass

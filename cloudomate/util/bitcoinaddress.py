@@ -3,8 +3,19 @@
 Copied from:
 http://rosettacode.org/wiki/Bitcoin/address_validation#Python
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
+from builtins import bytes
+from builtins import int
+from builtins import range
 from hashlib import sha256
+
+from future import standard_library
+
+standard_library.install_aliases()
 
 digits58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
@@ -98,7 +109,7 @@ def validate(bitcoin_address, magicbyte=0):
         return False
     # Check magic byte (for other altcoins, fix by Frederico Reiven)
     for mb in magicbyte:
-        if bcbytes.startswith(chr(int(mb)).encode("utf8")):
+        if bcbytes.startswith(bytes(int(mb))):
             break
     else:
         return False

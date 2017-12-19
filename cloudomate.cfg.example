@@ -1,20 +1,24 @@
-[User]
-email = 
-firstName = 
-lastName = 
-companyName = 
-phoneNumber = 
-password = 
+[user]
+email =
+firstname =
+lastname =
+companyname =
+phonenumber =
+password =
+username =
 
-[Address]
-address = 
-city = 
-state = 
-countryCode = 
-zipcode = 
+[address]
+address =
+city =
+state =
+countrycode =
+zipcode =
 
-[Server]
-rootpw = 
-ns1 = 
-ns2 = 
-hostname = 
+[payment]
+walletpath =
+
+[server]
+ns1 =
+ns2 =
+hostname =
+root_password =

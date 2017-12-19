@@ -1,35 +1,56 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import io
+import os
 import subprocess
 import sys
 from argparse import ArgumentParser
+from builtins import dict
+from builtins import input
+from builtins import round
+from builtins import str
+from os import path
 
-from cloudomate.hoster.vps.ccihosting import CCIHosting
+from CaseInsensitiveDict import CaseInsensitiveDict
+from future import standard_library
+
+from cloudomate import wallet as wallet_util
+from cloudomate.hoster.vpn.azirevpn import AzireVpn
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
+from cloudomate.hoster.vps.ccihosting import CCIHosting
 from cloudomate.hoster.vps.crowncloud import CrownCloud
-from cloudomate.hoster.vps.legionbox import LegionBox
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.pulseservers import Pulseservers
 from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
-from cloudomate.hoster.vpn.azirevpn import AzireVpn
-from cloudomate.util.config import UserOptions
 from cloudomate.util.fakeuserscraper import UserScraper
+from cloudomate.util.settings import Settings
 from cloudomate.wallet import Wallet
 
-commands = ["options", "purchase", "list"]
+standard_library.install_aliases()
+
+
+def _map_providers_to_dict(provider_list):
+    return CaseInsensitiveDict(dict((provider.get_metadata()[0], provider) for provider in provider_list))
+
+
 types = ["vps", "vpn"]
-providers = {
-    "vps": {
-        "blueangelhost": BlueAngelHost(),
-        "ccihosting": CCIHosting(),
-        "crowncloud": CrownCloud(),
-        "legionbox": LegionBox(),
-        "linevast": LineVast(),
-        'pulseservers': Pulseservers(),
-        "underground": UndergroundPrivate(),
-    },
-    "vpn": {
-        "azirevpn": AzireVpn(),
-    }
-}
+
+providers = CaseInsensitiveDict({
+    "vps": _map_providers_to_dict([
+        BlueAngelHost,
+        CCIHosting,
+        CrownCloud,
+        LineVast,
+        Pulseservers,
+        UndergroundPrivate,
+    ]),
+    "vpn": _map_providers_to_dict([
+        AzireVpn,
+    ])
+})
 
 
 def execute(cmd=sys.argv[1:]):
@@ -128,7 +149,7 @@ def add_parser_vps_get_ip(subparsers):
     parser_get_ip.add_argument("-n", "--number", help="The number of the service get the IP address for")
     parser_get_ip.add_argument("-e", "--email", help="The login email address")
     parser_get_ip.add_argument("-pw", "--password", help="The login password")
-    parser_get_ip.set_defaults(func=get_ip)
+    parser_get_ip.set_defaults(func=print_ip)
 
 
 def add_parser_vps_ssh(subparsers):
@@ -150,62 +171,96 @@ def add_parser_info(subparsers, provider_type):
                              help="The number of the %s service to get the info of" % provider_type.upper())
     parser_info.add_argument("-e", "--email", help="The login email address")
     parser_info.add_argument("-pw", "--password", help="The login password")
+
+    if provider_type == "vpn":
+        parser_info.add_argument("-o", "--ovpn", help="Save the ovpn file to the specified location")
+
     parser_info.set_defaults(func=info)
 
 
 def add_parser_vps_setrootpw(subparsers):
     parser_setrootpw = subparsers.add_parser("setrootpw", help="Set the root password of the last activated service")
     parser_setrootpw.add_argument("provider", help="The specified provider", choices=providers['vps'])
+    parser_setrootpw.add_argument("root_password", help="The new root password")
     parser_setrootpw.add_argument("-n", "--number", help="The number of the VPS service to change the password for")
     parser_setrootpw.add_argument("-e", "--email", help="The login email address")
     parser_setrootpw.add_argument("-pw", "--password", help="The login password")
-    parser_setrootpw.add_argument("-p", "--rootpw", help="The new root password", required=True)
-    parser_setrootpw.set_defaults(func=set_rootpw)
+    parser_setrootpw.set_defaults(func=change_root_password_ssh)
 
 
-def set_rootpw(args):
+def print_ip(args):
     provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider.name)
-    provider.set_rootpw(user_settings)
+    name, _ = provider.get_metadata()
+    user_settings = _get_user_settings(args, name)
 
-
-def get_ip(args):
-    provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider.name)
-    ip = provider.get_ip(user_settings)
-    print(ip)
+    provider_instance = provider(user_settings)
+    configuration = provider_instance.get_configuration()
+    print(configuration.ip)
 
 
 def info(args):
     provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider.name)
-    print(("Info for " + provider.name))
+    name, _ = provider.get_metadata()
+    user_settings = _get_user_settings(args, name)
 
-    provider_info = provider.info(user_settings)
+    config = provider(user_settings).get_configuration()
 
     if args.type == "vps":
-        _print_info_vps(provider_info)
+        print(("Info for " + name))
+        _print_info_vps(config)
     elif args.type == "vpn":
-        _print_info_vpn(provider_info)
+        if args.ovpn:
+            _save_info_vpn(config, args.ovpn)
+        else:
+            print(("Info for " + name))
+            _print_info_vpn(config)
 
 
 def status(args):
     provider = _get_provider(args)
-    print(("Getting status for %s" % provider.name))
-    user_settings = _get_user_settings(args, provider.name)
-    provider.get_status(user_settings)
+    name, _ = provider.get_metadata()
+    print(("Getting status for %s." % name))
+    user_settings = _get_user_settings(args, name)
+    p = provider(user_settings)
+    s = p.get_status()
+
+    if args.type == "vps":
+        # If we don't currently support usage statistics for this provider
+        if s.memory.used == -1.0:
+            row = "{:20}" * 2
+            print(row.format("Online", "Expiration"))
+            print(row.format(str(s.online), s.expiration.isoformat()))
+        else:
+            row = "{:20}" * 5
+            print(row.format("Memory used (GB)", "Storage used (GB)", "Bandwidth used (GB)", "Online", "Expiration"))
+            print(row.format(
+                '{:.2f}/{:.2f}'.format(s.memory.used, s.memory.total),
+                '{:.2f}/{:.2f}'.format(s.storage.used, s.storage.total),
+                '{:.2f}/{:.2f}'.format(s.bandwidth.used, s.bandwidth.total),
+                str(s.online),
+                s.expiration.isoformat()
+            ))
+    elif args.type == "vpn":
+        row = "{:18}" * 2
+        print(row.format("Online", "Expiration"))
+        print(row.format(str(s.online), s.expiration.isoformat()))
 
 
 def options(args):
     provider = _get_provider(args)
-    _options(provider)
+
+    if args.type == "vps":
+        _options_vps(provider)
+    elif args.type == "vpn":
+        _options_vpn(provider)
 
 
 def purchase(args):
     if "provider" not in vars(args):
         sys.exit(2)
     provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider.name)
+    name, _ = provider.get_metadata()
+    user_settings = _get_user_settings(args, name)
 
     if args.randomuser:
         _merge_random_user_data(user_settings)
@@ -215,76 +270,88 @@ def purchase(args):
         sys.exit(2)
 
     if args.type == 'vps':
-        _purchase_vps(provider, user_settings, args.option)
+        _purchase_vps(provider, user_settings, args)
     else:
-        _purchase_vpn(provider, user_settings)
+        _purchase_vpn(provider, user_settings, args)
 
 
 def _check_provider(provider, config):
-    return config.verify_options(provider.required_settings)
+    return config.verify_options(provider.get_required_settings())
 
 
 def _merge_random_user_data(user_settings):
     usergenerator = UserScraper()
     randomuser = usergenerator.get_user()
-    for key in randomuser.keys():
-        user_settings.config[key] = randomuser[key]
+    for section in randomuser.keys():
+        for key in randomuser[section].keys():
+            user_settings.put(section, key, randomuser[section][key])
 
 
 def _get_user_settings(args, provider=None):
-    user_settings = UserOptions()
+    user_settings = Settings()
     if 'config' in vars(args):
-        user_settings.read_settings(filename=args.config, provider=provider)
+        user_settings.read_settings(filename=args.config)
     else:
-        user_settings.read_settings(provider=provider)
-    _merge_arguments(user_settings, vars(args))
+        user_settings.read_settings()
+    _merge_arguments(user_settings, provider, vars(args))
     return user_settings
 
 
-def _merge_arguments(config, args):
+def _merge_arguments(config, provider, args):
     for key in args:
         if args[key] is not None:
-            config.put(key, args[key])
+            config.put(provider, key, args[key])
 
 
-def _purchase_vps(provider, user_settings, vps_option):
-    configurations = provider.options()
+def _purchase_vps(provider, user_settings, args):
+    vps_option = args.option
+    configurations = provider.get_options()
     if not 0 <= vps_option < len(configurations):
         print(('Specified configuration %s is not in range 0-%s' % (vps_option, len(configurations))))
         sys.exit(1)
     vps_option = configurations[vps_option]
     row_format = "{:15}" * 6
     print("Selected configuration:")
-    print((row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Est.Price")))
+    print((row_format.format("Name", "CPU", "RAM", "Storage", "Bandwidth", "Price (USD)")))
+    bandwidth = "Unlimited" if vps_option.bandwidth == sys.maxsize else vps_option.bandwidth
     print((row_format.format(
         vps_option.name,
-        str(vps_option.cpu),
-        str(vps_option.ram),
+        str(vps_option.cores),
+        str(vps_option.memory),
         str(vps_option.storage),
-        str(vps_option.bandwidth),
+        str(bandwidth),
         str(vps_option.price))))
 
-    if 'walletpath' in user_settings.config and user_settings.get("noconfirm") is True:
+    if args.noconfirm or (
+            user_settings.has_key('client', 'noconfirm') and user_settings.get('client', "noconfirm") == "1"):
         choice = True
     else:
         choice = _confirmation("Purchase this option?", default="no")
     if choice:
-        _register_vps(provider, vps_option, user_settings)
+        _register(provider, vps_option, user_settings)
     else:
         return False
 
 
-def _purchase_vpn(provider, user_settings):
+def _purchase_vpn(provider, user_settings, args):
     print("Selected configuration:")
-    provider.print_configurations()
+    options = provider.get_options()
+    option = options[0]
 
-    if 'walletpath' in user_settings.config and user_settings.get("noconfirm") is True:
+    row = "{:18}" * 5
+    print(row.format("Name", "Protocol", "Bandwidth", "Speed", "Price (USD)"))
+    bandwidth = "Unlimited" if option.bandwidth == sys.maxsize else str(option.bandwidth)
+    speed = "Unlimited" if option.speed == sys.maxsize else option.speed
+    print(row.format(option.name, option.protocol, bandwidth, speed, str(option.price)))
+
+    if args.noconfirm or (
+            user_settings.has_key('client', 'noconfirm') and user_settings.get('client', "noconfirm") == "1"):
         choice = True
     else:
         choice = _confirmation("Purchase this option?", default="no")
 
     if choice:
-        _register_vpn(provider, user_settings)
+        _register(provider, options[0], user_settings)
     else:
         return False
 
@@ -330,42 +397,74 @@ def _print_unknown_provider_type(provider_type):
 
 def _list_providers(provider_type):
     print("Providers:")
-    for provider in providers[provider_type]:
-        print(("   {:15}{:30}".format(provider, providers[provider_type][provider].website)))
+    for provider in providers[provider_type].values():
+        name, website = provider.get_metadata()
+        print("   {:15}{:30}".format(name, website))
 
 
 def _list_provider_types():
     print("Provider Types:")
     for provider_type in types:
-        print(("   {:15}" % provider_type))
+        print(("   {:15}".format(provider_type)))
 
 
-def _options(p):
-    print(("Options for %s:\n" % p.name))
-    p.options()
-    p.print_configurations()
+def _options_vps(p):
+    name, _ = p.get_metadata()
+    print(("Options for %s:\n" % name))
+    options = p.get_options()
+
+    # Print heading
+    row = "{:<5}" + "{:20}" * 8
+    print(row.format("#", "Name", "Cores", "Memory (GB)", "Storage (GB)", "Bandwidth", "Connection (Gbit/s)",
+                     "Est. Price (mBTC)", "Price (USD)"))
+
+    for i, option in enumerate(options):
+        bandwidth = "Unlimited" if option.bandwidth == sys.maxsize else str(option.bandwidth)
+
+        # Calculate the estimated price
+        rate = wallet_util.get_rate("USD")
+        fee = wallet_util.get_network_fee()
+        gateway = p.get_gateway()
+        estimate = gateway.estimate_price(option.price * rate) + fee  # BTC
+        estimate = round(1000 * estimate, 2)  # mBTC
+
+        print(row.format(i, option.name, str(option.cores), str(option.memory), str(option.storage), bandwidth,
+                         str(option.connection), str(estimate), str(option.price)))
 
 
-def _register_vps(p, vps_option, user_settings):
+def _options_vpn(provider):
+    name, _ = provider.get_metadata()
+    print(("Options for %s:\n" % name))
+    options = provider.get_options()
+
+    # Print heading
+    row = "{:18}" * 6
+    print(row.format("Name", "Protocol", "Bandwidth", "Speed", "Est. Price (mBTC)", "Price (USD)"))
+
+    for option in options:
+        bandwidth = "Unlimited" if option.bandwidth == sys.maxsize else str(option.bandwidth)
+        speed = "Unlimited" if option.speed == sys.maxsize else option.speed
+
+        # Calculate the estimated price
+        rate = wallet_util.get_rate("USD")
+        fee = wallet_util.get_network_fee()
+        gateway = provider.get_gateway()
+        estimate = gateway.estimate_price(option.price * rate) + fee  # BTC
+        estimate = round(1000 * estimate, 2)  # mBTC
+
+        print(row.format(option.name, option.protocol, bandwidth, speed, str(estimate), str(option.price)))
+
+
+def _register(provider, vps_option, settings):
     # For now use standard wallet implementation through Electrum
     # If wallet path is defined in config, use that.
-    if 'walletpath' in user_settings.config:
-        wallet = Wallet(wallet_path=user_settings.get('walletpath'))
+    if settings.has_key('client', 'walletpath'):
+        wallet = Wallet(wallet_path=settings.get('client', 'walletpath'))
     else:
         wallet = Wallet()
 
-    p.purchase(user_settings=user_settings, options=vps_option, wallet=wallet)
-
-
-def _register_vpn(p, user_settings):
-    # For now use standard wallet implementation through Electrum
-    # If wallet path is defined in config, use that.
-    if 'walletpath' in user_settings.config:
-        wallet = Wallet(wallet_path=user_settings.get('walletpath'))
-    else:
-        wallet = Wallet()
-
-    p.purchase(user_settings=user_settings, wallet=wallet)
+    provider_instance = provider(settings)
+    provider_instance.purchase(wallet, vps_option)
 
 
 def _get_provider(args):
@@ -383,23 +482,43 @@ def _get_provider(args):
     return providers[provider_type][provider]
 
 
-def ssh(args):
+def ssh(args, command=None):
     provider = _get_provider(args)
-    user_settings = _get_user_settings(args, provider.name)
-    ip = provider.get_ip(user_settings)
-    user = user_settings.get('user')
+    name, _ = provider.get_metadata()
+    user_settings = _get_user_settings(args, name)
+    config = provider(user_settings).get_configuration()
+    commandline = ['sshpass', '-p', config.root_password, 'ssh', '-o', 'StrictHostKeyChecking=no',
+                   'root@' + config.ip]
+
+    if command:
+        commandline.append(command)
+
     try:
-        subprocess.call(['sshpass', '-p', user_settings.get('rootpw'), 'ssh', '-o', 'StrictHostKeyChecking=no',
-                         user + '@' + ip])
+        subprocess.call(commandline)
+        return True
     except OSError as e:
         print(e)
         print('Install sshpass to use this command')
+        return False
 
 
-def _print_info_vps(info_dict):
-    row_format = "{:<25}{:<30}"
-    for key in info_dict:
-        print((row_format.format(key, info_dict[key])))
+def change_root_password_ssh(args):
+    if ssh(args, 'echo "root:' + args.root_password + '" | chpasswd'):
+        provider = _get_provider(args)
+        name, _ = provider.get_metadata()
+        user_settings = _get_user_settings(args, name)
+        user_settings.put("server", "root_password", args.root_password)
+        user_settings.save_settings()
+        print("Successfully set new root password in the config")
+    else:
+        print("Failed to set the new root password")
+        sys.exit(2)
+
+
+def _print_info_vps(info):
+    row = "{:18}" * 2
+    print(row.format("IP address", "Root password"))
+    print(row.format(str(info.ip), str(info.root_password)))
 
 
 def _print_info_vpn(provider_info):
@@ -417,6 +536,23 @@ def _print_info_vpn(provider_info):
     print(header)
     print(ovpn)
     print(header)
+
+
+def _save_info_vpn(info, ovpn):
+    if not ovpn.endswith('.ovpn'):
+        ovpn = ovpn + '.ovpn'
+
+    ovpn = path.normcase(path.normpath(path.join(os.getcwd(), ovpn)))
+    dir, _ = path.split(ovpn)
+    credentials = 'credentials.conf'
+
+    with io.open(ovpn, 'w', encoding='utf-8') as ovpn_file:
+        ovpn_file.write(info.ovpn + '\nauth-user-pass ' + credentials)
+
+    with io.open(path.join(dir, credentials), 'w', encoding='utf-8') as credentials_file:
+        credentials_file.writelines([info.username + '\n', info.password])
+
+    print("Saved VPN configuration to " + ovpn)
 
 
 if __name__ == '__main__':

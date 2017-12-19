@@ -1,78 +1,108 @@
-"""
-Hoster provides abstract implementations for common functionality
-At this time there is no abstract implementation for any functionality.
-"""
-import os
-import random
-import webbrowser
-from tempfile import mkstemp
-from urllib.parse import urlparse
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
+from abc import abstractmethod, ABCMeta
+
+from fake_useragent import UserAgent
+from future import standard_library
+from future.utils import with_metaclass
 from mechanicalsoup import StatefulBrowser
 
+from cloudomate import wallet as wallet_util
 
-class Hoster(object):
-    user_agents = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.1 Safari/603.1.30",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko",
-        "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
-        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0",
-        "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:53.0) Gecko/20100101 Firefox/53.0",
-    ]
+standard_library.install_aliases()
 
-    name = None
-    website = None
-    gateway = None
 
-    def __init__(self):
-        """
-        Initialize hoster object common variables
-         configurations holds the vps options available
-         _browser holds the stateful mechanize browser
-        """
+class Hoster(with_metaclass(ABCMeta)):
+    def __init__(self, settings):
         self._browser = self._create_browser()
+        self._settings = settings
 
-    def options(self):
-        raise NotImplementedError('Abstract method implementation')
+    @abstractmethod
+    def get_configuration(self):
+        """Get Hoster configuration.
 
-    def purchase(self, *args, **kwargs):
-        raise NotImplementedError('Abstract method implementation')
-
-    @classmethod
-    def _create_browser(cls):
-        return StatefulBrowser(user_agent=random.choice(cls.user_agents))
+        :return: Returns configuration for the Hoster instance
+        """
+        pass
 
     @staticmethod
-    def _open_in_browser(page):
-        html = page.get_data()
-        url = urlparse(page.geturl())
-        html = html.replace('href="/', 'href="' + url.scheme + '://' + url.netloc + '/')
-        html = html.replace('src="/', 'href="' + url.scheme + '://' + url.netloc + '/')
-        fd, path = mkstemp()
+    @abstractmethod
+    def get_gateway():
+        """Get payment gateway used by the Hoster.
 
-        with open(path, 'w') as f:
-            f.write(html)
+        :return: Returns the payment gateway module
+        """
+        pass
 
-        os.close(fd)
+    @staticmethod
+    @abstractmethod
+    def get_metadata():
+        """Get metadata about the Hoster.
 
-        webbrowser.open(path)
+        :return: Returns tuple of name and website url
+        """
+        pass
 
-    def print_configurations(self):
-        raise NotImplementedError('Abstract method implementation')
+    @classmethod
+    @abstractmethod
+    def get_options(cls):
+        """Get Hoster options.
+
+        :return: Returns list of Hoster options
+        """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_required_settings():
+        """Get settings required by the Hoster.
+
+        :return: Returns dictionary with sections as keys and the required settings in those sections as values
+        """
+        pass
+
+    @abstractmethod
+    def get_status(self):
+        """Get Hoster configuration.
+
+        :return: Returns status of the Hoster instance
+        """
+        pass
+
+    @classmethod
+    def pay(cls, wallet, gateway, url):
+        """Do a payment (should be moved to the payment gateways?)
+
+        :param wallet: the wallet to pay with
+        :param gateway: gateway through which to make the payment
+        :param url: url from which the amount and address can be extracted
+        """
+        name, _ = cls.get_metadata()
+
+        # Make the payment
+        print("Purchasing {} instance".format(name))
+        info = gateway.extract_info(url)
+        print(('Paying %s BTC to %s' % (info.amount, info.address)))
+        fee = wallet_util.get_network_fee()
+        print(('Calculated fee: %s' % fee))
+        transaction_hash = wallet.pay(info.address, info.amount, fee)
+        print('Done purchasing')
+        return transaction_hash
+
+    @abstractmethod
+    def purchase(self, wallet, option):
+        """Purchase Hoster.
+
+        :param wallet: The Electrum wallet to use for payments
+        :param option: Hoster option to purchase
+        """
+        pass
+
+    @staticmethod
+    def _create_browser():
+        user_agent = UserAgent(fallback="Mozilla/5.0 (X11; Linux x86_64; rv:57.0) Gecko/20100101 Firefox/57.0")
+        return StatefulBrowser(user_agent=user_agent.random)
