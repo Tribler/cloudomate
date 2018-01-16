@@ -41,17 +41,17 @@ class SolusvmHoster(VpsHoster):
         form.method = "POST"
 
     @staticmethod
-    def user_form(br, user_settings, payment_method, errorbox_class='checkout-error-feedback', acceptos=True):
+    def user_form(browser, user_settings, payment_method, errorbox_class='checkout-error-feedback', accepttos=True):
         """
         Fills in the form with user information.
-        :param acceptos:
+        :param accepttos: indicates if a TOS checkbox has to be checked.
         :param errorbox_class: the class of the div containing error messages.
         :param payment_method: the payment method, typically coinbase or bitpay
-        :param br: browser
+        :param browser: browser
         :param user_settings: settings
         :return: 
         """
-        form = br.get_current_form()
+        form = browser.get_current_form()
         form['firstname'] = user_settings.get("firstname")
         form['lastname'] = user_settings.get("lastname")
         form['email'] = user_settings.get("email")
@@ -61,16 +61,14 @@ class SolusvmHoster(VpsHoster):
         form['city'] = user_settings.get("city")
         form['state'] = user_settings.get("state")
         form['postcode'] = user_settings.get("zipcode")
-        #form['country'] = [user_settings.get('countrycode')]
-        #form.set('country', [user_settings.get('countrycode')])
         form['country'] = user_settings.get('countrycode')
         form['password'] = user_settings.get("password")
         form['password2'] = user_settings.get("password")
         form['paymentmethod'] = payment_method
-        if acceptos:
+        if accepttos:
             form['accepttos'] = True
 
-        page = br.submit_selected()
+        page = browser.submit_selected()
 
         if 'checkout' in page.url:
             soup = BeautifulSoup(page.text, 'lxml')
@@ -86,4 +84,4 @@ class SolusvmHoster(VpsHoster):
         :param form_id: the form element id
         :return: 
         """
-        browser.select_form('form#'+form_id)
+        browser.select_form('form#' + form_id)

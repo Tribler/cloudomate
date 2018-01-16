@@ -5,19 +5,19 @@ from cloudomate.hoster.vps.vpsoption import VpsOption
 from mock.mock import MagicMock
 from cloudomate import wallet
 
+
 class TestHosters(unittest.TestCase):
 
     def test_options(self):
         hoster = cloudomate.hoster.vps.vps_hoster.VpsHoster()
         options = [self._create_option()]
-        hoster.start= MagicMock(return_value=options)
+        hoster.start = MagicMock(return_value=options)
         hoster.options()
-        self.assertEqual(hoster.options(),options)
+        self.assertEqual(hoster.options(), options)
 
     def test_hoster_start(self):
         hoster = cloudomate.hoster.vps.vps_hoster.VpsHoster()
         self.assertRaises(NotImplementedError, hoster.start)
-
 
     def test_hoster_print(self):
         hoster = cloudomate.hoster.vps.vps_hoster.VpsHoster()
@@ -43,6 +43,7 @@ class TestHosters(unittest.TestCase):
             connection="Option connection",
             purchase_url="Option url"
         )
+
 
 if __name__ == '__main__':
     unittest.main()

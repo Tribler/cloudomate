@@ -80,7 +80,8 @@ def add_parser_list(subparsers, provider_type):
 
 def add_parser_options(subparsers, provider_type):
     parser_options = subparsers.add_parser("options", help="List %s provider configurations" % provider_type.upper())
-    parser_options.add_argument("provider", help="The specified %s provider" % provider_type.upper(), choices=providers[provider_type])
+    parser_options.add_argument("provider", help="The specified %s provider" % provider_type.upper(),
+                                choices=providers[provider_type])
     parser_options.set_defaults(func=options)
 
 
@@ -88,10 +89,6 @@ def add_parser_purchase(subparsers, provider_type):
     parser_purchase = subparsers.add_parser("purchase", help="Purchase %s" % provider_type.upper())
     parser_purchase.set_defaults(func=purchase)
     parser_purchase.add_argument("provider", help="The specified provider", choices=providers[provider_type])
-
-    if provider_type == 'vps':
-        parser_purchase.add_argument("option", help="The %s option number (see options)" % provider_type.upper(),
-                                     type=int)
 
     parser_purchase.add_argument("-c", "--config", help="Set custom config file")
     parser_purchase.add_argument("-f", help="Don't prompt for user confirmation", dest="noconfirm", action="store_true")
@@ -106,17 +103,19 @@ def add_parser_purchase(subparsers, provider_type):
     parser_purchase.add_argument("-s", "--state", help="state")
     parser_purchase.add_argument("-cc", "--countrycode", help="country code")
     parser_purchase.add_argument("-z", "--zipcode", help="zipcode")
+    parser_purchase.add_argument("--randomuser", action="store_true", help="Use random user info")
 
     if provider_type == 'vps':
+        parser_purchase.add_argument("option", help="The %s option number (see options)" % provider_type.upper(),
+                                     type=int)
         parser_purchase.add_argument("-rp", "--rootpw", help="root password")
         parser_purchase.add_argument("-ns1", "--ns1", help="ns1")
         parser_purchase.add_argument("-ns2", "--ns2", help="ns2")
         parser_purchase.add_argument("--hostname", help="hostname")
-    parser_purchase.add_argument("--randomuser", action="store_true", help="Use random user info")
 
 
 def add_parser_status(subparsers, provider_type):
-    parser_status = subparsers.add_parser("status", help="Get the status of the %s services." % provider_type.upper())
+    parser_status = subparsers.add_parser("status", help="Get the status of the %s services" % provider_type.upper())
     parser_status.add_argument("provider", help="The specified provider", nargs="?", choices=providers[provider_type])
     parser_status.add_argument("-e", "--email", help="The login email address")
     parser_status.add_argument("-pw", "--password", help="The login password")
@@ -124,7 +123,7 @@ def add_parser_status(subparsers, provider_type):
 
 
 def add_parser_vps_get_ip(subparsers):
-    parser_get_ip = subparsers.add_parser("getip", help="Get the IP address of the specified service.")
+    parser_get_ip = subparsers.add_parser("getip", help="Get the IP address of the specified service")
     parser_get_ip.add_argument("provider", help="The specified provider", nargs="?", choices=providers['vps'])
     parser_get_ip.add_argument("-n", "--number", help="The number of the service get the IP address for")
     parser_get_ip.add_argument("-e", "--email", help="The login email address")
@@ -133,7 +132,7 @@ def add_parser_vps_get_ip(subparsers):
 
 
 def add_parser_vps_ssh(subparsers):
-    parser_ssh = subparsers.add_parser("ssh", help="SSH into an active service.")
+    parser_ssh = subparsers.add_parser("ssh", help="SSH into an active service")
     parser_ssh.add_argument("provider", help="The specified provider", nargs="?", choices=providers['vps'])
     parser_ssh.add_argument("-n", "--number", help="The number of the service to SSH into")
     parser_ssh.add_argument("-e", "--email", help="The login email address")
@@ -145,17 +144,17 @@ def add_parser_vps_ssh(subparsers):
 
 def add_parser_info(subparsers, provider_type):
     parser_info = subparsers.add_parser("info",
-                                        help="Get information of the specified %s service." % provider_type.upper())
+                                        help="Get information of the specified %s service" % provider_type.upper())
     parser_info.add_argument("provider", help="The specified provider", nargs="?", choices=providers[provider_type])
     parser_info.add_argument("-n", "--number",
-                             help="The number of the %s service to change the password for" % provider_type.upper())
+                             help="The number of the %s service to get the info of" % provider_type.upper())
     parser_info.add_argument("-e", "--email", help="The login email address")
     parser_info.add_argument("-pw", "--password", help="The login password")
     parser_info.set_defaults(func=info)
 
 
 def add_parser_vps_setrootpw(subparsers):
-    parser_setrootpw = subparsers.add_parser("setrootpw", help="Set the root password of the last activated service.")
+    parser_setrootpw = subparsers.add_parser("setrootpw", help="Set the root password of the last activated service")
     parser_setrootpw.add_argument("provider", help="The specified provider", choices=providers['vps'])
     parser_setrootpw.add_argument("-n", "--number", help="The number of the VPS service to change the password for")
     parser_setrootpw.add_argument("-e", "--email", help="The login email address")
@@ -182,17 +181,17 @@ def info(args):
     user_settings = _get_user_settings(args, provider.name)
     print(("Info for " + provider.name))
 
-    info = provider.info(user_settings)
+    provider_info = provider.info(user_settings)
 
     if args.type == "vps":
-        _print_info_vps(info)
+        _print_info_vps(provider_info)
     elif args.type == "vpn":
-        _print_info_vpn(info)
+        _print_info_vpn(provider_info)
 
 
 def status(args):
     provider = _get_provider(args)
-    print(("Getting status for %s." % provider.name))
+    print(("Getting status for %s" % provider.name))
     user_settings = _get_user_settings(args, provider.name)
     provider.get_status(user_settings)
 
@@ -224,11 +223,13 @@ def purchase(args):
 def _check_provider(provider, config):
     return config.verify_options(provider.required_settings)
 
+
 def _merge_random_user_data(user_settings):
     usergenerator = UserScraper()
     randomuser = usergenerator.get_user()
     for key in randomuser.keys():
         user_settings.config[key] = randomuser[key]
+
 
 def _get_user_settings(args, provider=None):
     user_settings = UserOptions()
@@ -400,21 +401,23 @@ def _print_info_vps(info_dict):
     for key in info_dict:
         print((row_format.format(key, info_dict[key])))
 
-def _print_info_vpn(info):
+
+def _print_info_vpn(provider_info):
     credentials = "credentials.conf"
     header = "=" * 20
 
-    ovpn = info.ovpn
+    ovpn = provider_info.ovpn
     ovpn += "\nauth-user-pass " + credentials
 
     print("\ncredentials.conf")
     print(header)
-    print(info.username)
-    print(info.password)
+    print(provider_info.username)
+    print(provider_info.password)
     print("\nsettings.ovpn")
     print(header)
     print(ovpn)
     print(header)
+
 
 if __name__ == '__main__':
     execute()

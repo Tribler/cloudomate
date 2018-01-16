@@ -4,14 +4,15 @@ from cloudomate import wallet as wallet_util
 
 import sys
 
-
 VpnOptions = namedtuple('VpnOptions', ['name', 'protocol', 'price', 'bandwidth', 'speed'])
 VpnStatus = namedtuple('VpnStatus', ['online', 'expiration'])
 VpnInfo = namedtuple('VpnInfo', ['username', 'password', 'ovpn'])
 
+
 class VpnHoster(Hoster):
     """
-    Abstract class for VPN Hosters, concrete classes should provide the information in the __init__ function.
+    Abstract class for VPN Hosters.
+    This defines all required subclass methods and implements some common methods.
     """
 
     def __init__(self):

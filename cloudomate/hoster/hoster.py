@@ -45,9 +45,9 @@ class Hoster(object):
         """
         Initialize hoster object common variables
          configurations holds the vps options available
-         br holds the stateful mechanize browser
+         _browser holds the stateful mechanize browser
         """
-        self.br = self._create_browser()
+        self._browser = self._create_browser()
 
     def options(self):
         raise NotImplementedError('Abstract method implementation')

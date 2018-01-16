@@ -1,4 +1,5 @@
 import unittest
+import sys
 
 from parameterized import parameterized
 from mock.mock import MagicMock
@@ -15,7 +16,7 @@ from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
 from cloudomate.util.fakeuserscraper import UserScraper
 
 providers = [
-    (LineVast,),
+    (LineVast,),  # TODO: Find out why the integration test for this one is unstable
     (BlueAngelHost,),
     (CCIHosting,),
     (CrownCloud,),
@@ -32,6 +33,7 @@ class TestHosters(unittest.TestCase):
         self.assertTrue(len(list(options)) > 0)
 
     @parameterized.expand(providers)
+    @unittest.skipIf(len(sys.argv) >= 2 and sys.argv[1] == 'discover', 'Integration tests have to be run manually')
     def test_hoster_purchase(self, hoster):
         user_settings = UserScraper().get_user()
         host = hoster()

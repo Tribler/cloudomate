@@ -37,17 +37,17 @@ class CCIHosting(SolusvmHoster):
         :param vps_option: 
         :return: 
         """
-        self.br.open(vps_option.purchase_url)
+        self._browser.open(vps_option.purchase_url)
         self.server_form(user_settings)  # Add item to cart
-        self.br.open('https://www.ccihosting.com/accounts/cart.php?a=confdomains')
+        self._browser.open('https://www.ccihosting.com/accounts/cart.php?a=confdomains')
 
-        summary = self.br.get_current_page().find('div', class_='summary-container')
-        self.br.follow_link(summary.find('a', class_='btn-checkout'))
+        summary = self._browser.get_current_page().find('div', class_='summary-container')
+        self._browser.follow_link(summary.find('a', class_='btn-checkout'))
 
-        self.br.select_form(selector='form[name=orderfrm]')
-        self.user_form(self.br, user_settings, self.gateway.name)
+        self._browser.select_form(selector='form[name=orderfrm]')
+        self.user_form(self._browser, user_settings, self.gateway.name)
 
-        coinbase_url = self.br.get_current_page().find('form')['action']
+        coinbase_url = self._browser.get_current_page().find('form')['action']
         return self.gateway.extract_info(coinbase_url)
 
     def server_form(self, user_settings):
@@ -56,7 +56,7 @@ class CCIHosting(SolusvmHoster):
         :param user_settings: settings
         :return: 
         """
-        self.br.post('https://www.ccihosting.com/accounts/cart.php', {
+        self._browser.post('https://www.ccihosting.com/accounts/cart.php', {
             'ajax': '1',
             'a': 'confproduct',
             'configure': 'true',
@@ -71,8 +71,8 @@ class CCIHosting(SolusvmHoster):
         })
 
     def start(self):
-        self.br.open('https://www.ccihosting.com/offshore-vps.html')
-        return self.parse_options(self.br.get_current_page())
+        self._browser.open('https://www.ccihosting.com/offshore-vps.html')
+        return self.parse_options(self._browser.get_current_page())
 
     def parse_options(self, page):
         tables = page.findAll('div', class_='p_table')
@@ -97,19 +97,19 @@ class CCIHosting(SolusvmHoster):
         )
 
     def get_status(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         clientarea.set_rootpw_rootpassword_php()
 
     def get_ip(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.get_ip()
 
     def info(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         data = clientarea.get_service_info()
         return OrderedDict([
             ('Hostname', data[0]),

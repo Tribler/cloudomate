@@ -202,7 +202,8 @@ class ElectrumWalletHandler(object):
         if fee is None:
             transaction = subprocess.check_output(self.command + ['payto', str(address), str(amount)]).decode()
         else:
-            transaction = subprocess.check_output(self.command + ['payto', str(address), str(amount), '-f', str(fee)]).decode()
+            transaction = subprocess.check_output(
+                self.command + ['payto', str(address), str(amount), '-f', str(fee)]).decode()
         jtrs = json.loads(transaction)
         return jtrs['hex']
 

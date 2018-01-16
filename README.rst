@@ -26,7 +26,7 @@ Requirements
 Installation
 ============
 
-The project can be installed through pip ::
+The project can be installed through pip: ::
 
    pip3 install cloudomate
 
@@ -46,7 +46,7 @@ Currently the following VPS providers are implemented: ::
    pulseservers   https://pulseservers.com/
    underground    https://undergroundprivate.com
 
-This same list can be accessed through the list command. ::
+This same list can be accessed through the list command: ::
 
    cloudomate vps list
 
@@ -57,7 +57,7 @@ Currently the following VPN providers are implemented: ::
 
    azirevpn       https://www.azirevpn.com
 
-This same list can be accessed through the list command. ::
+This same list can be accessed through the list command: ::
 
    cloudomate vpn list
 
@@ -69,21 +69,21 @@ For some commands, mainly purchase, user configuration is required. The
 main way to do this is through a configruation file. For Linux, the default
 location for the configuration file is `$HOME/.config/cloudomate.cfg`.
 
-A configuration file looks like this ::
+A configuration file looks like this: ::
 
    [User]
    email = 
-   firstName = 
-   lastName = 
-   companyName = 
-   phoneNumber = 
+   firstname =
+   lastname =
+   companyname =
+   phonenumber =
    password = 
 
    [Address]
    address = 
    city = 
    state = 
-   countryCode = 
+   countrycode =
    zipcode = 
 
    [Server]
@@ -127,11 +127,11 @@ VPS
        list                List VPS providers
        options             List VPS provider configurations
        purchase            Purchase VPS
-       status              Get the status of the VPS services.
-       setrootpw           Set the root password of the last activated service.
-       getip               Get the IP address of the specified service.
-       ssh                 SSH into an active service.
-       info                Get information of the specified VPS service.
+       status              Get the status of the VPS services
+       setrootpw           Set the root password of the last activated service
+       getip               Get the IP address of the specified service
+       ssh                 SSH into an active service
+       info                Get information of the specified VPS service
        
    optional arguments:
      -h, --help            show this help message and exit
@@ -148,8 +148,8 @@ VPN
        list                List VPN providers
        options             List VPN provider configurations
        purchase            Purchase VPN
-       status              Get the status of the VPN services.
-       info                Get information of the specified VPN service.
+       status              Get the status of the VPN services
+       info                Get information of the specified VPN service
        
    optional arguments:
      -h, --help            show this help message and exit

@@ -9,8 +9,8 @@ from mechanicalsoup import StatefulBrowser
 
 class UserScraper:
     """
-    Scrapes fakeaddressgenerator.com for fake user data also adds some basic additional information for server
-    configuration.
+    Scrapes fakeaddressgenerator.com for fake user data.
+    It also adds some basic additional information for server configuration.
     """
 
     attributes = [
@@ -82,8 +82,8 @@ class UserScraper:
         return config
 
     def _get_attribute(self, attribute):
-        return self.br.get_current_page()\
-            .find(string=attribute)\
-            .parent.parent.parent\
-            .find('input')\
+        return self.br.get_current_page() \
+            .find(string=attribute) \
+            .parent.parent.parent \
+            .find('input') \
             .get('value')

@@ -160,9 +160,10 @@ class ClientArea(object):
         millis = int(round(time.time() * 1000))
 
         vserverid = self._get_vserverid(service['url'])
-        url = self.clientarea_url + '?action=productdetails&id=%s&vserverid=%s&modop=custom&a=ChangeRootPassword' \
-                                    '&newrootpassword=%s&ajax=1&ac=Custom_ChangeRootPassword&_=%s' \
-                                    % (service['id'], vserverid, password, millis)
+        url = self.clientarea_url + '?action=productdetails&id={}&vserverid={}&modop=custom&a=ChangeRootPassword' \
+                                    '&newrootpassword={}&ajax=1&ac=Custom_ChangeRootPassword&_={}' \
+            .format(service['id'], vserverid, password, millis)
+
         response = self.browser.open(url)
         response_json = json.loads(response.text)
         if response_json['success'] is True:

@@ -40,35 +40,35 @@ class LineVast(SolusvmHoster):
         :param vps_option: 
         :return: 
         """
-        self.br.open(vps_option.purchase_url)
+        self._browser.open(vps_option.purchase_url)
         self.server_form(user_settings)
-        self.br.open('https://panel.linevast.de/cart.php?a=view')
+        self._browser.open('https://panel.linevast.de/cart.php?a=view')
 
-        summary = self.br.get_current_page().find('div', class_='summary-container')
-        self.br.follow_link(summary.find('a', class_='btn-checkout'))
+        summary = self._browser.get_current_page().find('div', class_='summary-container')
+        self._browser.follow_link(summary.find('a', class_='btn-checkout'))
 
-        form = self.br.select_form(selector='form#frmCheckout')
+        form = self._browser.select_form(selector='form#frmCheckout')
         form['acceptdomainwiderruf1'] = True
         form['acceptdomainwiderruf2'] = True
-        self.user_form(self.br, user_settings, self.gateway.name)
+        self.user_form(self._browser, user_settings, self.gateway.name)
 
-        self.br.select_form(nr=0)  # Go to payment form
-        self.br.submit_selected()
+        self._browser.select_form(nr=0)  # Go to payment form
+        self._browser.submit_selected()
 
-        return self.gateway.extract_info(self.br.get_url())
+        return self.gateway.extract_info(self._browser.get_url())
 
     def server_form(self, user_settings):
         """
         Fills in the form containing server configuration.
         :return: 
         """
-        form = self.br.select_form('form#frmConfigureProduct')
+        form = self._browser.select_form('form#frmConfigureProduct')
         self.fill_in_server_form(form, user_settings, rootpw=False, hostname=False, nameservers=False)
         try:
             form['configoption[61]'] = '657'  # Ubuntu 16.04
         except LinkNotFoundError:
             form['configoption[125]'] = '549'  # Ubuntu 16.04
-        self.br.submit_selected()
+        self._browser.submit_selected()
 
     def start(self):
         """
@@ -76,11 +76,11 @@ class LineVast(SolusvmHoster):
         methods. Windows configurations allow a selection of Linux distributions, but not vice-versa.
         :return: possible configurations.
         """
-        self.br.open("https://linevast.de/en/offers/ddos-protected-vps-hosting.html")
-        options = self.parse_openvz_hosting(self.br.get_current_page())
+        self._browser.open("https://linevast.de/en/offers/ddos-protected-vps-hosting.html")
+        options = self.parse_openvz_hosting(self._browser.get_current_page())
 
-        self.br.open("https://linevast.de/en/offers/windows-vps-hosting.html")
-        options = itertools.chain(options, self.parse_kvm_hosting(self.br.get_current_page()))
+        self._browser.open("https://linevast.de/en/offers/windows-vps-hosting.html")
+        options = itertools.chain(options, self.parse_kvm_hosting(self._browser.get_current_page()))
 
         return options
 
@@ -139,32 +139,32 @@ class LineVast(SolusvmHoster):
         return option
 
     def get_status(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         info = clientarea.get_service_info()
-        self.br.open("https://vm.linevast.de/login.php")
-        self.br.select_form(nr=0)
-        self.br.form['username'] = info[2]
-        self.br.form['password'] = info[3]
-        self.br.form.new_control('text', 'Submit', {'name': 'Submit', 'value': '1'})
-        self.br.form.new_control('text', 'act', {'name': 'act', 'value': 'login'})
-        self.br.form.method = "POST"
-        page = self.br.submit()
+        self._browser.open("https://vm.linevast.de/login.php")
+        self._browser.select_form(nr=0)
+        self._browser.form['username'] = info[2]
+        self._browser.form['password'] = info[3]
+        self._browser.form.new_control('text', 'Submit', {'name': 'Submit', 'value': '1'})
+        self._browser.form.new_control('text', 'act', {'name': 'act', 'value': 'login'})
+        self._browser.form.method = "POST"
+        page = self._browser.submit()
         if not self._check_login(page.get_data()):
             print("Login failed")
             sys.exit(2)
-        self.br.open("https://vm.linevast.de/home.php")
-        vi = self._extract_vi_from_links(self.br.links())
+        self._browser.open("https://vm.linevast.de/home.php")
+        vi = self._extract_vi_from_links(self._browser.links())
         data = {
             'act': 'rootpassword',
             'opt': user_settings.get('rootpw'),
             'vi': vi
         }
         data = urllib.parse.urlencode(data)
-        page = self.br.open("https://vm.linevast.de/_vm_remote.php", data)
+        page = self._browser.open("https://vm.linevast.de/_vm_remote.php", data)
         if not self._check_set_rootpw(page.get_data()):
             print("Setting password failed")
             sys.exit(2)
@@ -195,11 +195,11 @@ class LineVast(SolusvmHoster):
         return False
 
     def get_ip(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.get_ip()
 
     def info(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         data = clientarea.get_service_info()
         return OrderedDict([
             ('Hostname', data[0]),

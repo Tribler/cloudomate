@@ -39,21 +39,19 @@ class CrownCloud(SolusvmHoster):
         :param vps_option: 
         :return: 
         """
-        self.br.open(vps_option.purchase_url)
+        self._browser.open(vps_option.purchase_url)
         self.server_form(user_settings)
-        self.br.open('https://crowncloud.net/clients/cart.php?a=view')
-        self.select_form_id(self.br, 'frmCheckout')
-        form = self.br.get_current_form()
-        #promobutton = self.br.get_current_form().find_control(type="submitbutton", nr=0)
-        #promobutton.disabled = True
+        self._browser.open('https://crowncloud.net/clients/cart.php?a=view')
+        self.select_form_id(self._browser, 'frmCheckout')
+        form = self._browser.get_current_form()
 
-        soup = self.br.get_current_page()
+        soup = self._browser.get_current_page()
         submit = soup.select('button#btnCompleteOrder')[0]
         form.choose_submit(submit)
 
-        self.user_form(self.br, user_settings, self.gateway.name, errorbox_class='errorbox')
-        self.br.select_form(nr=0)
-        page = self.br.submit_selected()
+        self.user_form(self._browser, user_settings, self.gateway.name, errorbox_class='errorbox')
+        self._browser.select_form(nr=0)
+        page = self._browser.submit_selected()
         return self.gateway.extract_info(page.url)
 
     def server_form(self, user_settings):
@@ -62,26 +60,28 @@ class CrownCloud(SolusvmHoster):
         :return: 
         """
         try:
-            self.select_form_id(self.br, 'orderfrm')
-            self.fill_in_server_form(self.br.get_current_form(), user_settings, nameservers=False, rootpw=False, hostname=False)
-            form = self.br.get_current_form()
+            self.select_form_id(self._browser, 'orderfrm')
+            self.fill_in_server_form(self._browser.get_current_form(), user_settings, nameservers=False, rootpw=False,
+                                     hostname=False)
+            form = self._browser.get_current_form()
             form.form['action'] = 'https://crowncloud.net/clients/cart.php'
             form.form['method'] = 'post'
             form['configoption[1]'] = '56'
-            form['configoption[8]']= '52'
-            form['configoption[9]']= '0'
+            form['configoption[8]'] = '52'
+            form['configoption[9]'] = '0'
             form.new_control('hidden', 'a', 'confproduct')
             form.new_control('hidden', 'ajax', '1')
         except LinkNotFoundError:
-            self.select_form_id(self.br, 'frmConfigureProduct')
-            self.fill_in_server_form(self.br.get_current_form(), user_settings, nameservers=False, rootpw=False, hostname=False)
+            self.select_form_id(self._browser, 'frmConfigureProduct')
+            self.fill_in_server_form(self._browser.get_current_form(), user_settings, nameservers=False, rootpw=False,
+                                     hostname=False)
             print("Using classic form")
             pass
-        resp = self.br.submit_selected()
+        resp = self._browser.submit_selected()
 
     def start(self):
-        self.br.open('http://crowncloud.net/openvz.php')
-        return self.parse_options(self.br.get_current_page())
+        self._browser.open('http://crowncloud.net/openvz.php')
+        return self.parse_options(self._browser.get_current_page())
 
     def parse_options(self, page):
         tables = page.findAll('table')
@@ -120,12 +120,12 @@ class CrownCloud(SolusvmHoster):
         )
 
     def get_status(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.print_services()
 
     def set_rootpw(self, user_settings):
         print("CrownCloud does not support changing root password through their configuration panel.")
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         (ip, user, rootpw) = self._extract_vps_information(clientarea)
         print(("IP: %s" % ip))
         print(("Root password: %s\n" % rootpw))
@@ -138,7 +138,7 @@ class CrownCloud(SolusvmHoster):
         emails = clientarea.get_emails()
         for email in emails:
             if 'New VPS Information' in email['title']:
-                page = self.br.open("https://crowncloud.net/clients/viewemail.php?id=" + email['id'])
+                page = self._browser.open("https://crowncloud.net/clients/viewemail.php?id=" + email['id'])
                 (ip, user, rootpw) = self._extract_email_info(page.get_data())
                 return ip, user, rootpw
         return None
@@ -153,7 +153,7 @@ class CrownCloud(SolusvmHoster):
         return ip_match.group(1), user_match.group(1), rootpw.group(1)
 
     def get_ip(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         (ip, user, rootpw) = self._extract_vps_information(clientarea)
         if not ip:
             print("No active IP found")
@@ -161,7 +161,7 @@ class CrownCloud(SolusvmHoster):
         return ip
 
     def info(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         (ip, user, rootpw) = self._extract_vps_information(clientarea)
         return OrderedDict([
             ('IP address', ip),

@@ -4,6 +4,10 @@ from cloudomate.hoster.hoster import Hoster
 
 
 class VpsHoster(Hoster):
+    """
+    Abstract class for VPS Hosters.
+    This class already implements some common methods.
+    """
     required_settings = None
     configurations = None
     client_area = None

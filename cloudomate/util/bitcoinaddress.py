@@ -45,7 +45,7 @@ def decode_base58(bitcoin_address, length):
     for char in bitcoin_address:
         try:
             n = n * 58 + digits58.index(char)
-        except:
+        except ValueError:
             msg = "Character not part of Bitcoin's base58: '%s'"
             raise ValueError(msg % (char,))
     try:
