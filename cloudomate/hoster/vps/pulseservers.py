@@ -1,11 +1,9 @@
 from collections import OrderedDict
 
-from bs4 import BeautifulSoup
-
 from cloudomate.gateway import coinbase
-from cloudomate.vps.clientarea import ClientArea
-from cloudomate.vps.solusvm_hoster import SolusvmHoster
-from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
+from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.vpsoption import VpsOption
 from cloudomate.wallet import determine_currency
 
 
@@ -40,17 +38,16 @@ class Pulseservers(SolusvmHoster):
         Open browser to hoster website and return parsed options
         :return: parsed options
         """
-        response = self.br.open('https://pulseservers.com/vps-linux.html')
-        return self.parse_options(response)
+        self._browser.open('https://pulseservers.com/vps-linux.html')
+        return self.parse_options(self._browser.get_current_page())
 
-    def parse_options(self, response):
+    def parse_options(self, site):
         """
         Parse options of hosting configurations
-        :param response: Site to be parsed
+        :param site: Site to be parsed
         :return: list of configurations
         """
-        site = BeautifulSoup(response.read(), 'lxml')
-        pricingboxes = site.findAll('div', {'class': 'pricing-box'})
+        pricingboxes = site.findAll('div', class_='pricing-box')
         self.configurations = [self._parse_box(box) for box in pricingboxes]
         return self.configurations
 
@@ -100,42 +97,47 @@ class Pulseservers(SolusvmHoster):
         :param vps_option: 
         :return: 
         """
-        self.br.open(vps_option.purchase_url)
+        self._browser.open(vps_option.purchase_url)
         self.server_form(user_settings)
-        self.br.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
-        self.select_form_id(self.br, 'mainfrm')
-        promobutton = self.br.form.find_control(name="validatepromo")
-        promobutton.disabled = True
-        self.user_form(self.br, user_settings, self.gateway.name, errorbox_class='errorbox')
-        self.br.select_form(nr=0)
-        page = self.br.submit()
-        return self.gateway.extract_info(page.geturl())
+        self._browser.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
+        self.select_form_id(self._browser, 'mainfrm')
+        form = self._browser.get_current_form()
+        soup = self._browser.get_current_page()
+        submit = soup.select('input.ordernow')[0]
+        form.choose_submit(submit)
+
+        self.user_form(self._browser, user_settings, self.gateway.name, errorbox_class='errorbox')
+        self._browser.select_form(nr=0)
+        page = self._browser.submit_selected()
+        return self.gateway.extract_info(page.url)
 
     def server_form(self, user_settings):
-        """
-        Fill in the form with user information
-        :param user_settings: settings
-        :return: 
-        """
-        self.select_form_id(self.br, 'orderfrm')
-        self.fill_in_server_form(self.br.form, user_settings, nameservers=False)
-        self.br.form['billingcycle'] = ['monthly']
-        self.br.submit()
+        self.select_form_id(self._browser, 'orderfrm')
+        form = self._browser.get_current_form()
+        self.fill_in_server_form(form, user_settings, nameservers=False)
+        form.set('billingcycle', 'monthly')
+
+        form.form['action'] = 'https://www.pulseservers.com/billing/cart.php'
+        form.form['method'] = 'get'
+        form.new_control('hidden', 'a', 'confproduct')
+        form.new_control('hidden', 'ajax', '1')
+
+        self._browser.submit_selected()
 
     def get_status(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         clientarea.set_rootpw_rootpassword_php()
 
     def get_ip(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.get_ip()
 
     def info(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         data = clientarea.get_service_info()
         return OrderedDict([
             ('Hostname', data[0]),

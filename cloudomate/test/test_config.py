@@ -45,5 +45,6 @@ class TestConfig(unittest.TestCase):
         self.config.read_settings("config_test.cfg", "testhoster")
         self.assertEqual(self.config.get("email"), "test@test.net")
 
+
 if __name__ == '__main__':
     unittest.main()

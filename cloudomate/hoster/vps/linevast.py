@@ -1,16 +1,16 @@
 import itertools
 import json
 import sys
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 from collections import OrderedDict
 
-from bs4 import BeautifulSoup
-from mechanize import ControlNotFoundError
-
 from cloudomate.gateway import bitpay
-from cloudomate.vps.clientarea import ClientArea
-from cloudomate.vps.solusvm_hoster import SolusvmHoster
-from cloudomate.vps.vpsoption import VpsOption
+from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
+from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.vpsoption import VpsOption
+from mechanicalsoup.utils import LinkNotFoundError
 
 
 class LineVast(SolusvmHoster):
@@ -35,54 +35,61 @@ class LineVast(SolusvmHoster):
 
     def register(self, user_settings, vps_option):
         """
-        Register RockHoster provider, pay through CoinBase
+        Register Linevast provider, pay through CoinBase
         :param user_settings: 
         :param vps_option: 
         :return: 
         """
-        self.br.open(vps_option.purchase_url)
+        self._browser.open(vps_option.purchase_url)
         self.server_form(user_settings)
-        self.br.open('https://panel.linevast.de/cart.php?a=view')
-        self.br.follow_link(text_regex=r'Checkout')
-        self.br.select_form(name='orderfrm')
-        self.user_form(self.br, user_settings, self.gateway.name)
-        self.br.select_form(nr=0)
-        page = self.br.submit()
-        return self.gateway.extract_info(page.geturl())
+        self._browser.open('https://panel.linevast.de/cart.php?a=view')
+
+        summary = self._browser.get_current_page().find('div', class_='summary-container')
+        self._browser.follow_link(summary.find('a', class_='btn-checkout'))
+
+        form = self._browser.select_form(selector='form#frmCheckout')
+        form['acceptdomainwiderruf1'] = True
+        form['acceptdomainwiderruf2'] = True
+        self.user_form(self._browser, user_settings, self.gateway.name)
+
+        self._browser.select_form(nr=0)  # Go to payment form
+        self._browser.submit_selected()
+
+        return self.gateway.extract_info(self._browser.get_url())
 
     def server_form(self, user_settings):
         """
         Fills in the form containing server configuration.
         :return: 
         """
-        self.select_form_id(self.br, 'frmConfigureProduct')
-        self.fill_in_server_form(self.br.form, user_settings, rootpw=False, hostname=False, nameservers=False)
+        form = self._browser.select_form('form#frmConfigureProduct')
+        self.fill_in_server_form(form, user_settings, rootpw=False, hostname=False, nameservers=False)
         try:
-            self.br.form['configoption[61]'] = ['657']  # Ubuntu 16.04
-        except ControlNotFoundError:
-            self.br.form['configoption[125]'] = ['549']  # Ubuntu 16.04
-        self.br.submit()
+            form['configoption[61]'] = '657'  # Ubuntu 16.04
+        except LinkNotFoundError:
+            form['configoption[125]'] = '549'  # Ubuntu 16.04
+        self._browser.submit_selected()
 
     def start(self):
         """
         Linux (OpenVZ) and Windows (KVM) pages are slightly different, therefore their pages are parsed by different 
-        methoods. Windows configurations allow a selection of Linux distributions, but not vice-versa.
+        methods. Windows configurations allow a selection of Linux distributions, but not vice-versa.
         :return: possible configurations.
         """
-        openvz_hosting_page = self.br.open("https://linevast.de/angebote/linux-openvz-vserver-mieten.html")
-        options = self.parse_openvz_hosting(openvz_hosting_page.get_data())
+        self._browser.open("https://linevast.de/en/offers/ddos-protected-vps-hosting.html")
+        options = self.parse_openvz_hosting(self._browser.get_current_page())
 
-        # kvm_hosting_page = self.br.open("https://linevast.de/angebote/kvm-vserver-mieten.html")
-        # options = itertools.chain(options, self.parse_kvm_hosting(kvm_hosting_page.get_data()))
+        self._browser.open("https://linevast.de/en/offers/windows-vps-hosting.html")
+        options = itertools.chain(options, self.parse_kvm_hosting(self._browser.get_current_page()))
+
         return options
 
     def parse_openvz_hosting(self, page):
-        soup = BeautifulSoup(page, "lxml")
-        table = soup.find('table', {'class': 'plans-block'})
+        table = page.find('table', {'class': 'plans-block'})
         details = table.tbody.tr
         names = table.findAll('div', {'class': 'plans-title'})
         i = 0
-        for plan in details.findAll('div', {'class': 'plans-content'})[1:]:
+        for plan in details.findAll('div', {'class': 'plans-content'}):
             name = names[i].text.strip() + ' OVZ'
             option = self.parse_openvz_option(plan, name)
             i = i + 1
@@ -99,18 +106,17 @@ class LineVast(SolusvmHoster):
             bandwidth='unmetered',
             currency='EUR',
             connection=int(elements[4].text.split(' GB')[0]) * 1000,
-            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')),
+            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace('\u20AC', '')),
             purchase_url=plan.a['href'],
         )
         return option
 
     def parse_kvm_hosting(self, page):
-        soup = BeautifulSoup(page, "lxml")
-        table = soup.find('table', {'class': 'plans-block'})
+        table = page.find('table', {'class': 'plans-block'})
         details = table.tbody.tr
         names = table.findAll('div', {'class': 'plans-title'})
         i = 0
-        for plan in details.findAll('div', {'class': 'plans-content'})[1:]:
+        for plan in details.findAll('div', {'class': 'plans-content'}):
             name = names[i].text.strip() + ' KVM'
             option = self.parse_kvm_option(plan, name)
             i = i + 1
@@ -127,38 +133,38 @@ class LineVast(SolusvmHoster):
             currency='EUR',
             bandwidth='unmetered',
             connection=int(elements[4].text.split(' GB')[0]) * 1000,
-            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace(u'\u20AC', '')),
+            price=float(plan.find('div', {'class': 'plans-price'}).span.text.replace('\u20AC', '')),
             purchase_url=plan.a['href'],
         )
         return option
 
     def get_status(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.print_services()
 
     def set_rootpw(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         info = clientarea.get_service_info()
-        self.br.open("https://vm.linevast.de/login.php")
-        self.br.select_form(nr=0)
-        self.br.form['username'] = info[2]
-        self.br.form['password'] = info[3]
-        self.br.form.new_control('text', 'Submit', {'name': 'Submit', 'value': '1'})
-        self.br.form.new_control('text', 'act', {'name': 'act', 'value': 'login'})
-        self.br.form.method = "POST"
-        page = self.br.submit()
+        self._browser.open("https://vm.linevast.de/login.php")
+        self._browser.select_form(nr=0)
+        self._browser.form['username'] = info[2]
+        self._browser.form['password'] = info[3]
+        self._browser.form.new_control('text', 'Submit', {'name': 'Submit', 'value': '1'})
+        self._browser.form.new_control('text', 'act', {'name': 'act', 'value': 'login'})
+        self._browser.form.method = "POST"
+        page = self._browser.submit()
         if not self._check_login(page.get_data()):
             print("Login failed")
             sys.exit(2)
-        self.br.open("https://vm.linevast.de/home.php")
-        vi = self._extract_vi_from_links(self.br.links())
+        self._browser.open("https://vm.linevast.de/home.php")
+        vi = self._extract_vi_from_links(self._browser.links())
         data = {
             'act': 'rootpassword',
             'opt': user_settings.get('rootpw'),
             'vi': vi
         }
-        data = urllib.urlencode(data)
-        page = self.br.open("https://vm.linevast.de/_vm_remote.php", data)
+        data = urllib.parse.urlencode(data)
+        page = self._browser.open("https://vm.linevast.de/_vm_remote.php", data)
         if not self._check_set_rootpw(page.get_data()):
             print("Setting password failed")
             sys.exit(2)
@@ -189,11 +195,11 @@ class LineVast(SolusvmHoster):
         return False
 
     def get_ip(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         return clientarea.get_ip()
 
     def info(self, user_settings):
-        clientarea = ClientArea(self.br, self.clientarea_url, user_settings)
+        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
         data = clientarea.get_service_info()
         return OrderedDict([
             ('Hostname', data[0]),

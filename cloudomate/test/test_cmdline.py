@@ -1,12 +1,11 @@
 import unittest
 from argparse import Namespace
 
-from mock.mock import MagicMock
-
 import cloudomate.cmdline as cmdline
+from cloudomate.hoster.vps.linevast import LineVast
+from cloudomate.hoster.vps.vpsoption import VpsOption
 from cloudomate.util.config import UserOptions
-from cloudomate.vps.rockhoster import RockHoster
-from cloudomate.vps.vpsoption import VpsOption
+from mock.mock import MagicMock
 
 
 class TestCmdLine(unittest.TestCase):
@@ -21,22 +20,23 @@ class TestCmdLine(unittest.TestCase):
         self.assertEqual(self.config.get(key), value)
 
     def test_execute_list(self):
-        command = ["list"]
+        command = ["vps", "list"]
         cmdline.execute(command)
 
     def test_execute_options(self):
         mock_method = self._mock_options()
-        command = ["options", "rockhoster"]
-        cmdline.providers["rockhoster"].configurations = []
+        command = ["vps", "options", "linevast"]
+        cmdline.providers["vps"]["linevast"].configurations = []
         cmdline.execute(command)
         mock_method.assert_called_once()
 
     def test_execute_purchase(self):
         self._mock_options([self._create_option()])
-        RockHoster.purchase = MagicMock()
-        command = ["purchase", "rockhoster", "-f", "-c", "config_test.cfg", "-rp", "asdf", "0"]
+        LineVast.purchase = MagicMock()
+        cmdline._confirmation = MagicMock(return_value=True)
+        command = ["vps", "purchase", "linevast", "-f", "-c", "config_test.cfg", "-rp", "asdf", "0"]
         cmdline.execute(command)
-        RockHoster.purchase.assert_called_once()
+        LineVast.purchase.assert_called_once()
 
     @staticmethod
     def _create_option():
@@ -53,30 +53,31 @@ class TestCmdLine(unittest.TestCase):
         )
 
     def test_execute_purchase_verify_options_failure(self):
-        command = ["purchase", "rockhoster", "-f", "-c", "config_test.cfg", "1"]
-        self._check_exit_code(2, cmdline.execute, command)
+        command = ["vps", "purchase", "linevast", "-f", "-c", "config_test.cfg", "1"]
+        self._check_exit_code(1, cmdline.execute, command)
 
     def test_execute_purchase_unknown_provider(self):
-        command = ["purchase", "nonode", "-f", "-rp", "asdf", "1"]
+        command = ["vps", "purchase", "nonode", "-f", "-rp", "asdf", "1"]
         self._check_exit_code(2, cmdline.execute, command)
 
     def test_execute_options_unknown_provider(self):
-        command = ["options", "nonode"]
+        command = ["vps", "options", "nonode"]
         self._check_exit_code(2, cmdline.execute, command)
 
     def _check_exit_code(self, exit_code, method, args):
         try:
             method(args)
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertEqual(e.code, exit_code)
 
     def test_execute_options_no_provider(self):
-        command = ["options"]
+        command = ["vps", "options"]
         self._check_exit_code(2, cmdline.execute, command)
 
     def test_purchase_unknown_provider(self):
         args = Namespace()
         args.provider = "sd"
+        args.type = "vps"
         self._check_exit_code(2, cmdline.purchase, args)
 
     def test_purchase_no_provider(self):
@@ -86,16 +87,17 @@ class TestCmdLine(unittest.TestCase):
     def test_purchase_bad_provider(self):
         args = Namespace()
         args.provider = False
+        args.type = "vps"
         self._check_exit_code(2, cmdline.purchase, args)
 
     def test_execute_purchase_high_id(self):
         self._mock_options()
-        command = ["purchase", "rockhoster", "-c", "config_test.cfg", "-rp", "asdf", "1000"]
+        command = ["vps", "purchase", "linevast", "-c", "config_test.cfg", "-rp", "asdf", "1000"]
         self._check_exit_code(1, cmdline.execute, command)
 
     def test_execute_purchase_low_id(self):
         mock = self._mock_options()
-        command = ["purchase", "rockhoster", "-c", "config_test.cfg", "-rp", "asdf", "-1"]
+        command = ["vps", "purchase", "linevast", "-c", "config_test.cfg", "-rp", "asdf", "-1"]
         self._check_exit_code(1, cmdline.execute, command)
         mock.assert_called_once()
 
@@ -103,8 +105,8 @@ class TestCmdLine(unittest.TestCase):
     def _mock_options(items=None):
         if items is None:
             items = []
-        RockHoster.options = MagicMock(return_value=items)
-        return RockHoster.options
+        LineVast.options = MagicMock(return_value=items)
+        return LineVast.options
 
 
 if __name__ == '__main__':

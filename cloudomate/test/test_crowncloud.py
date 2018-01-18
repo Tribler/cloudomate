@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from cloudomate.vps.crowncloud import CrownCloud
+from cloudomate.hoster.vps.crowncloud import CrownCloud
 
 
 class TestCrownCloud(unittest.TestCase):
@@ -9,7 +9,7 @@ class TestCrownCloud(unittest.TestCase):
         html_file = open(os.path.join(os.path.dirname(__file__), 'resources/crowncloud_email.html'), 'r')
         data = html_file.read()
         info = CrownCloud._extract_email_info(data)
-        self.assertEqual(info, (u'000.000.000.000', u'paneluserxxxx', u'xxxx'))
+        self.assertEqual(info, ('000.000.000.000', 'paneluserxxxx', 'xxxx'))
 
 
 if __name__ == '__main__':

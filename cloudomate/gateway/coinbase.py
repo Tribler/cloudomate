@@ -1,4 +1,6 @@
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from bs4 import BeautifulSoup
 
@@ -11,7 +13,7 @@ def extract_info(url):
     :param url: the Coinbase URL like "https://www.coinbase.com/checkouts/2b30a03995ec62f15bdc54e8428caa87"
     :return: a tuple of the amount in BitCoin along with the address
     """
-    response = urllib.urlopen(url)
+    response = urllib.request.urlopen(url)
     site = BeautifulSoup(response, 'lxml')
     details = site.find('div', {'class': 'details'})
     bitcoin_url = details.p.a['href']
