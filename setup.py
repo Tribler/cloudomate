@@ -1,5 +1,6 @@
 from codecs import open
 from os import path
+import sys
 
 from setuptools import setup, find_packages
 
@@ -7,6 +8,15 @@ here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
+
+if sys.version_info.major == 2:
+    package_data = {
+        b'cloudomate': [],
+    }
+else:
+    package_data = {
+        'cloudomate': [],
+    }
 
 setup(
     name='cloudomate',
@@ -43,16 +53,26 @@ setup(
 
     packages=find_packages(exclude=['docs', 'test']),
 
-    install_requires=['appdirs', 'lxml', 'MechanicalSoup', 'bs4', 'mock', 'forex-python', 'parameterized'],
+    install_requires=[
+        'appdirs',
+        'lxml',
+        'MechanicalSoup',
+        'bs4',
+        'forex-python',
+        'parameterized',
+        'fake-useragent',
+        'CaseInsensitiveDict',
+        'ConfigParser',
+        'future',
+        'requests[security]'
+    ],
 
     extras_require={
         'dev': [],
         'test': ['mock', 'parameterized'],
     },
 
-    package_data={
-        'cloudomate': [],
-    },
+    package_data=package_data,
 
     entry_points={
         'console_scripts': [

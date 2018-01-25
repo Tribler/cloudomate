@@ -1,147 +1,121 @@
-from collections import OrderedDict
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from cloudomate.gateway import coinbase
+import sys
+from builtins import int
+
+from future import standard_library
+
+from cloudomate.gateway.coinbase import Coinbase
+from cloudomate.hoster.vps import vps_hoster
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
-from cloudomate.hoster.vps.clientarea import ClientArea
-from cloudomate.hoster.vps.vpsoption import VpsOption
-from cloudomate.wallet import determine_currency
+
+standard_library.install_aliases()
 
 
 class Pulseservers(SolusvmHoster):
-    """
-    PulseServers contains the logic to view hosting configurations and to 
-    purchase servers at Pulseservers.
-    """
-    name = "pulseservers"
-    website = "https://pulseservers.com/"
-    required_settings = [
-        'firstname',
-        'lastname',
-        'email',
-        'phonenumber',
-        'address',
-        'city',
-        'state',
-        'zipcode',
-        'password',
-        'hostname',
-        'rootpw'
-    ]
-    clientarea_url = 'https://www.pulseservers.com/billing/clientarea.php'
-    gateway = coinbase
+    CART_URL = 'https://www.pulseservers.com/billing/cart.php?a=confdomains'
+    OPTIONS_URL = 'https://pulseservers.com/vps-linux.html'
 
-    def __init__(self):
-        super(Pulseservers, self).__init__()
+    '''
+    Information about the Hoster
+    '''
 
-    def start(self):
-        """
-        Open browser to hoster website and return parsed options
-        :return: parsed options
-        """
-        self._browser.open('https://pulseservers.com/vps-linux.html')
-        return self.parse_options(self._browser.get_current_page())
+    @staticmethod
+    def get_clientarea_url():
+        return 'https://www.pulseservers.com/billing/clientarea.php'
 
-    def parse_options(self, site):
-        """
-        Parse options of hosting configurations
-        :param site: Site to be parsed
-        :return: list of configurations
-        """
-        pricingboxes = site.findAll('div', class_='pricing-box')
-        self.configurations = [self._parse_box(box) for box in pricingboxes]
-        return self.configurations
+    @staticmethod
+    def get_gateway():
+        return Coinbase
+
+    @staticmethod
+    def get_metadata():
+        return 'PulseServers', 'https://pulseservers.com/'
+
+    @staticmethod
+    def get_required_settings():
+        return {
+            'user': ['firstname', 'lastname', 'email', 'phonenumber', 'password'],
+            'address': ['address', 'city', 'state', 'zipcode'],
+            'server': ['hostname', 'root_password']
+        }
+
+    '''
+    Action methods of the Hoster that can be called
+    '''
+
+    @classmethod
+    def get_options(cls):
+        browser = cls._create_browser()
+        browser.open(cls.OPTIONS_URL)
+
+        # Get all pricing boxes
+        soup = browser.get_current_page()
+        boxes = soup.select('div.pricing-box')
+        return [cls._parse_box(box) for box in boxes]
+
+    def purchase(self, wallet, option):
+        self._browser.open(option.purchase_url)
+        self._submit_server_form()
+        self._browser.open(self.CART_URL)
+        page = self._submit_user_form()
+        self.pay(wallet, self.get_gateway(), page.url)
+
+    '''
+    Hoster-specific methods that are needed to perform the actions
+    '''
+
+    def _submit_server_form(self):
+        form = self._browser.select_form('form#orderfrm')
+
+        self._fill_server_form()
+        form.set('billingcycle', 'monthly')
+        form.form['action'] = 'https://www.pulseservers.com/billing/cart.php'
+
+        return self._browser.submit_selected()
+
+    def _submit_user_form(self):
+        # Select the correct submit button
+        form = self._browser.select_form('form#mainfrm')
+        soup = self._browser.get_current_page()
+        submit = soup.select_one('input.ordernow')
+        form.choose_submit(submit)
+
+        # Let SolusVM class handle the rest
+        gateway = self.get_gateway()
+        self._fill_user_form(gateway.get_name(), errorbox_class='errorbox')
+
+        # Redirect to Coinbase
+        self._browser.select_form(nr=0)
+        return self._browser.submit_selected()
 
     @staticmethod
     def _parse_box(box):
-        """
-        Parse a single hosting configuration
-        :param box: Div containing hosting details
-        :return: VpsOption containing hosting details
-        """
         details = box.findAll('li')
+
+        name = details[0].h4.text
+
+        price = details[1].h1.text
+        price = float(price[1:])
+
+        cores = details[2].strong.text
+        cores = int(cores.split(' ')[0])
+
+        memory = details[3].strong.text
+        memory = float(memory[0:-2])
+
         storage = details[4].strong.text
         if storage == '1TB':
-            storage = 1024.0
+            storage = 1000.0
         else:
-            storage = float(storage.split('G')[0])
+            storage = float(storage[0:-2])
 
-        connection = details[5].strong.text.split('G')[0]
-        connection = int(connection) * 1000
-        return VpsOption(
-            name=details[0].h4.text,
-            price=float(details[1].h1.text.split('$')[1]),
-            currency=determine_currency(details[1].h1.text),
-            cpu=int(details[2].strong.text.split('C')[0]),
-            ram=float(details[3].strong.text.split('G')[0]),
-            storage=storage,
-            connection=connection,
-            bandwidth='unmetered',
-            purchase_url=details[9].a['href']
-        )
+        connection = details[5].strong.text
+        connection = int(connection[0:-7])
 
-    @staticmethod
-    def _beautify_cpu(cores, speed):
-        """
-        Format cores and speed to fit cpu column
-        :param cores: cores text
-        :param speed: speed text
-        :return: formatted string
-        """
-        spl = cores.split()
-        return '{0}c/{1}t {2}'.format(spl[0], spl[3], speed[:-4])
+        purchase_url = details[9].a['href']
 
-    def register(self, user_settings, vps_option):
-        """
-        Register at Pulseservers provider and pay through coinbase
-        :param user_settings: 
-        :param vps_option: 
-        :return: 
-        """
-        self._browser.open(vps_option.purchase_url)
-        self.server_form(user_settings)
-        self._browser.open('https://www.pulseservers.com/billing/cart.php?a=confdomains')
-        self.select_form_id(self._browser, 'mainfrm')
-        form = self._browser.get_current_form()
-        soup = self._browser.get_current_page()
-        submit = soup.select('input.ordernow')[0]
-        form.choose_submit(submit)
-
-        self.user_form(self._browser, user_settings, self.gateway.name, errorbox_class='errorbox')
-        self._browser.select_form(nr=0)
-        page = self._browser.submit_selected()
-        return self.gateway.extract_info(page.url)
-
-    def server_form(self, user_settings):
-        self.select_form_id(self._browser, 'orderfrm')
-        form = self._browser.get_current_form()
-        self.fill_in_server_form(form, user_settings, nameservers=False)
-        form.set('billingcycle', 'monthly')
-
-        form.form['action'] = 'https://www.pulseservers.com/billing/cart.php'
-        form.form['method'] = 'get'
-        form.new_control('hidden', 'a', 'confproduct')
-        form.new_control('hidden', 'ajax', '1')
-
-        self._browser.submit_selected()
-
-    def get_status(self, user_settings):
-        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
-        return clientarea.print_services()
-
-    def set_rootpw(self, user_settings):
-        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
-        clientarea.set_rootpw_rootpassword_php()
-
-    def get_ip(self, user_settings):
-        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
-        return clientarea.get_ip()
-
-    def info(self, user_settings):
-        clientarea = ClientArea(self._browser, self.clientarea_url, user_settings)
-        data = clientarea.get_service_info()
-        return OrderedDict([
-            ('Hostname', data[0]),
-            ('IP address', data[1]),
-            ('Nameserver 1', data[2].split('.com')[0] + '.com'),
-            ('Nameserver 2', data[2].split('.com')[1]),
-        ])
+        return vps_hoster.VpsOption(name, cores, memory, storage, sys.maxsize, connection, price, purchase_url)

@@ -1,13 +1,20 @@
-import random
-import string
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import random
 import string
+from builtins import object
+
+from future import standard_library
 
 from mechanicalsoup import StatefulBrowser
 
+standard_library.install_aliases()
 
-class UserScraper:
+
+class UserScraper(object):
     """
     Scrapes fakeaddressgenerator.com for fake user data.
     It also adds some basic additional information for server configuration.
@@ -20,6 +27,8 @@ class UserScraper:
         'State Full',
         'Zip Code',
         'Phone Number',
+        'Company',
+        'Username'
     ]
 
     pages = {
@@ -31,58 +40,63 @@ class UserScraper:
 
     def __init__(self, country='NL'):
         self.country_code = country
-        self.br = StatefulBrowser()
+        self.browser = StatefulBrowser()
         self.page = UserScraper.pages.get(country)
 
     def get_user(self):
-        self.br.open(self.page)
+        self.browser.open(self.page)
         attrs = {}
 
         for attr in self.attributes:
             attrs[attr] = self._get_attribute(attr)
 
         attrs['country_code'] = self.country_code
-        attrs['password'] = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-        attrs['email'] = self._get_attribute('Username') + '@email.com'
+        attrs['password'] = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(12))
+        attrs['email'] = attrs['Username'] + '@email.com'
         attrs['rootpw'] = attrs['password']
         attrs['ns1'] = 'ns1'
         attrs['ns2'] = 'ns2'
-        attrs['hostname'] = self._get_attribute('Username') + '.hostname.com'
+        attrs['hostname'] = attrs['Username'] + '.hostname.com'
 
         return self._map_to_config(attrs)
 
-    def _map_to_config(self, attrs):
+    @staticmethod
+    def _map_to_config(attrs):
         config = {}
         # Treat full name separately because it needs to be split
         if 'Full Name' in attrs:
-            config['firstname'] = attrs['Full Name'].split('\xa0')[0]
-            config['lastname'] = attrs['Full Name'].split('\xa0')[-1]
+            config['user'] = {}
+            config['user']['firstname'] = attrs['Full Name'].split('\xa0')[0]
+            config['user']['lastname'] = attrs['Full Name'].split('\xa0')[-1]
 
-        # Map the possible user attributes to their config names
+        # Map the possible user attributes to their config names and sections
         mapping = {
-            'Street': 'address',
-            'City': 'city',
-            'State Full': 'state',
-            'Zip Code': 'zipcode',
-            'Phone Number': 'phonenumber',
-            'Company': 'companyname',
-            'Username': 'username',
-            'country_code': 'countrycode',
-            'password': 'password',
-            'email': 'email',
-            'rootpw': 'rootpw',
-            'ns1': 'ns1',
-            'ns2': 'ns2',
-            'hostname': 'hostname',
+            'Street': ('address', 'address'),
+            'City': ('address', 'city'),
+            'State Full': ('address', 'state'),
+            'Zip Code': ('address', 'zipcode'),
+            'Phone Number': ('user', 'phonenumber'),
+            'Company': ('user', 'companyname'),
+            'Username': ('user', 'username'),
+            'country_code': ('address', 'countrycode'),
+            'password': ('user', 'password'),
+            'email': ('user', 'email'),
+            'rootpw': ('server', 'root_password'),
+            'ns1': ('server', 'ns1'),
+            'ns2': ('server', 'ns2'),
+            'hostname': ('server', 'hostname'),
         }
 
         for attr in attrs.keys():
             if attr in mapping.keys():
-                config[mapping[attr]] = attrs[attr]
+                section, key = mapping[attr]
+                if section not in config:
+                    config[section] = {}
+                config[section][key] = attrs[attr]
         return config
 
     def _get_attribute(self, attribute):
-        return self.br.get_current_page() \
+        return self.browser.get_current_page() \
             .find(string=attribute) \
             .parent.parent.parent \
             .find('input') \

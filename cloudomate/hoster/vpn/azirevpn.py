@@ -1,72 +1,76 @@
-import urllib.request
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from cloudomate.hoster.vpn.vpn_hoster import VpnHoster
-from cloudomate.hoster.vpn.vpn_hoster import VpnStatus
-from cloudomate.hoster.vpn.vpn_hoster import VpnInfo
-from cloudomate.gateway import bitpay
-from cloudomate import wallet as wallet_util
-from forex_python.converter import CurrencyRates
-import sys
 import datetime
+import sys
+from builtins import round
+
+import requests
+from forex_python.converter import CurrencyRates
+from future import standard_library
+
+from cloudomate.gateway.bitpay import BitPay
+from cloudomate.hoster.vpn.vpn_hoster import VpnHoster, VpnOption, VpnStatus, VpnConfiguration
+
+standard_library.install_aliases()
 
 
 class AzireVpn(VpnHoster):
     REGISTER_URL = "https://manager.azirevpn.com/en/auth/register"
-    INFO_URL = "https://www.azirevpn.com/support/configuration/generate?os=others&country=se1&nat=0&keys=0&protocol=udp&tls=gcm&port=random"
+    CONFIGURATION_URL = "https://www.azirevpn.com/support/configuration/generate?os=others&country=se1&nat=0&keys=0&protocol=udp&tls=gcm&port=random"
     LOGIN_URL = "https://manager.azirevpn.com/auth/login"
     ORDER_URL = "https://manager.azirevpn.com/order"
     OPTIONS_URL = "https://www.azirevpn.com"
     DASHBOARD_URL = "https://manager.azirevpn.com"
 
-    required_settings = [
-        'username',
-        'password',
-    ]
+    '''
+    Information about the Hoster
+    '''
 
-    def __init__(self):
-        super().__init__()
+    @staticmethod
+    def get_gateway():
+        return BitPay
 
-        self.name = "AzireVPN"
-        self.website = "https://www.azirevpn.com"
-        self.protocol = "OpenVPN"
-        self.bandwidth = sys.maxsize
-        self.speed = sys.maxsize
+    @staticmethod
+    def get_metadata():
+        return "AzireVPN", "https://www.azirevpn.com/"
 
-        self.gateway = bitpay
+    @staticmethod
+    def get_required_settings():
+        return {"user": ["username", "password"]}
 
-    def options(self):
-        self._browser.open(self.OPTIONS_URL)
-        soup = self._browser.get_current_page()
+    '''
+    Action methods of the Hoster that can be called
+    '''
+
+    def get_configuration(self):
+        response = requests.get(self.CONFIGURATION_URL)
+        ovpn = response.text
+        return VpnConfiguration(self._settings.get("user", "username"),
+                                self._settings.get("user", "password"), ovpn)
+
+    @classmethod
+    def get_options(cls):
+        # Get string with price from the website
+        browser = cls._create_browser()
+        browser.open(cls.OPTIONS_URL)
+        soup = browser.get_current_page()
         strong = soup.select_one("div.prices > ul > li:nth-of-type(2) > ul > li:nth-of-type(1) strong")
         string = strong.get_text()
+
+        # Calculate the price in USD
         eur = float(string[string.index("€") + 2: string.index("/") - 1])
-        self.price = round(CurrencyRates().convert("EUR", "USD", eur), 2)
+        price = round(CurrencyRates().convert("EUR", "USD", eur), 2)
 
-        return super().options()
+        name, _ = cls.get_metadata()
+        option = VpnOption(name, "OpenVPN", price, sys.maxsize, sys.maxsize)
+        return [option]
 
-    def purchase(self, user_settings, wallet):
-        # Prepare for the purchase on the AzireVPN website
-        self._register(user_settings)
-        self._login(user_settings)
-        page = self._order(user_settings, wallet)
-
-        # Make the payment
-        print("Purchasing AzireVPN instance")
-        amount, address = self.gateway.extract_info(page.url)
-        print(('Paying %s BTC to %s' % (amount, address)))
-        fee = wallet_util.get_network_fee()
-        print(('Calculated fee: %s' % fee))
-        transaction_hash = wallet.pay(address, amount, fee)
-        print('Done purchasing')
-        return transaction_hash
-
-    def info(self, user_settings):
-        response = urllib.request.urlopen(self.INFO_URL)
-        ovpn = response.read().decode('utf-8')
-        return VpnInfo(user_settings.get("username"), user_settings.get("password"), ovpn)
-
-    def status(self, user_settings):
-        self._login(user_settings)
+    def get_status(self):
+        self._login()
 
         # Retrieve the expiration date
         self._browser.open(self.DASHBOARD_URL)
@@ -85,12 +89,25 @@ class AzireVpn(VpnHoster):
             online = True
         return VpnStatus(online, expiration)
 
-    def _register(self, user_settings):
+    def purchase(self, wallet, option):
+        # Prepare for the purchase on the AzireVPN website
+        self._register()
+        self._login()
+        page = self._order()
+
+        # Make the payment
+        self.pay(wallet, self.get_gateway(), page.url)
+
+    '''
+    Hoster-specific methods that are needed to perform the actions
+    '''
+
+    def _register(self):
         self._browser.open(self.REGISTER_URL)
         form = self._browser.select_form()
-        form["username"] = user_settings.get("username")
-        form["password"] = user_settings.get("password")
-        form["password_confirmation"] = user_settings.get("password")
+        form["username"] = self._settings.get("user", "username")
+        form["password"] = self._settings.get("user", "password")
+        form["password_confirmation"] = self._settings.get("user", "password")
         page = self._browser.submit_selected()
 
         if page.url == self.REGISTER_URL:
@@ -102,11 +119,11 @@ class AzireVpn(VpnHoster):
 
         return page
 
-    def _login(self, user_settings):
+    def _login(self):
         self._browser.open(self.LOGIN_URL)
         form = self._browser.select_form()
-        form["username"] = user_settings.get("username")
-        form["password"] = user_settings.get("password")
+        form["username"] = self._settings.get("user", "username")
+        form["password"] = self._settings.get("user", "password")
         page = self._browser.submit_selected()
 
         if page.url == self.LOGIN_URL:
@@ -118,7 +135,7 @@ class AzireVpn(VpnHoster):
 
         return page
 
-    def _order(self, user_settings, wallet):
+    def _order(self):
         self._browser.open(self.ORDER_URL)
         form = self._browser.select_form("form#orderForm")
         form["package"] = "1"
