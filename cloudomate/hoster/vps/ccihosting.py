@@ -23,6 +23,9 @@ class CCIHosting(SolusvmHoster):
     CART_URL = 'https://www.ccihosting.com/accounts/cart.php?a=confdomains'
     OPTIONS_URL = 'https://www.ccihosting.com/offshore-vps.html'
 
+    # true if you can enable tuntap in the control panel
+    TUN_TAP_SETTINGS = False
+
     '''
     Information about the Hoster
     '''
@@ -91,7 +94,7 @@ class CCIHosting(SolusvmHoster):
         self._fill_user_form(self.get_gateway().get_name())
 
         coinbase_url = self._browser.get_current_page().find('form')['action']
-        self.pay(wallet, self.get_gateway(), coinbase_url)
+        return self.pay(wallet, self.get_gateway(), coinbase_url)
 
     '''
     Hoster-specific methods that are needed to perform the actions

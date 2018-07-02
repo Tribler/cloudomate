@@ -73,6 +73,9 @@ class Hoster(with_metaclass(ABCMeta)):
         """
         pass
 
+    def get_browser(self):
+        return self._browser
+
     @classmethod
     def pay(cls, wallet, gateway, url):
         """Do a payment (should be moved to the payment gateways?)
@@ -81,11 +84,13 @@ class Hoster(with_metaclass(ABCMeta)):
         :param gateway: gateway through which to make the payment
         :param url: url from which the amount and address can be extracted
         """
+
         name, _ = cls.get_metadata()
 
         # Make the payment
         print("Purchasing {} instance".format(name))
         info = gateway.extract_info(url)
+
         print(('Paying %s BTC to %s' % (info.amount, info.address)))
         fee = wallet_util.get_network_fee()
         print(('Calculated fee: %s' % fee))

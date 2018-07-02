@@ -18,6 +18,8 @@ standard_library.install_aliases()
 class UndergroundPrivate(SolusvmHoster):
     CART_URL = 'https://www.clientlogin.sx/cart.php?a=view'
     OPTIONS_URL = 'https://undergroundprivate.com/russiaoffshorevps.html'
+    # true if you can enable tuntap in the control panel
+    TUN_TAP_SETTINGS = False
 
     '''
     Information about the Hoster
@@ -75,11 +77,9 @@ class UndergroundPrivate(SolusvmHoster):
         self._submit_user_form()
 
         # Retrieve the payment URL from an iFrame
-        soup = self._browser.get_current_page()
-        iframe = soup.select_one('iframe')
-        url = iframe['src']
-
-        self.pay(wallet, self.get_gateway(), url)
+        self._browser.select_form('form')
+        page = self._browser.submit_selected().url
+        return self.pay(wallet, self.get_gateway(), page)
 
     '''
     Hoster-specific methods that are needed to perform the actions
@@ -108,7 +108,7 @@ class UndergroundPrivate(SolusvmHoster):
         connection = details[6].text
         connection = int(connection[0])
 
-        purchase_url = details[-1].p.span.a['href']
+        purchase_url = details[13].p.span.a['href']
 
         return vps_hoster.VpsOption(name, cores, memory, storage, sys.maxsize, connection, price, purchase_url)
 

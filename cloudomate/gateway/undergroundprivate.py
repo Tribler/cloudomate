@@ -4,8 +4,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
-
-from bs4 import BeautifulSoup
+from mechanicalsoup import StatefulBrowser
+from fake_useragent import UserAgent
 from future import standard_library
 
 from cloudomate.gateway.gateway import Gateway, PaymentInfo
@@ -20,26 +20,23 @@ else:
 class UndergroundPrivate(Gateway):
     @staticmethod
     def get_name():
-        return "blockchainv2"
+        return "SpectroCoin"
 
     @classmethod
     def extract_info(cls, url):
         """
         Extracts amount and BitCoin address from a UndergroundPrivate payment URL.
-        :param url: the URL (usually retrieved from an iFrame) like "https://www.clientlogin.sx//modules/gateways/blockchainv2.php?invoice=19076"
+        :param url: the URL like https://spectrocoin.com/en/order/view/1045356-0X6XzpZi.html
         :return: a tuple of the amount in BitCoin along with the address
         """
+        user_agent = UserAgent(fallback="Mozilla/5.0 (X11; Linux x86_64; rv:57.0) Gecko/20100101 Firefox/57.0")
+        browser = StatefulBrowser(user_agent=user_agent.random)
+        browser.open(url)
+        soup = browser.get_current_page()
 
-        response = urlopen(url)
-        soup = BeautifulSoup(response, 'lxml')
-
-        amount = soup.select_one('input.btcamount')
-        amount = amount['value']
-
-        address = soup.select_one('input.btcaddress')
-        address = address['value']
-
-        return PaymentInfo(amount, address)
+        amount = soup.select_one('div.payAmount').text.split(" ")[0]
+        address = soup.select_one('div.address').text
+        return PaymentInfo(float(amount), address)
 
     @staticmethod
     def get_gateway_fee():

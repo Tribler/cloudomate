@@ -17,13 +17,6 @@ standard_library.install_aliases()
 
 
 class TestClientArea(unittest.TestCase):
-    def test_emails(self):
-        html_file = open(os.path.join(os.path.dirname(__file__), 'resources/clientarea_emails.html'), 'r')
-        data = html_file.read()
-        html_file.close()
-        emails = ClientArea._extract_emails(data)
-        self.assertTrue(len(emails) == 5)
-
     @skip("Update needed for new clientarea")
     def test_extract_services(self):
         html_file = open(os.path.join(os.path.dirname(__file__), 'resources/clientarea_services.html'), 'r')

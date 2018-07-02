@@ -21,6 +21,12 @@ standard_library.install_aliases()
 class TestCmdLine(unittest.TestCase):
     def setUp(self):
         self.settings_file = os.path.join(os.path.dirname(__file__), 'resources/test_settings.cfg')
+        self.vps_options_real = LineVast.get_options
+        self.vps_purchase_real = LineVast.purchase
+
+    def tearDown(self):
+        LineVast.get_options = self.vps_options_real
+        LineVast.purchase = self.vps_purchase_real
 
     def test_execute_vps_list(self):
         command = ["vps", "list"]

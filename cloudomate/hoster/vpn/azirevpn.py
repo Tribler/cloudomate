@@ -9,22 +9,23 @@ import sys
 from builtins import round
 
 import requests
-from forex_python.converter import CurrencyRates
+from currency_converter import CurrencyConverter
 from future import standard_library
 
 from cloudomate.gateway.bitpay import BitPay
+from cloudomate import wallet as wallet_util
 from cloudomate.hoster.vpn.vpn_hoster import VpnHoster, VpnOption, VpnStatus, VpnConfiguration
 
 standard_library.install_aliases()
 
 
 class AzireVpn(VpnHoster):
-    REGISTER_URL = "https://manager.azirevpn.com/en/auth/register"
-    CONFIGURATION_URL = "https://www.azirevpn.com/support/configuration/generate?os=others&country=se1&nat=0&keys=0&protocol=udp&tls=gcm&port=random"
-    LOGIN_URL = "https://manager.azirevpn.com/auth/login"
-    ORDER_URL = "https://manager.azirevpn.com/order"
+    REGISTER_URL = "https://www.azirevpn.com/en/manager/auth/register"
+    CONFIGURATION_URL = "https://www.azirevpn.com/cfg/openvpn/generate?os=others&country=se1&nat=0&keys=0&protocol=udp&tls=gcm&port=random"
+    LOGIN_URL = "https://www.azirevpn.com/manager/auth/login"
+    ORDER_URL = "https://www.azirevpn.com/manager/order"
     OPTIONS_URL = "https://www.azirevpn.com"
-    DASHBOARD_URL = "https://manager.azirevpn.com"
+    DASHBOARD_URL = "https://www.azirevpn.com/manager"
 
     '''
     Information about the Hoster
@@ -57,13 +58,14 @@ class AzireVpn(VpnHoster):
         # Get string with price from the website
         browser = cls._create_browser()
         browser.open(cls.OPTIONS_URL)
-        soup = browser.get_current_page()
-        strong = soup.select_one("div.prices > ul > li:nth-of-type(2) > ul > li:nth-of-type(1) strong")
-        string = strong.get_text()
+        soup = browser.get_current_page().find_all('strong')
+        string = str(soup)
+        words = string.split()
 
         # Calculate the price in USD
-        eur = float(string[string.index("€") + 2: string.index("/") - 1])
-        price = round(CurrencyRates().convert("EUR", "USD", eur), 2)
+        eur = float(words[2])
+        c = CurrencyConverter()
+        price = round(c.convert(eur, "EUR", "USD"), 2)
 
         name, _ = cls.get_metadata()
         option = VpnOption(name, "OpenVPN", price, sys.maxsize, sys.maxsize)
@@ -96,11 +98,25 @@ class AzireVpn(VpnHoster):
         page = self._order()
 
         # Make the payment
-        self.pay(wallet, self.get_gateway(), page.url)
+        return self.pay(wallet, page.url)
 
     '''
     Hoster-specific methods that are needed to perform the actions
     '''
+
+    def pay(self, wallet, url):
+
+        self._browser.open(url)
+        soup = self._browser.get_current_page()
+        address = soup.select_one("div.transaction > input").get("value")
+        amount = float(soup.select_one("div.transaction > input:nth-of-type(2)").get("value"))
+        fee = wallet_util.get_network_fee()
+        print(('Calculated fee: %s' % fee))
+        transaction_hash = wallet.pay(address, amount, fee)
+        print('Done purchasing')
+        return transaction_hash
+
+
 
     def _register(self):
         self._browser.open(self.REGISTER_URL)
@@ -139,7 +155,8 @@ class AzireVpn(VpnHoster):
         self._browser.open(self.ORDER_URL)
         form = self._browser.select_form("form#orderForm")
         form["package"] = "1"
-        form["payment_gateway"] = "bitpay"
+        form["payment_gateway"] = "coinpayment"
+        form["coinpayment_crypto"] = "BTC"
         form["tos"] = True
         page = self._browser.submit_selected()
 

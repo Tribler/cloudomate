@@ -35,7 +35,6 @@ class ClientArea(object):
     def get_ip(self, service=None):
         if service is None:
             service = self.get_services_first()
-
         self._browser.open(service.url)
         soup = self._browser.get_current_page()
         rows = soup.select('div#domain > div.row')
@@ -67,8 +66,6 @@ class ClientArea(object):
         price_string = columns[1].text
         dot_index = price_string.index('.')
         price = float(price_string[1:dot_index + 3])
-        if 'EUR' in price_string:
-            price = round(CurrencyRates().convert("EUR", "USD", price), 2)
 
         next_due = columns[2].span.text
         next_due = datetime.datetime.strptime(next_due, '%Y-%m-%d')
@@ -95,23 +92,3 @@ class ClientArea(object):
             print("Login failure")
             sys.exit(2)
         self.home_page = page
-
-    #
-    # Legacy methods, currently not used
-    #
-
-    def get_emails(self):
-        page = self._browser.open(self._url + "?action=emails")
-        return self._extract_emails(page.get_data())
-
-    @staticmethod
-    def _extract_emails(data):
-        soup = BeautifulSoup(data, 'lxml')
-        table = soup.find('table', {'id': 'tableEmailsList'}).tbody
-        emails = []
-        for row in table.findAll('tr'):
-            emails.append({
-                'id': row['onclick'].split('\'')[1].split('id=')[1],
-                'title': row.findAll('td')[1].text
-            })
-        return emails

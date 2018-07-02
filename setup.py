@@ -1,6 +1,8 @@
+from cloudomate.globals import __version__
 from codecs import open
 from os import path
 import sys
+
 
 from setuptools import setup, find_packages
 
@@ -21,15 +23,15 @@ else:
 setup(
     name='cloudomate',
 
-    version='1.0.0',
+    version=__version__,
 
     description='Automate buying VPS instances with Bitcoin',
     long_description=long_description,
 
-    url='https://github.com/Jaapp-/Cloudomate',
+    url='https://github.com/tribler/cloudomate',
 
     author='PlebNet',
-    author_email='plebnet@heijligers.me',
+    author_email='authentic8989@gmail.com',
 
     license='LGPLv3',
 
@@ -57,6 +59,7 @@ setup(
         'appdirs',
         'lxml',
         'MechanicalSoup',
+        'CurrencyConverter',
         'bs4',
         'forex-python',
         'parameterized',

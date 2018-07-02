@@ -25,9 +25,13 @@ from cloudomate.hoster.vps.crowncloud import CrownCloud
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.pulseservers import Pulseservers
 from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
+from cloudomate.hoster.vps.twosync import TwoSync
+from cloudomate.hoster.vps.proxhost import ProxHost
 from cloudomate.util.fakeuserscraper import UserScraper
 from cloudomate.util.settings import Settings
 from cloudomate.wallet import Wallet
+
+from cloudomate import globals
 
 standard_library.install_aliases()
 
@@ -38,14 +42,22 @@ def _map_providers_to_dict(provider_list):
 
 types = ["vps", "vpn"]
 
+
+"""
+All implemented providers, those commented out are not working for now. CCIHosting's and 
+Pulseserver's gateway changed to CoinPayments and this is not implemented. CrownCloud 
+manually checks orders and do not accept multiple variations of the same email. 
+"""
 providers = CaseInsensitiveDict({
     "vps": _map_providers_to_dict([
         BlueAngelHost,
-        CCIHosting,
-        CrownCloud,
+        # CCIHosting,
+        # CrownCloud,
         LineVast,
-        Pulseservers,
+        # Pulseservers,
         UndergroundPrivate,
+        TwoSync,
+        ProxHost
     ]),
     "vpn": _map_providers_to_dict([
         AzireVpn,
@@ -55,15 +67,16 @@ providers = CaseInsensitiveDict({
 
 def execute(cmd=sys.argv[1:]):
     parser = ArgumentParser(description="Cloudomate")
+    parser.add_argument('--version', action='version', version='%(prog)s '+globals.__version__)
 
     subparsers = parser.add_subparsers(dest="type")
+
     add_vps_parsers(subparsers)
     add_vpn_parsers(subparsers)
     subparsers.required = True
 
     args = parser.parse_args(cmd)
     args.func(args)
-
 
 def add_vpn_parsers(subparsers):
     vpn_parsers = subparsers.add_parser("vpn")
@@ -125,6 +138,7 @@ def add_parser_purchase(subparsers, provider_type):
     parser_purchase.add_argument("-cc", "--countrycode", help="country code")
     parser_purchase.add_argument("-z", "--zipcode", help="zipcode")
     parser_purchase.add_argument("--randomuser", action="store_true", help="Use random user info")
+    parser_purchase.add_argument("--testnet", action="store_true", help="Use Electrum's testnet bitcoins (for testing)")
 
     if provider_type == 'vps':
         parser_purchase.add_argument("option", help="The %s option number (see options)" % provider_type.upper(),
@@ -265,6 +279,17 @@ def purchase(args):
     if args.randomuser:
         _merge_random_user_data(user_settings)
 
+        if args.testnet or os.getenv('TESTNET', '0') == '1':
+            user_settings.put('user', 'testnet', '1')
+            os.environ['TESTNET'] = '1'
+            print('testnet on')
+        else:
+            user_settings.put('user', 'testnet', '0')
+            os.environ['TESTNET'] = '0'
+            print('testnet off')
+        user_settings.save_settings()
+        print('Random user settings used: ' + user_settings.get_default_config_location())
+
     if not _check_provider(provider, user_settings):
         print("Missing option")
         sys.exit(2)
@@ -294,6 +319,12 @@ def _get_user_settings(args, provider=None):
     else:
         user_settings.read_settings()
     _merge_arguments(user_settings, provider, vars(args))
+
+    # Set global testnet variable according to configuration
+    if user_settings.has_key('user', 'testnet') and user_settings.get('user', 'testnet') == '1':
+        os.environ['TESTNET'] = '1'
+    else:
+        os.environ['TESTNET'] = '0'
     return user_settings
 
 
@@ -458,10 +489,12 @@ def _options_vpn(provider):
 def _register(provider, vps_option, settings):
     # For now use standard wallet implementation through Electrum
     # If wallet path is defined in config, use that.
+    testnet = os.getenv('TESTNET', '0') == '1'
+
     if settings.has_key('client', 'walletpath'):
-        wallet = Wallet(wallet_path=settings.get('client', 'walletpath'))
+        wallet = Wallet(wallet_path=settings.get('client', 'walletpath'), testnet=testnet)
     else:
-        wallet = Wallet()
+        wallet = Wallet(testnet=testnet)
 
     provider_instance = provider(settings)
     provider_instance.purchase(wallet, vps_option)

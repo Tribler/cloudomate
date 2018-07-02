@@ -56,7 +56,7 @@ class Coinbase(Gateway):
         :param bitcoin_url: bitcoin url
         :return: Amount to be transferred
         """
-        amount_section, _ = bitcoin_url.split('&')
+        _, amount_section = bitcoin_url.split('?')
         amount_text = amount_section.split('=')[1]
         amount = float(amount_text)
         return amount
