@@ -20,6 +20,9 @@ class Settings(object):
         config_dir = user_config_dir()
         self._default_filename = os.path.join(config_dir, 'cloudomate.cfg')
 
+    def get_default_config_location(self):
+        return self._default_filename
+
     def read_settings(self, filename=None):
         """Read the settings object from a file.
 

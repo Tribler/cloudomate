@@ -19,6 +19,9 @@ class Pulseservers(SolusvmHoster):
     CART_URL = 'https://www.pulseservers.com/billing/cart.php?a=confdomains'
     OPTIONS_URL = 'https://pulseservers.com/vps-linux.html'
 
+    # true if you can enable tuntap in the control panel
+    TUN_TAP_SETTINGS = False
+
     '''
     Information about the Hoster
     '''
@@ -62,7 +65,7 @@ class Pulseservers(SolusvmHoster):
         self._submit_server_form()
         self._browser.open(self.CART_URL)
         page = self._submit_user_form()
-        self.pay(wallet, self.get_gateway(), page.url)
+        return self.pay(wallet, self.get_gateway(), page.url)
 
     '''
     Hoster-specific methods that are needed to perform the actions

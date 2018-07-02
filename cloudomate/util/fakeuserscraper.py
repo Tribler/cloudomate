@@ -52,11 +52,12 @@ class UserScraper(object):
 
         attrs['country_code'] = self.country_code
         attrs['password'] = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(12))
-        attrs['email'] = attrs['Username'] + '@email.com'
+        attrs['email'] = 'authentic8989+' + attrs['Username'] + '@gmail.com'
         attrs['rootpw'] = attrs['password']
         attrs['ns1'] = 'ns1'
         attrs['ns2'] = 'ns2'
         attrs['hostname'] = attrs['Username'] + '.hostname.com'
+        attrs['testnet'] = 'off'
 
         return self._map_to_config(attrs)
 
@@ -85,6 +86,7 @@ class UserScraper(object):
             'ns1': ('server', 'ns1'),
             'ns2': ('server', 'ns2'),
             'hostname': ('server', 'hostname'),
+            'testnet': ('user', 'testnet')
         }
 
         for attr in attrs.keys():

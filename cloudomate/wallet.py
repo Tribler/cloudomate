@@ -110,12 +110,14 @@ class Wallet(object):
     Wallets with passwords may still be used, but passwords will have to be entered manually.
     """
 
-    def __init__(self, wallet_command=None, wallet_path=None):
+    def __init__(self, wallet_command=None, wallet_path=None, testnet=None):
         if wallet_command is None:
             if os.path.exists('/usr/local/bin/electrum'):
                 wallet_command = ['/usr/local/bin/electrum']
             else:
                 wallet_command = ['/usr/bin/env', 'electrum']
+        if testnet:
+            wallet_command.append('--testnet')
         self.command = wallet_command
         self.wallet_handler = ElectrumWalletHandler(wallet_command, wallet_path)
 
@@ -163,7 +165,7 @@ class Wallet(object):
             print('Not enough funds')
             return
 
-        transaction_hex = self.wallet_handler.create_transaction(amount, address, fee)
+        transaction_hex = self.wallet_handler.create_transaction(amount, address)
         success, transaction_hash = self.wallet_handler.broadcast(transaction_hex)
         if not success:
             print(('Transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash)))
@@ -206,7 +208,7 @@ class ElectrumWalletHandler(object):
         if self.not_running_before:
             subprocess.call(self.command + ['daemon', 'stop'])
 
-    def create_transaction(self, amount, address, fee):
+    def create_transaction(self, amount, address, fee=None):
         """
         Create a transaction
         :param amount: amount of bitcoins to be transferred
