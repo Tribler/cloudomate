@@ -191,8 +191,7 @@ class BlueAngelHost(SolusvmHoster):
         """
         form = self._browser.select_form('form#frmConfigureProduct')
         self._fill_server_form()
-        form['configoption[72]'] = '87'  # Ubuntu
-        form['configoption[73]'] = '91'  # 64 bit
+        form['customfield[135]'] = 'ubuntu-16.04-x86_64'  # Ubuntu 64 bit
         self._browser.submit_selected()
 
 class BAHClientArea(ClientArea):
