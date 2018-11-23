@@ -67,7 +67,8 @@ setup(
         'CaseInsensitiveDict',
         'ConfigParser',
         'future',
-        'requests[security]'
+        'requests[security]',
+        'python-dateutil'
     ],
 
     extras_require={
