@@ -11,7 +11,8 @@ from builtins import super
 
 from future import standard_library
 
-from bs4 import BeautifulSoup
+from bs4 import Tag
+from past.builtins import unicode
 
 from cloudomate.gateway.bitpay import BitPay
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
@@ -202,7 +203,7 @@ class BAHClientArea(ClientArea):
         for email in self.get_emails():
             e_id = email['id']
             title = email['title']
-            if 'ready' in title:
+            if 'ready' in title.lower():
                 email_id = e_id
                 break
         self._browser.open(self.email_url + '?id=' + email_id)
@@ -219,29 +220,37 @@ class BAHClientArea(ClientArea):
 
 
         ps = soup.findAll('p')
-        pattern1 = re.compile(r'(?:<.*>)*((?:Main IP\s*:\s*)|'
-                              r'(?:Root pass\s*:\S*)|(?:Username\s*:\s*)|'
-                              r'(?:SSH Port\s))(.*)(?:<.*>)', re.MULTILINE)
-        pattern2 = re.compile(r'(?:<p>)*((?:UserName:)|(?:Password:))(.*)(?:<.*>)')
-        for p in ps:
-            for (k, v) in re.findall(pattern1, str(p)):
-                if 'Main IP' in k and not server_info['ip_address']:
-                    server_info['ip_address'] = v
-                elif 'Root pass' in k and not server_info['server_password']:
-                    server_info['server_password'] = v
-                elif 'Username' in k and not server_info['server_user']:
-                    server_info['server_user'] = v
-            cpum = re.match(r'(?:<p>)*Panel URL\s*:\s*.*href="(.*)\/".*(?:<.*>)', str(p))
-            if cpum:
-                server_info['control_panel_url'] = cpum.group(1)
 
-            for (k, v) in re.findall(pattern2, str(p)):
-                if 'UserName' in k and not server_info['vmuser']:
-                    server_info['vmuser'] = v
-                elif 'Password' in k and not server_info['vmuser_password']:
-                    server_info['vmuser_password'] = v
+        # map of server_info fields to the labels in the e-mail
+        server_keyword = 'Hostname'
+        server_fields = {
+            'ip_address': 'Main IP',
+            'server_user': 'Username',
+            'server_password': 'Root Password'
+        }
+
+        vm_keyword = 'Manager Details'
+        vm_fields = {
+            'vmuser': 'Username',
+            'vmuser_password': 'Password'
+        }
+
+        for p in ps:
+            for line in p:
+                self._parse_email_section(p, line, server_keyword, server_fields, server_info)
+                self._parse_email_section(p, line, vm_keyword, vm_fields, server_info)
+                if isinstance(line, Tag) and line.name == 'a':
+                    server_info['control_panel_url'] = unicode(line.next)
 
         return server_info
+
+    @staticmethod
+    def _parse_email_section(p, line, keyword, fields, server_info):
+        if keyword in p.text:
+            for key, label in fields.items():
+                line_str = unicode(line)
+                if label in line_str:
+                    server_info[key] = line_str.split(':')[1].strip()
 
     @staticmethod
     def _extract_emails(soup):
