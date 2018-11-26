@@ -25,7 +25,6 @@ standard_library.install_aliases()
 
 
 class BlueAngelHost(SolusvmHoster):
-    CLIENT_DATA_URL = 'https://www.billing.blueangelhost.com/modules/servers/solusvmpro/get_client_data.php'
     CART_URL = 'https://www.billing.blueangelhost.com/cart.php?a=view'
 
     # true if you can enable tuntap in the control panel
@@ -97,20 +96,16 @@ class BlueAngelHost(SolusvmHoster):
     def get_status(self):
         status = super().get_status()
 
-        # Retrieve the vserverid
-        page = self._browser.open(status.clientarea.url)
-        match = re.search(r'vserverid = (\d+)', page.text)
-        identifier = match.group(1)
-
-        millis = int(round(time.time() * 1000))  # Needed for some reason
-        page = self._browser.open('{}?vserverid={}&_={}'.format(self.CLIENT_DATA_URL, identifier, millis))
+        # Get server stats
+        page = self._browser.open('{}&api=json&act=vpsmanage&stats=1'.format(status.clientarea.url))
         data = page.json()
 
-        memory = VpsStatusResource(self._convert_gigabyte(data['memoryused']),
-                                   self._convert_gigabyte(data['memorytotal']))
-        storage = VpsStatusResource(self._convert_gigabyte(data['hddused']), self._convert_gigabyte(data['hddtotal']))
-        bandwidth = VpsStatusResource(self._convert_gigabyte(data['bandwidthused']),
-                                      self._convert_gigabyte(data['bandwidthtotal']))
+        memory = VpsStatusResource(data['info']['ram']['used']/1024.0,
+                                   data['info']['ram']['limit']/1024.0)
+        storage = VpsStatusResource(data['info']['disk']['used_gb'],
+                                    data['info']['disk']['limit_gb'])
+        bandwidth = VpsStatusResource(data['info']['bandwidth']['used_gb'],
+                                      data['info']['bandwidth']['limit_gb'])
 
         return VpsStatus(memory, storage, bandwidth, status.online, status.expiration, status.clientarea)
 
@@ -132,22 +127,6 @@ class BlueAngelHost(SolusvmHoster):
     '''
     Hoster-specific methods that are needed to perform the actions
     '''
-
-    @staticmethod
-    def _convert_gigabyte(s):
-        n = float(s.split(' ')[0])
-        if 'KB' in s:
-            n /= 1024.0 * 1024.0
-        elif 'MB' in s:
-            n /= 1024.0
-        elif 'GB' in s:
-            pass
-        elif 'TB' in s:
-            n *= 1024.0
-        else:
-            raise ValueError('Unknown unit in string {}'.format(s))
-
-        return n
 
     @classmethod
     def _parse_options(cls, page, is_kvm=False):
