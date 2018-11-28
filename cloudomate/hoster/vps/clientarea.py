@@ -72,11 +72,11 @@ class ClientArea(object):
 
         status = columns[3].span.text.lower()
 
-        try:
+        if len(columns) > 4:
             url = columns[4].a['href']
             url = url.split('.php')
             url = self._url + url[1]
-        except IndexError: #Fixes twosync
+        else: #Fixes twosync
             url = self._url + '/' + row['data-url']
 
         return ClientAreaService(name, price, next_due, status, url)
