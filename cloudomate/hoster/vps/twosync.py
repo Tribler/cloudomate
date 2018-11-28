@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import json
 import re
 import time
+import datetime
 
 from builtins import int
 from builtins import super
@@ -17,6 +18,8 @@ from cloudomate.gateway.blockchain import Blockchain
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
+from cloudomate.hoster.vps.vps_hoster import VpsStatus
+from cloudomate.hoster.vps.vps_hoster import VpsStatusResource
 from cloudomate.hoster.vps.clientarea import ClientArea
 
 standard_library.install_aliases()
@@ -195,12 +198,30 @@ class TwoSync(SolusvmHoster):
         address = str(pages[1]).split('>')[1].split('<')[0]
         return str(amount) + '&' + address
 
+    @classmethod
+    def _convert_bytes_to_gbytes(cls, num):
+        return num / 1024 / 1024 / 1024
 
+    def get_status(self):
+        status = super().get_status()
+
+        service_id = status.clientarea.url.split('=')[-1]
+        data = self._browser.post(url='https://ua.2sync.org/modules/servers/tProxmox/monitorProxmox.php',
+                                  data={'serviceid': service_id, 'typeVm': 'qemu'}).json()
+
+
+        memory = VpsStatusResource(self._convert_bytes_to_gbytes(data['mem']),
+                                   self._convert_bytes_to_gbytes(data['maxmem']))
+        storage = VpsStatusResource(self._convert_bytes_to_gbytes(data['freemem']),
+                                    self._convert_bytes_to_gbytes(data['maxdisk']))
+        bandwidth = VpsStatusResource(float('inf'), float('inf'))
+
+        return VpsStatus(memory, storage, bandwidth, status.online, status.expiration, status.clientarea)
 
 
 class TSClientArea(ClientArea):
     """
-    Modified ClientAria for twosync,
+    Modified ClientArea for twosync,
     Extended for looking up server information such as IP, root password
     """
     email_url = None
@@ -246,7 +267,7 @@ class TSClientArea(ClientArea):
         pattern1 = re.compile(r'(?:<.>)*((?:Username:)|(?:Root Password:)|(?:VPS IP:))\s*((?:\w{1,3}\.*){1,4})(?:<.>)*', re.MULTILINE)
 
         for p in ps:
-            p = re.sub(r'[^\x00-\x7F]+', '', str(p)).decode('utf-8','ignore').strip()
+            p = re.sub(r'[^\x00-\x7F]+', '', str(p)).strip()
             for (k, v) in re.findall(pattern1, p):
                 if 'VPS IP' in k and not server_info['ip_address']:
                     server_info['ip_address'] = v
