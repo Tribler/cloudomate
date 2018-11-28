@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import json
 import re
 import time
+import datetime
 
 from builtins import int
 from builtins import super
@@ -17,6 +18,8 @@ from cloudomate.gateway.blockchain import Blockchain
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
+from cloudomate.hoster.vps.vps_hoster import VpsStatus
+from cloudomate.hoster.vps.vps_hoster import VpsStatusResource
 from cloudomate.hoster.vps.clientarea import ClientArea
 
 standard_library.install_aliases()
@@ -68,21 +71,18 @@ class TwoSync(SolusvmHoster):
     @classmethod
     def get_options(cls):
         """
-        Linux (OpenVZ) and Windows (KVM) pages are slightly different, therefore their pages are parsed by different
-        methods. Windows configurations allow a selection of Linux distributions, but not vice-versa.
+        Fetches the possible configuration for Ukraine VPS with Linux (OpenVZ)
         :return: possible configurations.
         """
-        browser = cls._create_browser()
-        browser.open("https://www.2sync.co/vps/ukraine/")
 
-        options = cls._parse_openvz_hosting(browser.get_current_page())
+        options = cls._parse_openvz_hosting()
         lst = list(options)
 
         return lst
 
     def get_configuration(self):
         """
-        Overrides the default configuration method as BlueAngelHost doesn't use the server password during
+        Overrides the default configuration method as TwoSync doesn't use the server password during
         registration
         :return: IP and Password
         """
@@ -104,14 +104,8 @@ class TwoSync(SolusvmHoster):
         self._server_form()
         self._browser.open(self.CART_URL)
 
-        summary = self._browser.get_current_page().find('div', class_='summary-container')
-        self._browser.follow_link(summary.find('a', class_='btn-checkout'))
-
         form = self._browser.select_form(selector='form#frmCheckout')
-        self._fill_user_form(self.get_gateway().get_name())
-
-        self._browser.select_form(nr=0)  # Go to payment form
-        self._browser.submit_selected()
+        self._fill_user_form(self.get_gateway().get_name(), 'alert alert-danger')
 
         self._browser.open('https://ua.2sync.org/cart.php?a=complete')
         invoice = self._browser.get_current_page().find('a', {'class': 'alert-link'})
@@ -161,29 +155,38 @@ class TwoSync(SolusvmHoster):
         self._browser.submit_selected()
 
     @classmethod
-    def _parse_openvz_hosting(cls, page):
-        urls = cls._get_hrefs()
-        table = page.find_all('td')
+    def _parse_openvz_hosting(cls):
+        browser = cls._create_browser()
+        browser.open('https://ua.2sync.org/cart.php')
+        page = browser.get_current_page()
 
-        names = ['2S VSUA01', '2S VSUA02', '2S VSUA03', '2S VSUA04']
-        for i in range(0, len(urls)):
-            option = cls._parse_linux_option(urls[i], table, names[i], i)
+        packages = page.find_all('div', {'class': 'package'})
+
+        for i in range(0, len(packages)):
+            option = cls._parse_linux_option(packages[i])
             yield option
 
-
     @staticmethod
-    def _parse_linux_option(url, table, name, i):
-        option = VpsOption(
-            name=name,
-            storage=str(table[3 + (i*8)]).split('g>')[1].split('<')[0],
-            cores=str(table[1 + (i*8)]).split('g>')[1].split('<')[0],
-            memory=str(table[2 + (i*8)]).split('g>')[1].split('GB')[0],
-            bandwidth='unmetered',
-            connection=int(str(table[5 + (i*8)]).split('g>')[1].split('Gbps')[0]) * 1000,
-            price=float(str(table[7 + (i*8)]).split('$')[1].split('/mo')[0]),
-            purchase_url=url,
+    def _parse_linux_option(package):
+        option = {
+            'name': package.find('h3').text,
+            'price': package.find('div', {'class': 'price'}).text.split('$')[1].split('USD/mo')[0],
+            'purchase_url': 'https://ua.2sync.org/' + package.find('a').get('href')
+        }
+        for entry in package.find_all('li'):
+            key,value = entry.text.replace('\n', '').split(' ')[:2]
+            option[key] = value
+
+        return VpsOption(
+            name=option['name'],
+            storage=option['Space'].split('GB')[0],
+            cores=option['CPU'],
+            memory=option['RAM'].split('GB')[0],
+            bandwidth=option['Bandwidth'].lower(),
+            connection=int(option['Port'].split('Gbit')[0]),
+            price=float(option['price']),
+            purchase_url=option['purchase_url'],
         )
-        return option
 
     @classmethod
     def extract_info(cls, url):
@@ -195,43 +198,30 @@ class TwoSync(SolusvmHoster):
         address = str(pages[1]).split('>')[1].split('<')[0]
         return str(amount) + '&' + address
 
-
     @classmethod
-    def _get_hrefs(cls):
-        browser = cls._create_browser()
-        browser.open("https://ua.2sync.org/cart.php")
-        page = browser.get_current_page()
-        hrefs = page.find_all('a', {'class': 'order-button'})
-        lst = [None] * int(len(hrefs)/2)
+    def _convert_bytes_to_gbytes(cls, num):
+        return num / 1024 / 1024 / 1024
 
-        for x in range(0, len(hrefs), 2):
-            urlstring = str(hrefs[x]).split('href="')[1].split('"')[0]
-            urlstring = urlstring.replace('/cart.php', '').replace('amp;', '')
-            url = browser.get_url()
-            url = url.split('?')[0]
-            url = url + urlstring
-            lst[int(x/2)] = url
+    def get_status(self):
+        status = super().get_status()
 
-        return lst
+        service_id = status.clientarea.url.split('=')[-1]
+        data = self._browser.post(url='https://ua.2sync.org/modules/servers/tProxmox/monitorProxmox.php',
+                                  data={'serviceid': service_id, 'typeVm': 'qemu'}).json()
 
-    @staticmethod
-    def _extract_vi_from_links(links):
-        for link in links:
-            if "_v=" in link.url:
-                return link.url.split("_v=")[1]
-        return False
 
-    @staticmethod
-    def _check_login(text):
-        data = json.loads(text)
-        if data['success'] and data['success'] == '1':
-            return True
-        return False
+        memory = VpsStatusResource(self._convert_bytes_to_gbytes(data['mem']),
+                                   self._convert_bytes_to_gbytes(data['maxmem']))
+        storage = VpsStatusResource(self._convert_bytes_to_gbytes(data['freemem']),
+                                    self._convert_bytes_to_gbytes(data['maxdisk']))
+        bandwidth = VpsStatusResource(float('inf'), float('inf'))
+
+        return VpsStatus(memory, storage, bandwidth, status.online, status.expiration, status.clientarea)
 
 
 class TSClientArea(ClientArea):
     """
-    Modified ClientAria for twosync,
+    Modified ClientArea for twosync,
     Extended for looking up server information such as IP, root password
     """
     email_url = None
@@ -277,7 +267,7 @@ class TSClientArea(ClientArea):
         pattern1 = re.compile(r'(?:<.>)*((?:Username:)|(?:Root Password:)|(?:VPS IP:))\s*((?:\w{1,3}\.*){1,4})(?:<.>)*', re.MULTILINE)
 
         for p in ps:
-            p = re.sub(r'[^\x00-\x7F]+', '', str(p)).decode('utf-8','ignore').strip()
+            p = re.sub(r'[^\x00-\x7F]+', '', str(p)).strip()
             for (k, v) in re.findall(pattern1, p):
                 if 'VPS IP' in k and not server_info['ip_address']:
                     server_info['ip_address'] = v
