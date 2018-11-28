@@ -101,8 +101,8 @@ class BlueAngelHost(SolusvmHoster):
         page = self._browser.open('{}&api=json&act=vpsmanage&stats=1'.format(status.clientarea.url))
         data = page.json()
 
-        memory = VpsStatusResource(data['info']['ram']['used']/1024.0,
-                                   data['info']['ram']['limit']/1024.0)
+        memory = VpsStatusResource(self._convert_mb_to_gb(data['info']['ram']['used']),
+                                   self._convert_mb_to_gb(data['info']['ram']['limit']))
         storage = VpsStatusResource(data['info']['disk']['used_gb'],
                                     data['info']['disk']['limit_gb'])
         bandwidth = VpsStatusResource(data['info']['bandwidth']['used_gb'],
@@ -128,6 +128,10 @@ class BlueAngelHost(SolusvmHoster):
     '''
     Hoster-specific methods that are needed to perform the actions
     '''
+
+    @staticmethod
+    def _convert_mb_to_gb(mb):
+        return mb/1024.0
 
     @classmethod
     def _parse_options(cls, page, is_kvm=False):
