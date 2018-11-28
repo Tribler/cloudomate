@@ -11,7 +11,8 @@ from builtins import super
 
 from future import standard_library
 
-from bs4 import BeautifulSoup
+from bs4 import Tag
+from past.builtins import unicode
 
 from cloudomate.gateway.bitpay import BitPay
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
@@ -25,7 +26,6 @@ standard_library.install_aliases()
 
 
 class BlueAngelHost(SolusvmHoster):
-    CLIENT_DATA_URL = 'https://www.billing.blueangelhost.com/modules/servers/solusvmpro/get_client_data.php'
     CART_URL = 'https://www.billing.blueangelhost.com/cart.php?a=view'
 
     # true if you can enable tuntap in the control panel
@@ -97,20 +97,16 @@ class BlueAngelHost(SolusvmHoster):
     def get_status(self):
         status = super().get_status()
 
-        # Retrieve the vserverid
-        page = self._browser.open(status.clientarea.url)
-        match = re.search(r'vserverid = (\d+)', page.text)
-        identifier = match.group(1)
-
-        millis = int(round(time.time() * 1000))  # Needed for some reason
-        page = self._browser.open('{}?vserverid={}&_={}'.format(self.CLIENT_DATA_URL, identifier, millis))
+        # Get server stats
+        page = self._browser.open('{}&api=json&act=vpsmanage&stats=1'.format(status.clientarea.url))
         data = page.json()
 
-        memory = VpsStatusResource(self._convert_gigabyte(data['memoryused']),
-                                   self._convert_gigabyte(data['memorytotal']))
-        storage = VpsStatusResource(self._convert_gigabyte(data['hddused']), self._convert_gigabyte(data['hddtotal']))
-        bandwidth = VpsStatusResource(self._convert_gigabyte(data['bandwidthused']),
-                                      self._convert_gigabyte(data['bandwidthtotal']))
+        memory = VpsStatusResource(self._convert_mb_to_gb(data['info']['ram']['used']),
+                                   self._convert_mb_to_gb(data['info']['ram']['limit']))
+        storage = VpsStatusResource(data['info']['disk']['used_gb'],
+                                    data['info']['disk']['limit_gb'])
+        bandwidth = VpsStatusResource(data['info']['bandwidth']['used_gb'],
+                                      data['info']['bandwidth']['limit_gb'])
 
         return VpsStatus(memory, storage, bandwidth, status.online, status.expiration, status.clientarea)
 
@@ -134,20 +130,8 @@ class BlueAngelHost(SolusvmHoster):
     '''
 
     @staticmethod
-    def _convert_gigabyte(s):
-        n = float(s.split(' ')[0])
-        if 'KB' in s:
-            n /= 1024.0 * 1024.0
-        elif 'MB' in s:
-            n /= 1024.0
-        elif 'GB' in s:
-            pass
-        elif 'TB' in s:
-            n *= 1024.0
-        else:
-            raise ValueError('Unknown unit in string {}'.format(s))
-
-        return n
+    def _convert_mb_to_gb(mb):
+        return mb/1024.0
 
     @classmethod
     def _parse_options(cls, page, is_kvm=False):
@@ -223,7 +207,7 @@ class BAHClientArea(ClientArea):
         for email in self.get_emails():
             e_id = email['id']
             title = email['title']
-            if 'ready' in title:
+            if 'ready' in title.lower():
                 email_id = e_id
                 break
         self._browser.open(self.email_url + '?id=' + email_id)
@@ -240,29 +224,37 @@ class BAHClientArea(ClientArea):
 
 
         ps = soup.findAll('p')
-        pattern1 = re.compile(r'(?:<.*>)*((?:Main IP\s*:\s*)|'
-                              r'(?:Root pass\s*:\S*)|(?:Username\s*:\s*)|'
-                              r'(?:SSH Port\s))(.*)(?:<.*>)', re.MULTILINE)
-        pattern2 = re.compile(r'(?:<p>)*((?:UserName:)|(?:Password:))(.*)(?:<.*>)')
-        for p in ps:
-            for (k, v) in re.findall(pattern1, str(p)):
-                if 'Main IP' in k and not server_info['ip_address']:
-                    server_info['ip_address'] = v
-                elif 'Root pass' in k and not server_info['server_password']:
-                    server_info['server_password'] = v
-                elif 'Username' in k and not server_info['server_user']:
-                    server_info['server_user'] = v
-            cpum = re.match(r'(?:<p>)*Panel URL\s*:\s*.*href="(.*)\/".*(?:<.*>)', str(p))
-            if cpum:
-                server_info['control_panel_url'] = cpum.group(1)
 
-            for (k, v) in re.findall(pattern2, str(p)):
-                if 'UserName' in k and not server_info['vmuser']:
-                    server_info['vmuser'] = v
-                elif 'Password' in k and not server_info['vmuser_password']:
-                    server_info['vmuser_password'] = v
+        # map of server_info fields to the labels in the e-mail
+        server_keyword = 'Hostname'
+        server_fields = {
+            'ip_address': 'Main IP',
+            'server_user': 'Username',
+            'server_password': 'Root Password'
+        }
+
+        vm_keyword = 'Manager Details'
+        vm_fields = {
+            'vmuser': 'Username',
+            'vmuser_password': 'Password'
+        }
+
+        for p in ps:
+            for line in p:
+                self._parse_email_section(p, line, server_keyword, server_fields, server_info)
+                self._parse_email_section(p, line, vm_keyword, vm_fields, server_info)
+                if isinstance(line, Tag) and line.name == 'a':
+                    server_info['control_panel_url'] = unicode(line.next)
 
         return server_info
+
+    @staticmethod
+    def _parse_email_section(p, line, keyword, fields, server_info):
+        if keyword in p.text:
+            for key, label in fields.items():
+                line_str = unicode(line)
+                if label in line_str:
+                    server_info[key] = line_str.split(':')[1].strip()
 
     @staticmethod
     def _extract_emails(soup):
