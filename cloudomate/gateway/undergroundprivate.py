@@ -4,17 +4,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
-from mechanicalsoup import StatefulBrowser
+
 from fake_useragent import UserAgent
 from future import standard_library
+from mechanicalsoup import StatefulBrowser
 
 from cloudomate.gateway.gateway import Gateway, PaymentInfo
 
 standard_library.install_aliases()
 if sys.version_info > (3, 0):
-    from urllib.request import urlopen
+    pass
 else:
-    from urllib2 import urlopen
+    pass
 
 
 class UndergroundPrivate(Gateway):

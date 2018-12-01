@@ -17,21 +17,17 @@ from os import path
 from CaseInsensitiveDict import CaseInsensitiveDict
 from future import standard_library
 
+from cloudomate import globals
 from cloudomate import wallet as wallet_util
 from cloudomate.hoster.vpn.azirevpn import AzireVpn
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
-from cloudomate.hoster.vps.ccihosting import CCIHosting
-from cloudomate.hoster.vps.crowncloud import CrownCloud
 from cloudomate.hoster.vps.linevast import LineVast
-from cloudomate.hoster.vps.pulseservers import Pulseservers
-from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
-from cloudomate.hoster.vps.twosync import TwoSync
 from cloudomate.hoster.vps.proxhost import ProxHost
+from cloudomate.hoster.vps.twosync import TwoSync
+from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
 from cloudomate.util.fakeuserscraper import UserScraper
 from cloudomate.util.settings import Settings
 from cloudomate.wallet import Wallet
-
-from cloudomate import globals
 
 standard_library.install_aliases()
 

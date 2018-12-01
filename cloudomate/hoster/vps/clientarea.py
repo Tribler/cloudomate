@@ -7,11 +7,8 @@ from __future__ import unicode_literals
 import datetime
 import re
 import sys
-from builtins import round
 from collections import namedtuple
 
-from bs4 import BeautifulSoup
-from forex_python.converter import CurrencyRates
 from future import standard_library
 
 standard_library.install_aliases()

@@ -3,16 +3,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import itertools
 import json
+import ssl
 from builtins import super
 
-import ssl
-import requests
 import dateutil.parser
-from mechanicalsoup import StatefulBrowser
-from fake_useragent import UserAgent
-
+import requests
 from future import standard_library
 from future.moves.urllib import request
 

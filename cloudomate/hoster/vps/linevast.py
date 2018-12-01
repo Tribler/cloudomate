@@ -3,27 +3,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import itertools
 import json
-
+import re
+import sys
 from builtins import int
 from builtins import round
 from builtins import super
 
+from currency_converter import CurrencyConverter
 from future import standard_library
 from mechanicalsoup.utils import LinkNotFoundError
-from decimal import Decimal
-from currency_converter import CurrencyConverter
-import ast
 
 from cloudomate.gateway.bitpay import BitPay
-from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.vps_hoster import VpsOption
-
-import re
-import sys
-import requests
 
 standard_library.install_aliases()
 

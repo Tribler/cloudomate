@@ -1,9 +1,9 @@
-import unittest
-import time
 import os
+import unittest
+
+from mock import patch, MagicMock
 
 from cloudomate.util.captchasolver import CaptchaSolver, ReCaptchaSolver
-from mock import patch, MagicMock
 
 
 class TestCaptchaSolver(unittest.TestCase):

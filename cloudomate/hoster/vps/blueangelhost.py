@@ -4,23 +4,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import itertools
-import re
-import time
 from builtins import int
 from builtins import super
 
-from future import standard_library
-
 from bs4 import Tag
+from future import standard_library
 from past.builtins import unicode
 
 from cloudomate.gateway.bitpay import BitPay
+from cloudomate.hoster.vps.clientarea import ClientArea
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
+from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
 from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsStatus
 from cloudomate.hoster.vps.vps_hoster import VpsStatusResource
-from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
-from cloudomate.hoster.vps.clientarea import ClientArea
 
 standard_library.install_aliases()
 

@@ -3,11 +3,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import re
 import time
-import datetime
-
 from builtins import int
 from builtins import super
 
@@ -15,12 +12,12 @@ from future import standard_library
 from mechanicalsoup.utils import LinkNotFoundError
 
 from cloudomate.gateway.blockchain import Blockchain
+from cloudomate.hoster.vps.clientarea import ClientArea
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
-from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
+from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsStatus
 from cloudomate.hoster.vps.vps_hoster import VpsStatusResource
-from cloudomate.hoster.vps.clientarea import ClientArea
 
 standard_library.install_aliases()
 
