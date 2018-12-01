@@ -305,7 +305,7 @@ class ControlPanel(object):
 
     _vi = None
 
-    _valid_acts = set(['istun', 'rootpassword'])
+    _valid_acts = {'istun', 'rootpassword'}
 
     def __init__(self, browser, control_panel_url, vmuser, vmuser_password):
         self._browser = browser

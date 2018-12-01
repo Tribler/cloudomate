@@ -47,9 +47,9 @@ class CaptchaSolver(object):
                                  json={"clientKey": self._client_key})
 
         # Check response of HTTP request
-        if (response.status_code == requests.codes.ok):
+        if response.status_code == requests.codes.ok:
             response_json = json.loads(response.text)
-            if (response_json["errorId"] == 0):
+            if response_json["errorId"] == 0:
                 print("Successful, account balance returned")
                 return response_json["balance"]
             else:
@@ -92,9 +92,9 @@ class CaptchaSolver(object):
                                        "taskId": task_id})
 
         # Check response of HTTP request
-        if (response.status_code == requests.codes.ok):
+        if response.status_code == requests.codes.ok:
             response_json = json.loads(response.text)
-            if (response_json["errorId"] == 0):
+            if response_json["errorId"] == 0:
                 print("Successful, captcha solved:")
                 return response_json["solution"]
             else:
@@ -111,9 +111,9 @@ class CaptchaSolver(object):
                                        "taskId": task_id})
 
         # Check response of HTTP request
-        if (response.status_code == requests.codes.ok):
+        if response.status_code == requests.codes.ok:
             response_json = json.loads(response.text)
-            if (response_json["errorId"] == 0):
+            if response_json["errorId"] == 0:
                 print("Successful, task status returned")
                 return response_json["status"]
             else:
@@ -141,12 +141,12 @@ class CaptchaSolver(object):
                                        })
 
         # Check response of HTTP request
-        if (response.status_code == requests.codes.ok):
+        if response.status_code == requests.codes.ok:
             response_json = json.loads(response.text)
-            if (response_json["errorId"] == 0):
+            if response_json["errorId"] == 0:
                 print("Successful, captcha task was created:" + response.text)
                 return response_json["taskId"]
-            elif (response_json["errorCode"] == "ERROR_NO_SLOT_AVAILABLE"):
+            elif response_json["errorCode"] == "ERROR_NO_SLOT_AVAILABLE":
                 time.sleep(15)
                 return self._create_task_captcha_text_case_sensitive(
                     base64_image_string)
@@ -179,12 +179,12 @@ class ReCaptchaSolver(CaptchaSolver):
                                  })
 
         # Check response of HTTP request
-        if (response.status_code == requests.codes.ok):
+        if response.status_code == requests.codes.ok:
             response_json = json.loads(response.text)
-            if (response_json["errorId"] == 0):
+            if response_json["errorId"] == 0:
                 print("Successful, task was created: " + response.text)
                 return response_json["taskId"]
-            elif (response_json["errorCode"] == "ERROR_NO_SLOT_AVAILABLE"):
+            elif response_json["errorCode"] == "ERROR_NO_SLOT_AVAILABLE":
                 # In case task could not be created, create it again
                 time.sleep(15)
                 return self._create_task_google_recaptcha(website_url,
