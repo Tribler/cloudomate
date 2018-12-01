@@ -61,7 +61,6 @@ class CaptchaSolver(object):
 
     def solve_captcha_text_case_sensitive(self, full_image_file_path):
         # Encode captcha image before sending it
-        encoded_image_string = ""
         if os.path.isfile(full_image_file_path):
             with open(full_image_file_path, "rb") as image_file:
                 encoded_image_string = base64.b64encode(image_file.read())

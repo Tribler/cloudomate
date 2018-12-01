@@ -101,7 +101,7 @@ class TwoSync(SolusvmHoster):
         self._server_form()
         self._browser.open(self.CART_URL)
 
-        form = self._browser.select_form(selector='form#frmCheckout')
+        self._browser.select_form(selector='form#frmCheckout')
         self._fill_user_form(self.get_gateway().get_name(), 'alert alert-danger')
 
         self._browser.open('https://ua.2sync.org/cart.php?a=complete')

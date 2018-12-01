@@ -132,7 +132,6 @@ class ProxHost(SolusvmHoster):
         )
 
     def purchase(self, wallet, option):
-        data = self.json_user_config()
         res = requests.post(self.BASE_URL + '/purchase/' + option.purchase_url, json=self.json_user_config(),
                             verify=False)
         print(res)
