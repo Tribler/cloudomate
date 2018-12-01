@@ -73,7 +73,7 @@ class ClientArea(object):
             url = columns[4].a['href']
             url = url.split('.php')
             url = self._url + url[1]
-        else: #Fixes twosync
+        else:  # Fixes twosync
             url = self._url + '/' + row['data-url']
 
         return ClientAreaService(name, price, next_due, status, url)

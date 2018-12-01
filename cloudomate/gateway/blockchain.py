@@ -18,9 +18,6 @@ class Blockchain(Gateway):
 
     @staticmethod
     def extract_info(url):
-      amount, address = str(url).split('&')
-      am = float(amount)
-      return PaymentInfo(am, address)
-
-
-
+        amount, address = str(url).split('&')
+        am = float(amount)
+        return PaymentInfo(am, address)

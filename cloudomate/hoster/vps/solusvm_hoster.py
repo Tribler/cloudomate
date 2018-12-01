@@ -3,10 +3,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import sys
 import subprocess
-
+import sys
 from abc import abstractmethod
+from builtins import super
 
 from bs4 import BeautifulSoup
 from future import standard_library
@@ -17,8 +17,6 @@ from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
 from cloudomate.hoster.vps.vps_hoster import VpsHoster
 from cloudomate.hoster.vps.vps_hoster import VpsStatus
 from cloudomate.hoster.vps.vps_hoster import VpsStatusResourceNone
-
-from builtins import super
 
 standard_library.install_aliases()
 
@@ -84,7 +82,8 @@ class SolusvmHoster(VpsHoster):
         :return: True if password changing succeeded, else False
         """
         config = self.get_configuration()
-        commandline = list(['sshpass', '-p', config.root_password, 'ssh', '-o', 'StrictHostKeyChecking=no', 'root@' + config.ip])
+        commandline = list(
+            ['sshpass', '-p', config.root_password, 'ssh', '-o', 'StrictHostKeyChecking=no', 'root@' + config.ip])
         commandline.append('echo "root:' + newpassword + '" | chpasswd')
 
         try:
@@ -142,7 +141,6 @@ class SolusvmHoster(VpsHoster):
             form['ns2prefix'] = self._settings.get('server', 'ns2')
         except LinkNotFoundError:
             print('Couldn\'t set ns1, ns2')
-
 
         # As an alternative to the default Ajax request
         form.new_control('hidden', 'a', 'confproduct')

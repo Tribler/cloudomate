@@ -38,10 +38,10 @@ class TestHosters(unittest.TestCase):
         options = hoster.get_options()
         self.assertTrue(len(options) > 0)
 
-
     @parameterized.expand(providers)
     @unittest.skipIf(len(sys.argv) >= 2 and sys.argv[1] == 'discover', 'Integration tests have to be run manually')
-    @skip('These tests relies on webscraping and form filling of vps pages. these pages change and therefore these tests are currently to unreliable')
+    @skip('These tests relies on webscraping and form filling of vps pages. these pages change and therefore these '
+          'tests are currently to unreliable')
     def test_hoster_purchase(self, hoster):
         user_settings = Settings()
         self._merge_random_user_data(user_settings)

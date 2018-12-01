@@ -219,7 +219,7 @@ class ElectrumWalletHandler(object):
         if fee is None:
             transaction = self._command(['payto', str(address), str(amount)])
         else:
-            transaction = self._command( ['payto', str(address), str(amount), '-f', str(fee)])
+            transaction = self._command(['payto', str(address), str(amount), '-f', str(fee)])
         jtrs = json.loads(transaction)
         return jtrs['hex']
 

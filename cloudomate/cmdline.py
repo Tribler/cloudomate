@@ -38,7 +38,6 @@ def _map_providers_to_dict(provider_list):
 
 types = ["vps", "vpn"]
 
-
 """
 All implemented providers, those commented out are not working for now. CCIHosting's and 
 Pulseserver's gateway changed to CoinPayments and this is not implemented. CrownCloud 
@@ -63,7 +62,7 @@ providers = CaseInsensitiveDict({
 
 def execute(cmd=sys.argv[1:]):
     parser = ArgumentParser(description="Cloudomate")
-    parser.add_argument('--version', action='version', version='%(prog)s '+globals.__version__)
+    parser.add_argument('--version', action='version', version='%(prog)s ' + globals.__version__)
 
     subparsers = parser.add_subparsers(dest="type")
 
@@ -73,6 +72,7 @@ def execute(cmd=sys.argv[1:]):
 
     args = parser.parse_args(cmd)
     args.func(args)
+
 
 def add_vpn_parsers(subparsers):
     vpn_parsers = subparsers.add_parser("vpn")

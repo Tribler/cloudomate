@@ -58,7 +58,7 @@ class TwoSync(SolusvmHoster):
     def _create_clientarea(self):
         if self._clientarea is None:
             self._clientarea = TSClientArea(self.get_browser(), self.get_clientarea_url(),
-                                                  self.get_email_url(), self._settings)
+                                            self.get_email_url(), self._settings)
         return self._clientarea
 
     '''
@@ -113,7 +113,7 @@ class TwoSync(SolusvmHoster):
 
         self.pay(wallet, self.get_gateway(), urlselected)
 
-        #open invoice page after paying
+        # open invoice page after paying
         invoice = str(url).split('=')[1]
         self._browser.open('https://ua.2sync.org/modules/gateways/blockchain.php?invoice=' + invoice)
 
@@ -171,7 +171,7 @@ class TwoSync(SolusvmHoster):
             'purchase_url': 'https://ua.2sync.org/' + package.find('a').get('href')
         }
         for entry in package.find_all('li'):
-            key,value = entry.text.replace('\n', '').split(' ')[:2]
+            key, value = entry.text.replace('\n', '').split(' ')[:2]
             option[key] = value
 
         return VpsOption(
@@ -205,7 +205,6 @@ class TwoSync(SolusvmHoster):
         service_id = status.clientarea.url.split('=')[-1]
         data = self._browser.post(url='https://ua.2sync.org/modules/servers/tProxmox/monitorProxmox.php',
                                   data={'serviceid': service_id, 'typeVm': 'qemu'}).json()
-
 
         memory = VpsStatusResource(self._convert_bytes_to_gbytes(data['mem']),
                                    self._convert_bytes_to_gbytes(data['maxmem']))
@@ -261,7 +260,8 @@ class TSClientArea(ClientArea):
         }
 
         ps = soup.findAll('p')
-        pattern1 = re.compile(r'(?:<.>)*((?:Username:)|(?:Root Password:)|(?:VPS IP:))\s*((?:\w{1,3}\.*){1,4})(?:<.>)*', re.MULTILINE)
+        pattern1 = re.compile(r'(?:<.>)*((?:Username:)|(?:Root Password:)|(?:VPS IP:))\s*((?:\w{1,3}\.*){1,4})(?:<.>)*',
+                              re.MULTILINE)
 
         for p in ps:
             p = re.sub(r'[^\x00-\x7F]+', '', str(p)).strip()

@@ -1,8 +1,9 @@
-import json
-import requests
-import time
-import os
 import base64
+import json
+import os
+import time
+
+import requests
 
 """
 Usage: 
@@ -35,9 +36,8 @@ print(rc_solution)
 
 
 class CaptchaSolver(object):
-
     _client_key = "not set"
-         
+
     def __init__(self, c_key):
         self._client_key = c_key
 
@@ -72,8 +72,8 @@ class CaptchaSolver(object):
 
         # Create new Captcha solving task using the API
         task_id = self._create_task_captcha_text_case_sensitive(
-                         encoded_image_string)
-        
+            encoded_image_string)
+
         # Query API until task is finished
         current_status = self._get_task_status(task_id)
         while current_status == "processing":
@@ -85,12 +85,12 @@ class CaptchaSolver(object):
         # Get solution
         solution = self._get_task_result(task_id)
         return solution["text"]
-           
+
     def _get_task_result(self, task_id):
         # Query API for the solution of the task       
         response = requests.post("https://api.anti-captcha.com/getTaskResult",
                                  json={"clientKey": self._client_key,
-                                 "taskId": task_id})
+                                       "taskId": task_id})
 
         # Check response of HTTP request
         if (response.status_code == requests.codes.ok):
@@ -109,7 +109,7 @@ class CaptchaSolver(object):
         # Query API for the status of the task
         response = requests.post("https://api.anti-captcha.com/getTaskResult",
                                  json={"clientKey": self._client_key,
-                                 "taskId": task_id})
+                                       "taskId": task_id})
 
         # Check response of HTTP request
         if (response.status_code == requests.codes.ok):
@@ -128,18 +128,18 @@ class CaptchaSolver(object):
         # Send task creation command to API
         response = requests.post("https://api.anti-captcha.com/createTask",
                                  json={"clientKey": self._client_key,
-                                 "task":
-                                 {
-                                  "type": "ImageToTextTask",
-                                  "body": base64_image_string,
-                                  "phrase": False,
-                                  "case": True,
-                                  "numeric": False,
-                                  "math": 0,
-                                  "minLength": 0,
-                                  "maxLength": 0
-                                 }
-                                 })
+                                       "task":
+                                           {
+                                               "type": "ImageToTextTask",
+                                               "body": base64_image_string,
+                                               "phrase": False,
+                                               "case": True,
+                                               "numeric": False,
+                                               "math": 0,
+                                               "minLength": 0,
+                                               "maxLength": 0
+                                           }
+                                       })
 
         # Check response of HTTP request
         if (response.status_code == requests.codes.ok):
@@ -150,7 +150,7 @@ class CaptchaSolver(object):
             elif (response_json["errorCode"] == "ERROR_NO_SLOT_AVAILABLE"):
                 time.sleep(15)
                 return self._create_task_captcha_text_case_sensitive(
-                              base64_image_string)
+                    base64_image_string)
             else:
                 # Print API error
                 print(response.text)
@@ -164,18 +164,19 @@ class CaptchaSolver(object):
 
 class ReCaptchaSolver(CaptchaSolver):
 
-
     def _create_task_google_recaptcha(self, website_url, website_key):
         # Send task creation command to API
         response = requests.post("https://api.anti-captcha.com/createTask",
-                                 json={"clientKey": self._client_key, "task":
-                                 {
-                                  "type": "NoCaptchaTaskProxyless",
-                                  "websiteURL": website_url,
-                                  "websiteKey": website_key
-                                 },
-                                  "softId": 0,
-                                  "languagePool": "en"
+                                 json={
+                                     "clientKey": self._client_key,
+                                     "task":
+                                         {
+                                             "type": "NoCaptchaTaskProxyless",
+                                             "websiteURL": website_url,
+                                             "websiteKey": website_key
+                                         },
+                                     "softId": 0,
+                                     "languagePool": "en"
                                  })
 
         # Check response of HTTP request
@@ -187,8 +188,8 @@ class ReCaptchaSolver(CaptchaSolver):
             elif (response_json["errorCode"] == "ERROR_NO_SLOT_AVAILABLE"):
                 # In case task could not be created, create it again
                 time.sleep(15)
-                return self._create_task_google_recaptcha(website_url, 
-                                                           website_key)
+                return self._create_task_google_recaptcha(website_url,
+                                                          website_key)
             else:
                 # Print API errordd
                 print(response.text)
