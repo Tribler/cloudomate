@@ -5,19 +5,16 @@ from __future__ import unicode_literals
 
 import sys
 import unittest
+from unittest import skip
 
 from future import standard_library
 from mock.mock import MagicMock
 from parameterized import parameterized
-from unittest import skip
 
 from cloudomate.exceptions.vps_out_of_stock import VPSOutOfStockException
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
-from cloudomate.hoster.vps.ccihosting import CCIHosting
-from cloudomate.hoster.vps.crowncloud import CrownCloud
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.pulseservers import Pulseservers
-from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
 from cloudomate.hoster.vps.twosync import TwoSync
 from cloudomate.util.fakeuserscraper import UserScraper
 from cloudomate.util.settings import Settings
@@ -41,10 +38,10 @@ class TestHosters(unittest.TestCase):
         options = hoster.get_options()
         self.assertTrue(len(options) > 0)
 
-
     @parameterized.expand(providers)
     @unittest.skipIf(len(sys.argv) >= 2 and sys.argv[1] == 'discover', 'Integration tests have to be run manually')
-    @skip('These tests relies on webscraping and form filling of vps pages. these pages change and therefore these tests are currently to unreliable')
+    @skip('These tests relies on webscraping and form filling of vps pages. these pages change and therefore these '
+          'tests are currently to unreliable')
     def test_hoster_purchase(self, hoster):
         user_settings = Settings()
         self._merge_random_user_data(user_settings)

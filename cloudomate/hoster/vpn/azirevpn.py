@@ -116,8 +116,6 @@ class AzireVpn(VpnHoster):
         print('Done purchasing')
         return transaction_hash
 
-
-
     def _register(self):
         self._browser.open(self.REGISTER_URL)
         form = self._browser.select_form()
@@ -154,7 +152,7 @@ class AzireVpn(VpnHoster):
     def _order(self):
         self._browser.open(self.ORDER_URL)
         form = self._browser.select_form("form#orderForm")
-        form["package"] = "1"
+        form["package"] = "7"
         form["payment_gateway"] = "coinpayment"
         form["coinpayment_crypto"] = "BTC"
         form["tos"] = True

@@ -17,21 +17,17 @@ from os import path
 from CaseInsensitiveDict import CaseInsensitiveDict
 from future import standard_library
 
+from cloudomate import globals
 from cloudomate import wallet as wallet_util
 from cloudomate.hoster.vpn.azirevpn import AzireVpn
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
-from cloudomate.hoster.vps.ccihosting import CCIHosting
-from cloudomate.hoster.vps.crowncloud import CrownCloud
 from cloudomate.hoster.vps.linevast import LineVast
-from cloudomate.hoster.vps.pulseservers import Pulseservers
-from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
-from cloudomate.hoster.vps.twosync import TwoSync
 from cloudomate.hoster.vps.proxhost import ProxHost
+from cloudomate.hoster.vps.twosync import TwoSync
+from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
 from cloudomate.util.fakeuserscraper import UserScraper
 from cloudomate.util.settings import Settings
 from cloudomate.wallet import Wallet
-
-from cloudomate import globals
 
 standard_library.install_aliases()
 
@@ -41,7 +37,6 @@ def _map_providers_to_dict(provider_list):
 
 
 types = ["vps", "vpn"]
-
 
 """
 All implemented providers, those commented out are not working for now. CCIHosting's and 
@@ -67,7 +62,7 @@ providers = CaseInsensitiveDict({
 
 def execute(cmd=sys.argv[1:]):
     parser = ArgumentParser(description="Cloudomate")
-    parser.add_argument('--version', action='version', version='%(prog)s '+globals.__version__)
+    parser.add_argument('--version', action='version', version='%(prog)s ' + globals.__version__)
 
     subparsers = parser.add_subparsers(dest="type")
 
@@ -77,6 +72,7 @@ def execute(cmd=sys.argv[1:]):
 
     args = parser.parse_args(cmd)
     args.func(args)
+
 
 def add_vpn_parsers(subparsers):
     vpn_parsers = subparsers.add_parser("vpn")
@@ -366,8 +362,8 @@ def _purchase_vps(provider, user_settings, args):
 
 def _purchase_vpn(provider, user_settings, args):
     print("Selected configuration:")
-    options = provider.get_options()
-    option = options[0]
+    vpn_options = provider.get_options()
+    option = vpn_options[0]
 
     row = "{:18}" * 5
     print(row.format("Name", "Protocol", "Bandwidth", "Speed", "Price (USD)"))
@@ -382,7 +378,7 @@ def _purchase_vpn(provider, user_settings, args):
         choice = _confirmation("Purchase this option?", default="no")
 
     if choice:
-        _register(provider, options[0], user_settings)
+        _register(provider, vpn_options[0], user_settings)
     else:
         return False
 
@@ -442,14 +438,14 @@ def _list_provider_types():
 def _options_vps(p):
     name, _ = p.get_metadata()
     print(("Options for %s:\n" % name))
-    options = p.get_options()
+    vps_options = p.get_options()
 
     # Print heading
     row = "{:<5}" + "{:20}" * 8
     print(row.format("#", "Name", "Cores", "Memory (GB)", "Storage (GB)", "Bandwidth", "Connection (Gbit/s)",
                      "Est. Price (mBTC)", "Price (USD)"))
 
-    for i, option in enumerate(options):
+    for i, option in enumerate(vps_options):
         bandwidth = "Unlimited" if option.bandwidth == sys.maxsize else str(option.bandwidth)
 
         # Calculate the estimated price
@@ -466,13 +462,13 @@ def _options_vps(p):
 def _options_vpn(provider):
     name, _ = provider.get_metadata()
     print(("Options for %s:\n" % name))
-    options = provider.get_options()
+    vpn_options = provider.get_options()
 
     # Print heading
     row = "{:18}" * 6
     print(row.format("Name", "Protocol", "Bandwidth", "Speed", "Est. Price (mBTC)", "Price (USD)"))
 
-    for option in options:
+    for option in vpn_options:
         bandwidth = "Unlimited" if option.bandwidth == sys.maxsize else str(option.bandwidth)
         speed = "Unlimited" if option.speed == sys.maxsize else option.speed
 
@@ -548,10 +544,10 @@ def change_root_password_ssh(args):
         sys.exit(2)
 
 
-def _print_info_vps(info):
+def _print_info_vps(vps_info):
     row = "{:18}" * 2
     print(row.format("IP address", "Root password"))
-    print(row.format(str(info.ip), str(info.root_password)))
+    print(row.format(str(vps_info.ip), str(vps_info.root_password)))
 
 
 def _print_info_vpn(provider_info):
@@ -571,19 +567,19 @@ def _print_info_vpn(provider_info):
     print(header)
 
 
-def _save_info_vpn(info, ovpn):
+def _save_info_vpn(vpn_info, ovpn):
     if not ovpn.endswith('.ovpn'):
         ovpn = ovpn + '.ovpn'
 
     ovpn = path.normcase(path.normpath(path.join(os.getcwd(), ovpn)))
-    dir, _ = path.split(ovpn)
+    directory, _ = path.split(ovpn)
     credentials = 'credentials.conf'
 
     with io.open(ovpn, 'w', encoding='utf-8') as ovpn_file:
-        ovpn_file.write(info.ovpn + '\nauth-user-pass ' + credentials)
+        ovpn_file.write(vpn_info.ovpn + '\nauth-user-pass ' + credentials)
 
-    with io.open(path.join(dir, credentials), 'w', encoding='utf-8') as credentials_file:
-        credentials_file.writelines([info.username + '\n', info.password])
+    with io.open(path.join(directory, credentials), 'w', encoding='utf-8') as credentials_file:
+        credentials_file.writelines([vpn_info.username + '\n', vpn_info.password])
 
     print("Saved VPN configuration to " + ovpn)
 

@@ -3,16 +3,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import itertools
 import json
+import ssl
 from builtins import super
 
-import ssl
-import requests
 import dateutil.parser
-from mechanicalsoup import StatefulBrowser
-from fake_useragent import UserAgent
-
+import requests
 from future import standard_library
 from future.moves.urllib import request
 
@@ -117,13 +113,13 @@ class ProxHost(SolusvmHoster):
         return list(options)
 
     def get_configuration(self):
-        res = requests.post(self.BASE_URL+'/getconfiguration', json=self.json_user_config(), verify=False)
+        res = requests.post(self.BASE_URL + '/getconfiguration', json=self.json_user_config(), verify=False)
         print(res.content)
         config = json.loads(res.content)
         return VpsConfiguration(config['ip'], config['root_password'])
 
     def get_status(self):
-        res = requests.post(self.BASE_URL+'/getstatus', json=self.json_user_config(), verify=False)
+        res = requests.post(self.BASE_URL + '/getstatus', json=self.json_user_config(), verify=False)
         print(res.content)
         status = json.loads(res.content.decode('utf8'))
         return VpsStatus(
@@ -136,17 +132,17 @@ class ProxHost(SolusvmHoster):
         )
 
     def purchase(self, wallet, option):
-        data = self.json_user_config()
-        res = requests.post(self.BASE_URL+'/purchase/'+option.purchase_url, json=self.json_user_config(), verify=False)
+        res = requests.post(self.BASE_URL + '/purchase/' + option.purchase_url, json=self.json_user_config(),
+                            verify=False)
         print(res)
         pay_url = res.content.decode('utf8')
         print(pay_url)
         return self.pay(wallet, self.get_gateway(), pay_url)
 
-
     @staticmethod
     def get_ip(user_settings):
-        res = requests.post(ProxHost.BASE_URL + '/getconfiguration', json=ProxHost(user_settings).json_user_config(), verify=False)
+        res = requests.post(ProxHost.BASE_URL + '/getconfiguration', json=ProxHost(user_settings).json_user_config(),
+                            verify=False)
         print(res.content)
         config = json.loads(res.content)
         return config['ip']
