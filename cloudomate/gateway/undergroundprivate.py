@@ -3,8 +3,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import sys
-
 from fake_useragent import UserAgent
 from future import standard_library
 from mechanicalsoup import StatefulBrowser
@@ -12,10 +10,6 @@ from mechanicalsoup import StatefulBrowser
 from cloudomate.gateway.gateway import Gateway, PaymentInfo
 
 standard_library.install_aliases()
-if sys.version_info > (3, 0):
-    pass
-else:
-    pass
 
 
 class UndergroundPrivate(Gateway):
