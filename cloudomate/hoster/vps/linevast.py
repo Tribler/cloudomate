@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import json
 import re
 import sys
-from builtins import int
 from builtins import round
 from builtins import super
 
@@ -44,7 +43,7 @@ class LineVast(SolusvmHoster):
 
     @staticmethod
     def get_email_url():
-        return 'https://panel.linevast.de/viewemail.php' # + ?id=123456
+        return 'https://panel.linevast.de/viewemail.php'  # + ?id=123456
 
     @staticmethod
     def get_gateway():
@@ -87,7 +86,7 @@ class LineVast(SolusvmHoster):
         :return: possible configurations.
         """
         browser = cls._create_browser()
-        browser.open("https://linevast.de/en/offers/ddos-protected-vps-hosting.html")
+        browser.open("https://panel.linevast.de/cart.php")
         options = cls._parse_openvz_hosting(browser.get_current_page())
         lst = list(options)
 
@@ -129,71 +128,22 @@ class LineVast(SolusvmHoster):
 
     @classmethod
     def _parse_openvz_hosting(cls, page):
-        urls = cls._get_hrefs()
-        storage = cls._get_storage()
-        names = page.find_all('p', {'class': 'text-center py-3'})
-        prices = page.find_all('div', {'class': 'pricing-1'})
-        info = page.find_all('div', {'class': 'text-muted'})
-        for i in range(0, len(info)):
-            index = 2 * i + 1
-            price = str(prices).split('data-monthly="')[index].split('" data-yearly=')[0]
-            name = str(names[i]).split('data-product="')[1].split('" href')[0]
-
-            option = cls._parse_linux_option(price, name, info[i], urls[i], storage[i])
-            yield option
-
-    @staticmethod
-    def _parse_linux_option(price, name, info, url, storage):
-        elements = str(info).split('<br/>')
-        price = price.replace(',', '.')
-        c = CurrencyConverter()
-
-        option = VpsOption(
-            name=str(name).strip(),
-            storage=storage,
-            cores=float((elements[0].split('>')[1].split(' CPU-Cores')[0]).strip()),
-            memory=float((elements[2].split('GB Arbeitsspeicher')[0]).strip()),
-            bandwidth='unmetered',
-            connection=(int(elements[3].split('GB')[0]) * 1000),
-            price=round(c.convert(price, 'EUR', 'USD'), 2),
-            purchase_url=str(url).strip(),
-        )
-        return option
-
-    @classmethod
-    def _get_hrefs(cls):
-        browser = cls._create_browser()
-        browser.open("https://panel.linevast.de/cart.php")
-        page = browser.get_current_page()
-        hrefs = page.find_all('a', {'class': 'order-button'})
-
-        lst = [None] * len(hrefs)
-
-        for x in range(0, len(hrefs)):
-            hrefs[x] = re.sub(r'[^\x00-\x7F]+','',str(hrefs)).decode('utf-8','ignore').strip()
-            urlstring = str(hrefs[x]).split('href="')[1].split('"')[0]
-            urlstring = urlstring.replace('/cart.php', '').replace('amp;', '')
-            url = browser.get_url()
-            url = url.split('?')[0]
-            url = url + urlstring
-            lst[x] = url
-
-        return lst
-
-    @classmethod
-    def _get_storage(cls):
-        browser = cls._create_browser()
-        browser.open("https://panel.linevast.de/cart.php")
-        page = browser.get_current_page()
-
-        storage = [None] * 4
-
-        for x in range(0, 4):
-            storagetemp = page.find('li', {'id': 'product' + str(x+1) +'-feature3'})
-            storagetemp = str(storagetemp).split('>')[1].split('GB')[0]
-            storage[x] = int(storagetemp)
-
-        return storage
+        options = page.find_all('div', {'class': 'price-table'})
+        for idx, option in enumerate(options, start=1):
+            list_elements = option.find_all('li')
+            price_eur = float(option.find('div', {'class', 'price'}).span.text[1:])
+            c = CurrencyConverter()
+            price_usd = round(c.convert(price_eur, 'EUR', 'USD'), 2)
+            yield VpsOption(
+                name=option.find('div', {'class': 'top-area'}).text.strip(),
+                storage=list_elements[2].text.strip().split(' ')[0],
+                cores=list_elements[0].text.strip().split(' ')[0],
+                memory=list_elements[1].text.strip().split(' ')[0],
+                bandwidth='unmetered',
+                connection=1,
+                price=price_usd,
+                purchase_url='https://panel.linevast.de' + option.find('a', {'class': 'order-button'})['href'],
+            )
 
     @staticmethod
     def _extract_vi_from_links(links):
@@ -212,6 +162,7 @@ class LineVast(SolusvmHoster):
     '''
     Control panel actions
     '''
+
     def enable_tun_tap(self):
         self._create_controlpanel()
         return self._controlpanel.enable_tun_tap()
@@ -279,7 +230,7 @@ class LineVastClientArea(ClientArea):
                     server_info['control_panel_url'] = tds.next().renderContents().strip().decode('utf-8')
                 elif tdcontent == 'User:' and not server_info['vmuser']:
                     server_info['vmuser'] = tds.next().renderContents().strip().decode('utf-8')
-                elif tdcontent == 'Password:' and not  server_info['vmuser_password']:
+                elif tdcontent == 'Password:' and not server_info['vmuser_password']:
                     server_info['vmuser_password'] = tds.next().renderContents().strip().decode('utf-8')
             except StopIteration:
                 break
@@ -351,7 +302,7 @@ class ControlPanel(object):
         Requests the status of the server
         :return: server status in json
         """
-        res = self._browser.session.post(self._url+'/_vm_remote.php', data={'act': 'getstats', 'vi': self._get_vi()})
+        res = self._browser.session.post(self._url + '/_vm_remote.php', data={'act': 'getstats', 'vi': self._get_vi()})
         return res.json()
 
     def _change_setting(self, act=None, opt=None):
@@ -369,7 +320,7 @@ class ControlPanel(object):
             'opt': opt,
             'vi': self._get_vi()
         }
-        print("posting to: %s"%self._url + '/_vm_remote.php')
+        print("posting to: %s" % self._url + '/_vm_remote.php')
         res = self._browser.session.post(self._url + '/_vm_remote.php', data=data, verify=True)
         return res.status_code == 200
 
