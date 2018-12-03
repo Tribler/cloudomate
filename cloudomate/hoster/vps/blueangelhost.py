@@ -4,23 +4,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import itertools
-import re
-import time
 from builtins import int
 from builtins import super
 
-from future import standard_library
-
 from bs4 import Tag
+from future import standard_library
 from past.builtins import unicode
 
 from cloudomate.gateway.bitpay import BitPay
+from cloudomate.hoster.vps.clientarea import ClientArea
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
+from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
 from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsStatus
 from cloudomate.hoster.vps.vps_hoster import VpsStatusResource
-from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
-from cloudomate.hoster.vps.clientarea import ClientArea
 
 standard_library.install_aliases()
 
@@ -44,7 +41,7 @@ class BlueAngelHost(SolusvmHoster):
 
     @staticmethod
     def get_email_url():
-        return 'https://www.billing.blueangelhost.com/viewemail.php' # + ?id=123456
+        return 'https://www.billing.blueangelhost.com/viewemail.php'  # + ?id=123456
 
     @staticmethod
     def get_gateway():
@@ -65,7 +62,7 @@ class BlueAngelHost(SolusvmHoster):
     def _create_clientarea(self):
         if self._clientarea is None:
             self._clientarea = BAHClientArea(self.get_browser(), self.get_clientarea_url(),
-                                                  self.get_email_url(), self._settings)
+                                             self.get_email_url(), self._settings)
         return self._clientarea
 
     '''
@@ -131,7 +128,7 @@ class BlueAngelHost(SolusvmHoster):
 
     @staticmethod
     def _convert_mb_to_gb(mb):
-        return mb/1024.0
+        return mb / 1024.0
 
     @classmethod
     def _parse_options(cls, page, is_kvm=False):
@@ -178,6 +175,7 @@ class BlueAngelHost(SolusvmHoster):
         form['customfield[135]'] = 'ubuntu-16.04-x86_64'  # Ubuntu 64 bit
         self._browser.submit_selected()
 
+
 class BAHClientArea(ClientArea):
     """
     Modified ClientAria for BlueAngelHost,
@@ -221,7 +219,6 @@ class BAHClientArea(ClientArea):
             'vmuser_password': None,
             'control_panel_url': None
         }
-
 
         ps = soup.findAll('p')
 

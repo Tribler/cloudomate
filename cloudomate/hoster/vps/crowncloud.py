@@ -94,7 +94,7 @@ class CrownCloud(SolusvmHoster):
         for table in tables:  # There are multiple tables with server options on the page
             for row in table.findAll('tr'):
                 if len(row.findAll('td')) > 0:  # Ignore headers
-                    option = cls._parse_row(row,connection)
+                    option = cls._parse_row(row, connection)
                     if option is not None:
                         yield option
 

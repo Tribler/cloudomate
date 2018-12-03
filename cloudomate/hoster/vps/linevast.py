@@ -4,21 +4,19 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
-
+import re
+import sys
 from builtins import round
 from builtins import super
 
+from currency_converter import CurrencyConverter
 from future import standard_library
 from mechanicalsoup.utils import LinkNotFoundError
-from currency_converter import CurrencyConverter
 
 from cloudomate.gateway.bitpay import BitPay
-from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.clientarea import ClientArea
+from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.vps_hoster import VpsOption
-
-import re
-import sys
 
 standard_library.install_aliases()
 
@@ -258,7 +256,7 @@ class ControlPanel(object):
 
     _vi = None
 
-    _valid_acts = set(['istun', 'rootpassword'])
+    _valid_acts = {'istun', 'rootpassword'}
 
     def __init__(self, browser, control_panel_url, vmuser, vmuser_password):
         self._browser = browser

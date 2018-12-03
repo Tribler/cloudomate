@@ -7,11 +7,8 @@ from __future__ import unicode_literals
 import datetime
 import re
 import sys
-from builtins import round
 from collections import namedtuple
 
-from bs4 import BeautifulSoup
-from forex_python.converter import CurrencyRates
 from future import standard_library
 
 standard_library.install_aliases()
@@ -76,7 +73,7 @@ class ClientArea(object):
             url = columns[4].a['href']
             url = url.split('.php')
             url = self._url + url[1]
-        else: #Fixes twosync
+        else:  # Fixes twosync
             url = self._url + '/' + row['data-url']
 
         return ClientAreaService(name, price, next_due, status, url)

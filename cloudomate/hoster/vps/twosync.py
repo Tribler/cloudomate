@@ -3,11 +3,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import re
 import time
-import datetime
-
 from builtins import int
 from builtins import super
 
@@ -15,12 +12,12 @@ from future import standard_library
 from mechanicalsoup.utils import LinkNotFoundError
 
 from cloudomate.gateway.blockchain import Blockchain
+from cloudomate.hoster.vps.clientarea import ClientArea
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
-from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsConfiguration
+from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsStatus
 from cloudomate.hoster.vps.vps_hoster import VpsStatusResource
-from cloudomate.hoster.vps.clientarea import ClientArea
 
 standard_library.install_aliases()
 
@@ -61,7 +58,7 @@ class TwoSync(SolusvmHoster):
     def _create_clientarea(self):
         if self._clientarea is None:
             self._clientarea = TSClientArea(self.get_browser(), self.get_clientarea_url(),
-                                                  self.get_email_url(), self._settings)
+                                            self.get_email_url(), self._settings)
         return self._clientarea
 
     '''
@@ -104,7 +101,7 @@ class TwoSync(SolusvmHoster):
         self._server_form()
         self._browser.open(self.CART_URL)
 
-        form = self._browser.select_form(selector='form#frmCheckout')
+        self._browser.select_form(selector='form#frmCheckout')
         self._fill_user_form(self.get_gateway().get_name(), 'alert alert-danger')
 
         self._browser.open('https://ua.2sync.org/cart.php?a=complete')
@@ -116,7 +113,7 @@ class TwoSync(SolusvmHoster):
 
         self.pay(wallet, self.get_gateway(), urlselected)
 
-        #open invoice page after paying
+        # open invoice page after paying
         invoice = str(url).split('=')[1]
         self._browser.open('https://ua.2sync.org/modules/gateways/blockchain.php?invoice=' + invoice)
 
@@ -174,7 +171,7 @@ class TwoSync(SolusvmHoster):
             'purchase_url': 'https://ua.2sync.org/' + package.find('a').get('href')
         }
         for entry in package.find_all('li'):
-            key,value = entry.text.replace('\n', '').split(' ')[:2]
+            key, value = entry.text.replace('\n', '').split(' ')[:2]
             option[key] = value
 
         return VpsOption(
@@ -208,7 +205,6 @@ class TwoSync(SolusvmHoster):
         service_id = status.clientarea.url.split('=')[-1]
         data = self._browser.post(url='https://ua.2sync.org/modules/servers/tProxmox/monitorProxmox.php',
                                   data={'serviceid': service_id, 'typeVm': 'qemu'}).json()
-
 
         memory = VpsStatusResource(self._convert_bytes_to_gbytes(data['mem']),
                                    self._convert_bytes_to_gbytes(data['maxmem']))
@@ -264,7 +260,8 @@ class TSClientArea(ClientArea):
         }
 
         ps = soup.findAll('p')
-        pattern1 = re.compile(r'(?:<.>)*((?:Username:)|(?:Root Password:)|(?:VPS IP:))\s*((?:\w{1,3}\.*){1,4})(?:<.>)*', re.MULTILINE)
+        pattern1 = re.compile(r'(?:<.>)*((?:Username:)|(?:Root Password:)|(?:VPS IP:))\s*((?:\w{1,3}\.*){1,4})(?:<.>)*',
+                              re.MULTILINE)
 
         for p in ps:
             p = re.sub(r'[^\x00-\x7F]+', '', str(p)).strip()

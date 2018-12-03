@@ -37,7 +37,6 @@ class VpsHoster(Hoster):
     This class already implements some common methods.
     """
 
-
     @abstractmethod
     def get_configuration(self):
         """Get Hoster configuration.

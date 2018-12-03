@@ -116,8 +116,6 @@ class AzireVpn(VpnHoster):
         print('Done purchasing')
         return transaction_hash
 
-
-
     def _register(self):
         self._browser.open(self.REGISTER_URL)
         form = self._browser.select_form()
