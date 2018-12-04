@@ -8,9 +8,6 @@ import sys
 from builtins import round
 from builtins import float
 from builtins import str
-from builtins import int
-
-import requests
 
 from forex_python.converter import CurrencyRates
 from future import standard_library
@@ -47,7 +44,7 @@ class MullVad(VpnHoster):
 
     @staticmethod
     def get_required_settings():
-        return {"captcha": ["captchaaccount"]}
+        return {"anticaptcha": ["accountkey"]}
 
     '''
     Action methods of the Hoster that can be called
@@ -78,19 +75,17 @@ class MullVad(VpnHoster):
         self._login()
 
         # Retrieve days left until expiration
-        now = datetime.datetime.now(datetime.timezone.utc)
         (online, expiration) = self._check_vpn_date()
-        expiration = datetime.timedelta(days=int(expiration))
 
         # Add the remaining days to the current date to get expiration date
-        return VpnStatus(online, now + expiration)
+        return VpnStatus(online, expiration)
 
     def purchase(self, wallet, option):
         # Prepare for the purchase on the MullVad website
-        if self._settings.get("user", "accountnumber") is None:
-            self._register()
-        else:
+        if self._settings.has_key("user", "accountnumber"):
             self._login()
+        else:
+            self._register()
         page = self._order()
 
         self.pay(wallet, self.get_gateway(), str(page))
@@ -112,8 +107,8 @@ class MullVad(VpnHoster):
                     "captcha.png")
          
         # Solve captcha 
-        captcha_solver = CaptchaSolver(self._settings.get("captcha",
-                                                          "captchaaccount"))
+        captcha_solver = CaptchaSolver(self._settings.get("anticaptcha",
+                                                          "accountkey"))
         solution = captcha_solver.solve_captcha_text_case_sensitive(
                                                                 "./captcha.png")
         form["captcha_1"] = solution
@@ -160,8 +155,8 @@ class MullVad(VpnHoster):
 
     def _order(self):
         self._browser.open(self.ORDER_URL)
-        form = self._browser.select_form()
-        
+        form = self._browser.select_form('form[action="/en/account/bitcoin/"]')
+
         # Order one month
         form["months"] = "1"
         self._browser.session.headers["Referer"] = self._browser.get_url()
@@ -174,13 +169,8 @@ class MullVad(VpnHoster):
         # Checks if VPN expired
         soup = self._browser.get_current_page()
         expire_date = soup.select(".balance-header")[0].get_text()
-        expire_date = expire_date.split("\n")[2]
-        index_before_date = expire_date.index("in")
-        index_after_date = expire_date.index("days")
-        expire_date = expire_date[index_before_date + 3:index_after_date - 1]
-        
-        if (expire_date <= "0"):
-            return (False, expire_date)
-        else:
-            return (True, expire_date)
+        expire_date = expire_date.split("\n")[2].strip()
+        now = datetime.datetime.now()
+        expire_date = datetime.datetime.strptime(expire_date, "%d %B %Y")
 
+        return (expire_date > now), expire_date

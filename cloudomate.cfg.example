@@ -22,3 +22,6 @@ ns1 =
 ns2 =
 hostname =
 root_password =
+
+[anticaptcha]
+accountkey =
