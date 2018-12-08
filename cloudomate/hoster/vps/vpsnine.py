@@ -118,12 +118,11 @@ class VPSNine(SolusvmHoster):
         Fills in the form containing server configuration.
         :return:
         """
-        form = self._browser.select_form('form#frmConfigureProduct')
+        form = self._browser.select_form()
         self._fill_server_form()
-        try:
-            form['configoption[61]'] = '657'  # Ubuntu 16.04
-        except LinkNotFoundError:
-            form['configoption[125]'] = '549'  # Ubuntu 16.04
+        form['hostname'] = self._settings.get('server', 'hostname')
+        form['configoption[1]'] = '540'  # Ubuntu 14.04
+        form['gateway'] = 'bitcoin'  # Bitcoin
         self._browser.submit_selected()
 
     @classmethod
