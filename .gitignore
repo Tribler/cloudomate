@@ -7,6 +7,7 @@ dist/
 *.py[cod]
 __pycache__/
 *.so
+*.swp
 *~
 .idea/*
 .pypirc
