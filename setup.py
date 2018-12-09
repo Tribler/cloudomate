@@ -68,7 +68,8 @@ setup(
         'ConfigParser',
         'future',
         'requests[security]',
-        'python-dateutil'
+        'python-dateutil',
+        'websocket-client'
     ],
 
     extras_require={
