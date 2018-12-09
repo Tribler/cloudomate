@@ -95,10 +95,12 @@ class MullVad(VpnHoster):
         self._login()
 
         # Retrieve days left until expiration
-        (online, expiration) = self._check_vpn_date()
+        expire_date = self._get_expiration_date()
+        expire_date = datetime.datetime.strptime(expire_date, "%d %B %Y")
 
-        # Add the remaining days to the current date to get expiration date
-        return VpnStatus(online, expiration)
+        online = (expire_date > self._get_current_date())
+
+        return VpnStatus(online, expire_date)
 
     def purchase(self, wallet, option):
         # Prepare for the purchase on the MullVad website
@@ -185,15 +187,16 @@ class MullVad(VpnHoster):
 
         return page
 
-    def _check_vpn_date(self):
+    def _get_expiration_date(self):
         # Checks if VPN expired
         soup = self._browser.get_current_page()
         expire_date = soup.select(".balance-header")[0].get_text()
         expire_date = expire_date.split("\n")[2].strip()
-        now = datetime.datetime.now()
-        expire_date = datetime.datetime.strptime(expire_date, "%d %B %Y")
+        return expire_date
 
-        return (expire_date > now), expire_date
+    @staticmethod
+    def _get_current_date():
+        return datetime.datetime.now()
 
     # Download configuration files for setting up VPN and extract them
     def _download_files(self):

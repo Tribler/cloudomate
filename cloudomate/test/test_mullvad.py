@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import unittest
 import datetime
+from unittest import mock
 
 from future import standard_library
 from mock.mock import MagicMock 
@@ -38,16 +39,17 @@ class TestMullvad(unittest.TestCase):
         self.assertTrue(self.mullvad.pay.called)
 
     def test_get_status(self):
-        self.mullvad._check_vpn_date = MagicMock(return_value=(True,"-5"))
+        self.mullvad._get_expiration_date = MagicMock(return_value="2 January 2019")
         self.mullvad._login = MagicMock()
+        now = datetime.datetime.strptime("9 December 2018", "%d %B %Y")
+        self.mullvad._get_current_date = MagicMock(return_value=now)
 
-        expiration_date = self.mullvad.get_status()[1]
-        now = datetime.datetime.now(datetime.timezone.utc)
-        expiration_days = datetime.timedelta(days=int("-5"))
-        full_date = now + expiration_days
+        (online, expire_date) = self.mullvad.get_status()
 
-        self.assertEqual(expiration_date.day, full_date.day)
-        self.assertEqual(expiration_date.month, full_date.month)
+        self.assertEqual(True, online)
+        self.assertEqual(2019, expire_date.year)
+        self.assertEqual(1, expire_date.month)
+        self.assertEqual(2, expire_date.day)
 
 
 if __name__ == "__main__":
