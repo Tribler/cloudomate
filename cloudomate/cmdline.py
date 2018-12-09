@@ -21,6 +21,7 @@ from cloudomate import globals
 from cloudomate import wallet as wallet_util
 from cloudomate.hoster.vpn.azirevpn import AzireVpn
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
+from cloudomate.hoster.vps.hostsailor import HostSailor
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.proxhost import ProxHost
 from cloudomate.hoster.vps.twosync import TwoSync
@@ -52,7 +53,8 @@ providers = CaseInsensitiveDict({
         # Pulseservers,
         UndergroundPrivate,
         TwoSync,
-        ProxHost
+        ProxHost,
+        HostSailor
     ]),
     "vpn": _map_providers_to_dict([
         AzireVpn,
