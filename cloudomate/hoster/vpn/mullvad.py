@@ -4,7 +4,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import os
+import shutil
 import sys
+import zipfile
 from builtins import round
 from builtins import float
 from builtins import str
@@ -29,6 +32,7 @@ class MullVad(VpnHoster):
     ORDER_URL = "https://www.mullvad.net/en/account"
     OPTIONS_URL = "https://www.mullvad.net/en"
     INFO_URL = "https://mullvad.net/en/guides/linux-openvpn-installation/"
+    CONFIGURATION_URL = "https://mullvad.net/en/download/config/"
 
     '''
     Information about the Hoster
@@ -51,9 +55,25 @@ class MullVad(VpnHoster):
     '''
 
     def get_configuration(self):
-        return VpnConfiguration('No user name needed',
-                                'No password needed', 
-                     'Use install_mullvad.py in util folder to install the VPN')
+        self._download_files()
+
+        userpass_file = open("./config-files/mullvad_userpass.txt", "r")
+        username = userpass_file.readline().strip()
+        password = userpass_file.readline().strip()
+
+        conf_file = open("./config-files/mullvad_se-sto.conf", "r")
+        conf = conf_file.read()
+
+        ca_file = open("./config-files/mullvad_ca.crt", "r")
+        ca = ca_file.read()
+
+        # include the certificate
+        conf = conf.replace("ca mullvad_ca.crt", "<ca>\n" + ca + "</ca>")
+
+        # remove userpass as it is added by cmdline.py
+        conf = conf.replace("auth-user-pass mullvad_userpass.txt", "")
+
+        return VpnConfiguration(username, password, conf)
 
     @classmethod
     def get_options(cls):
@@ -174,3 +194,42 @@ class MullVad(VpnHoster):
         expire_date = datetime.datetime.strptime(expire_date, "%d %B %Y")
 
         return (expire_date > now), expire_date
+
+    # Download configuration files for setting up VPN and extract them
+    def _download_files(self):
+        # Fill information on website to get right files for openVPN
+        self._browser.open(self.CONFIGURATION_URL)
+        form = self._browser.select_form()
+        form["account_token"] = self._settings.get("user", "accountnumber")
+        form["platform"] = "linux"
+        form["region"] = "se-sto"
+        form["port"] = "0"
+        self._browser.session.headers["Referer"] = self._browser.get_url()
+        response = self._browser.submit_selected()
+        content = response.content
+
+        # Create the folder that will store the configuration files
+        result = os.popen("mkdir -p config-files").read()
+        print(result)
+
+        # Download the zip file to the right location
+        files_path = "./config-files/config.zip"
+        with open(files_path, "wb") as output:
+            output.write(content)
+
+        # Unzip files
+        zip_file = zipfile.ZipFile(files_path, "r")
+        for member in zip_file.namelist():
+            filename = os.path.basename(member)
+            # Skip directories
+            if not filename:
+                continue
+
+            # Copy file (taken from zipfile's extract)
+            source = zip_file.open(member)
+            target = open(os.path.join("./config-files/", filename), "wb")
+            with source, target:
+                shutil.copyfileobj(source, target)
+
+        # Delete zip file
+        os.remove(files_path)
