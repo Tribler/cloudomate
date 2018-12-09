@@ -22,6 +22,7 @@ from cloudomate import wallet as wallet_util
 from cloudomate.hoster.vpn.azirevpn import AzireVpn
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
 from cloudomate.hoster.vps.linevast import LineVast
+from cloudomate.hoster.vps.routerhosting import RouterHosting
 from cloudomate.hoster.vps.proxhost import ProxHost
 from cloudomate.hoster.vps.twosync import TwoSync
 from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
@@ -39,9 +40,9 @@ def _map_providers_to_dict(provider_list):
 types = ["vps", "vpn"]
 
 """
-All implemented providers, those commented out are not working for now. CCIHosting's and 
-Pulseserver's gateway changed to CoinPayments and this is not implemented. CrownCloud 
-manually checks orders and do not accept multiple variations of the same email. 
+All implemented providers, those commented out are not working for now. CCIHosting's and
+Pulseserver's gateway changed to CoinPayments and this is not implemented. CrownCloud
+manually checks orders and do not accept multiple variations of the same email.
 """
 providers = CaseInsensitiveDict({
     "vps": _map_providers_to_dict([
@@ -49,6 +50,7 @@ providers = CaseInsensitiveDict({
         # CCIHosting,
         # CrownCloud,
         LineVast,
+        RouterHosting,
         # Pulseservers,
         UndergroundPrivate,
         TwoSync,
