@@ -132,27 +132,3 @@ class RouterHosting(SolusvmHoster):
                 purchase_url=list_elements[7].find('a', {'class': 'w-btn'})['href'],
             )
 
-    @staticmethod
-    def _extract_vi_from_links(links):
-        for link in links:
-            if "_v=" in link.url:
-                return link.url.split("_v=")[1]
-        return False
-
-    @staticmethod
-    def _check_login(text):
-        data = json.loads(text)
-        if data['success'] and data['success'] == '1':
-            return True
-        return False
-
-    '''
-    Control panel actions
-    '''
-    def change_root_password(self, new_password):
-        self._create_controlpanel()
-        return self._controlpanel.change_root_password(new_password)
-
-    def get_status_control_panel(self):
-        self._create_controlpanel()
-        return self._controlpanel.get_status()
