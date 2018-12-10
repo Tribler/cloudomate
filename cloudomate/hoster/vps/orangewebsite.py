@@ -98,13 +98,8 @@ class OrangeWebsite(SolusvmHoster):
         self._browser.open(self.CART_URL)
         self._cart_form()
 
-        # self._browser.open("https://secure.orangewebsite.com/cart.php?a=checkout")
-        # self._browser.session.headers['referer'] = "https://secure.orangewebsite.com/cart.php?a=view"
-        # self._browser.open("https://secure.orangewebsite.com/cart.php?a=complete")
-
-        # print(self._browser.get_current_page())
-        print(self._browser.get_url())
-
+        # TODO
+        return
         summary = self._browser.get_current_page().find('div', class_='summary-container')
         self._browser.follow_link(summary.find('a', class_='btn-checkout'))
 
@@ -142,17 +137,15 @@ class OrangeWebsite(SolusvmHoster):
         form['password'] = self._settings.get('user', "password")
         form['password2'] = self._settings.get('user', "password")
         form['paymentmethod'] = 'bitpay'
-        # form['cctype'] = 'visa'
-        # form['ccexpirymonth'] = 01
-        # form['ccexpiryyear'] = 2018
 
         form['accepttos'] = True
 
-        # form.print_summary()
+        # Default submit button is "Validate code", use "Complete order" instead
+        soup = self._browser.get_current_page()
+        submit = soup.select_one('input.ordernow')
+        form.choose_submit(submit)
 
-        response = self._browser.submit_selected()
-
-        # print(response.text)
+        self._browser.submit_selected()
 
 
     @classmethod
