@@ -9,12 +9,20 @@ from collections import namedtuple
 from future import standard_library
 from future.utils import with_metaclass
 
+from mechanicalsoup import StatefulBrowser
+
 standard_library.install_aliases()
 
 PaymentInfo = namedtuple('PaymentInfo', ['amount', 'address'])
 
 
 class Gateway(with_metaclass(ABCMeta)):
+
+    @staticmethod
+    @abstractmethod
+    def use_session():
+        return False
+
     @staticmethod
     @abstractmethod
     def get_name():
