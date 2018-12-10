@@ -136,7 +136,7 @@ class LineVast(SolusvmHoster):
             price_usd = round(c.convert(price_eur, 'EUR', 'USD'), 2)
             yield VpsOption(
                 name=option.find('div', {'class': 'top-area'}).text.strip(),
-                storage=list_elements[2].text.strip().split(' ')[0],
+                storage=list_elements[2].text.strip().split(' ')[0].split('GB')[0],
                 cores=list_elements[0].text.strip().split(' ')[0],
                 memory=list_elements[1].text.strip().split(' ')[0],
                 bandwidth='unmetered',
