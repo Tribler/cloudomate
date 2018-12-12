@@ -197,13 +197,7 @@ class LineVastClientArea(ClientArea):
         """
         Returns the parsed server information from email
         """
-        email_id = None
-        for email in self.get_emails():
-            e_id = email['id']
-            title = email['title']
-            if title == 'New Server Information':
-                email_id = e_id
-                break
+        email_id = self._get_email_id()
         self._browser.open(self.email_url + '?id=' + email_id)
         soup = self._browser.get_current_page()
 
@@ -236,6 +230,13 @@ class LineVastClientArea(ClientArea):
                 break
 
         return server_info
+
+    def _get_email_id(self):
+        for email in self.get_emails():
+            e_id = email['id']
+            title = email['title']
+            if title == 'New Server Information':
+                return e_id
 
     @staticmethod
     def _extract_emails(soup):

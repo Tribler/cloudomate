@@ -74,7 +74,7 @@ setup(
 
     extras_require={
         'dev': [],
-        'test': ['mock', 'parameterized'],
+        'test': ['mock', 'parameterized', 'flake8'],
     },
 
     package_data=package_data,

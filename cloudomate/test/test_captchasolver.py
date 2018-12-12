@@ -3,16 +3,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import unittest
-import time
 import os
 import unittest
 
-from mock import patch, MagicMock
 from future import standard_library
 from mock.mock import patch, MagicMock
-
-from cloudomate.util.captchasolver import CaptchaSolver, ReCaptchaSolver
 
 standard_library.install_aliases()
 

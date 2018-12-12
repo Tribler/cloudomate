@@ -4,7 +4,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
-from http.cookiejar import Cookie
 
 from fake_useragent import UserAgent
 from future import standard_library
@@ -47,7 +46,7 @@ class CoinGate(Gateway):
         response = browser.open(url, headers=headers)
         cookies = []
         for cookie in response.cookies:
-            cookie = cookie  # type: Cookie
+            cookie = cookie
             cookies.append('{}: {}'.format(cookie.name, cookie.value))
         ws = create_connection("wss://coingate.com/cable", cookie='; '.join(cookies), origin='https://coingate.com')
 
