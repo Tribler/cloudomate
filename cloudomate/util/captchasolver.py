@@ -1,24 +1,22 @@
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function 
+from __future__ import print_function
 from __future__ import unicode_literals
-
-from builtins import open
-from builtins import str
 
 import base64
 import json
 import os
 import time
+from builtins import open
+from builtins import str
 
 import requests
-
 from future import standard_library
 
 standard_library.install_aliases()
 
 """
-Usage: 
+Usage:
 
 Feed Anti Captcha account API key to solver:
 c_solver = CaptchaSolver("fd58e13e22604e820052b44611d61d6c")
@@ -98,7 +96,7 @@ class CaptchaSolver(object):
         return solution["text"]
 
     def _get_task_result(self, task_id):
-        # Query API for the solution of the task       
+        # Query API for the solution of the task
         response = requests.post("https://api.anti-captcha.com/getTaskResult",
                                  json={"clientKey": self._client_key,
                                        "taskId": task_id})

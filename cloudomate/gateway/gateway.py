@@ -9,8 +9,6 @@ from collections import namedtuple
 from future import standard_library
 from future.utils import with_metaclass
 
-from mechanicalsoup import StatefulBrowser
-
 standard_library.install_aliases()
 
 PaymentInfo = namedtuple('PaymentInfo', ['amount', 'address'])

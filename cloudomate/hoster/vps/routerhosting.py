@@ -3,18 +3,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
-import re
-import sys
-from builtins import round
 from builtins import super
 
-from currency_converter import CurrencyConverter
 from future import standard_library
 from mechanicalsoup.utils import LinkNotFoundError
 
 from cloudomate.gateway.coinpayments import CoinPayments
-from cloudomate.hoster.vps.clientarea import ClientArea
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.vps_hoster import VpsOption
 
@@ -83,7 +77,7 @@ class RouterHosting(SolusvmHoster):
         self._browser.follow_link(summary.find('a', class_='btn-checkout'))
 
         try:
-            form = self._browser.select_form(selector='form#frmCheckout')
+            self._browser.select_form(selector='form#frmCheckout')
         except LinkNotFoundError:
             print("Too many open transactions, try connecting from a different IP")
             raise
@@ -98,6 +92,7 @@ class RouterHosting(SolusvmHoster):
     '''
     Hoster-specific methods that are needed to perform the actions
     '''
+
     def _server_form(self):
         """
         Fills in the form containing server configuration.
@@ -128,7 +123,6 @@ class RouterHosting(SolusvmHoster):
                 memory=list_elements[0].text.strip().split('\xa0')[0],
                 bandwidth=list_elements[4].text.strip().split(' ')[0],
                 connection=list_elements[3].text.strip().split('Gbps')[0],
-                price= float(list_elements[6].text.split("\"")[0].split("/")[0][1:]),
+                price=float(list_elements[6].text.split("\"")[0].split("/")[0][1:]),
                 purchase_url=list_elements[7].find('a', {'class': 'w-btn'})['href'],
             )
-

@@ -3,10 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
-
 from future import standard_library
-from future.moves.urllib import request
 
 from cloudomate.gateway.gateway import Gateway, PaymentInfo
 
@@ -22,12 +19,12 @@ class CustomMullvad(Gateway):
     def extract_info(page):
         """
         Extracts amount and BitCoin address from MullVad's payment page.
-        :param page: the HTML page returned after sumbitting the order 
+        :param page: the HTML page returned after sumbitting the order
         :return: a tuple of the amount in BitCoin along with the address
         """
         month_price = ""
         bitcoin_address = ""
-        
+
         # Parse page to get bitcoin ammount and address
         for line in page.split("\n"):
             if "1 month = " in line:
@@ -36,7 +33,7 @@ class CustomMullvad(Gateway):
                 bitcoin_address_line = line.strip().split(" ")[3].split("=")[1]
                 bitcoin_address = bitcoin_address_line.partition("\"")[-1]
                 bitcoin_address = bitcoin_address.rpartition("\"")[0]
- 
+
         return PaymentInfo(month_price, bitcoin_address)
 
     @staticmethod

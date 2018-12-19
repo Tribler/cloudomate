@@ -3,12 +3,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import unittest
 import datetime
-from unittest import mock
+import unittest
 
 from future import standard_library
-from mock.mock import MagicMock 
+from mock.mock import MagicMock
 
 from cloudomate.hoster.vpn.mullvad import MullVad
 from cloudomate.hoster.vpn.vpn_hoster import VpnOption
@@ -19,7 +18,7 @@ standard_library.install_aliases()
 
 
 class TestMullvad(unittest.TestCase):
-     
+
     def setUp(self):
         self.settings = Settings()
         self.settings.put("user", "accountnumber", "2132sadfqf")
@@ -31,9 +30,9 @@ class TestMullvad(unittest.TestCase):
         self.mullvad._login = MagicMock()
         self.mullvad._order = MagicMock()
         self.mullvad.pay = MagicMock()
- 
+
         self.mullvad.purchase(self.wallet, self.option)
-        
+
         self.assertTrue(self.mullvad._login.called)
         self.assertTrue(self.mullvad._order.called)
         self.assertTrue(self.mullvad.pay.called)

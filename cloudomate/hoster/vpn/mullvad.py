@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
@@ -8,8 +8,8 @@ import os
 import shutil
 import sys
 import zipfile
-from builtins import round
 from builtins import float
+from builtins import round
 from builtins import str
 
 from forex_python.converter import CurrencyRates
@@ -22,9 +22,10 @@ from cloudomate.util.captchasolver import CaptchaSolver
 standard_library.install_aliases()
 
 if sys.version_info > (3, 0):
-   from urllib.request import urlretrieve
+    from urllib.request import urlretrieve
 else:
-   from urllib import urlretrieve
+    from urllib import urlretrieve
+
 
 class MullVad(VpnHoster):
     REGISTER_URL = "https://www.mullvad.net/en/account/create/"
@@ -85,8 +86,8 @@ class MullVad(VpnHoster):
 
         # Calculate the price in USD
         eur = float(string[string.index("€") + 1:string.index("/")])
-        price = round(CurrencyRates().convert("EUR","USD", eur), 2)
-        
+        price = round(CurrencyRates().convert("EUR", "USD", eur), 2)
+
         name, _ = cls.get_metadata()
         option = VpnOption(name, "OpenVPN", price, sys.maxsize, sys.maxsize)
         return [option]
@@ -112,11 +113,9 @@ class MullVad(VpnHoster):
 
         self.pay(wallet, self.get_gateway(), str(page))
 
-
     '''
     Hoster-specific methods that are needed to perform the actions
     '''
-
 
     def _register(self):
         self._browser.open(self.REGISTER_URL)
@@ -127,16 +126,16 @@ class MullVad(VpnHoster):
         img = soup.select("img.captcha")[0]["src"]
         urlretrieve("https://www.mullvad.net" + img,
                     "captcha.png")
-         
-        # Solve captcha 
+
+        # Solve captcha
         captcha_solver = CaptchaSolver(self._settings.get("anticaptcha",
                                                           "accountkey"))
         solution = captcha_solver.solve_captcha_text_case_sensitive(
-                                                                "./captcha.png")
+            "./captcha.png")
         form["captcha_1"] = solution
-        
+
         self._browser.session.headers["Referer"] = self._browser.get_url()
-      
+
         page = self._browser.submit_selected()
 
         # Check if registration was successful
@@ -146,7 +145,7 @@ class MullVad(VpnHoster):
             sys.exit(2)
 
         new_account_number = 0
-        
+
         # Parse page to get new account number
         new_page = str(self._browser.get_current_page())
         for line in new_page.split("\n"):
@@ -154,7 +153,7 @@ class MullVad(VpnHoster):
                 new_account_number = line.split(":")[1]
                 new_account_number = new_account_number.split("<")[0].strip(" ")
                 break
-        self._settings.put("user","accountnumber", new_account_number)
+        self._settings.put("user", "accountnumber", new_account_number)
         self._settings.save_settings()
 
         return page
@@ -162,7 +161,7 @@ class MullVad(VpnHoster):
     def _login(self):
         self._browser.open(self.LOGIN_URL)
         form = self._browser.select_form()
-        
+
         # Use account number to login
         form["account_number"] = self._settings.get("user", "accountnumber")
         self._browser.session.headers["Referer"] = self._browser.get_url()
