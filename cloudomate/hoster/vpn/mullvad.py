@@ -85,7 +85,7 @@ class MullVad(VpnHoster):
         string = p[1].get_text()
 
         # Calculate the price in USD
-        eur = float(string[string.index("€") + 1:string.index("/")])
+        eur = float(string[string.index("\u20ac") + 1:string.index("/")])
         price = round(CurrencyRates().convert("EUR", "USD", eur), 2)
 
         name, _ = cls.get_metadata()
