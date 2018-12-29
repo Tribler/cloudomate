@@ -10,7 +10,7 @@ from builtins import super
 
 from future import standard_library
 
-from cloudomate.gateway.coinbase import Coinbase
+from cloudomate.gateway.coinpayments import CoinPayments
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.vps_hoster import VpsOption
 from cloudomate.hoster.vps.vps_hoster import VpsStatus
@@ -36,7 +36,7 @@ class CCIHosting(SolusvmHoster):
 
     @staticmethod
     def get_gateway():
-        return Coinbase
+        return CoinPayments
 
     @staticmethod
     def get_metadata():
@@ -84,17 +84,46 @@ class CCIHosting(SolusvmHoster):
 
     def purchase(self, wallet, option):
         self._browser.open(option.purchase_url)
-        self._server_form()  # Add item to cart
+        self._server_form()
         self._browser.open(self.CART_URL)
 
         summary = self._browser.get_current_page().find('div', class_='summary-container')
         self._browser.follow_link(summary.find('a', class_='btn-checkout'))
 
-        self._browser.select_form(selector='form[name=orderfrm]')
+        try:
+            self._browser.select_form(selector='form#frmCheckout')
+        except LinkNotFoundError:
+            print("Too many open transactions, try connecting from a different IP")
+            raise
+
         self._fill_user_form(self.get_gateway().get_name())
 
-        coinbase_url = self._browser.get_current_page().find('form')['action']
-        return self.pay(wallet, self.get_gateway(), coinbase_url)
+        self._browser.select_form(nr=0)  # Go to payment form
+        self._browser.submit_selected()
+
+        return self.pay(wallet, self.get_gateway(), self._browser.get_url(), self._browser, self._settings)
+        # self._browser.open(option.purchase_url)
+        # self._server_form()  # Add item to cart
+        # self._browser.open(self.CART_URL)
+
+        # summary = self._browser.get_current_page().find('div', class_='summary-container')
+        # self._browser.follow_link(summary.find('a', class_='btn-checkout'))
+
+        # self._browser.select_form(selector='form[name=orderfrm]')
+        # self._fill_user_form(self.get_gateway().get_name())
+
+        # coinpayments_url = self._browser.get_current_page().find('form')['action']
+        # self._browser.select_form('form[action="' + coinpayments_url + '"]')
+        # self._browser.get_current_form().print_summary()
+
+        # response = self._browser.submit_selected()
+        # print(response.text)
+
+        # print("--- \n\n---\n")
+
+        # print(self._browser.get_current_page())
+        # # coinpayments_url = "https://www.ccihosting.com/accounts/cart.php?a=complete"
+        # return self.pay(wallet, self.get_gateway(), coinpayments_url)
 
     '''
     Hoster-specific methods that are needed to perform the actions
@@ -137,7 +166,7 @@ class CCIHosting(SolusvmHoster):
 
     @classmethod
     def _parse_options(cls, page):
-        tables = page.findAll('div', class_='p_table')
+        tables = page.findAll('div', class_='pricing')
         for column in tables:
             yield cls._parse_cci_options(column)
 
@@ -146,6 +175,10 @@ class CCIHosting(SolusvmHoster):
         header = column.find('div', class_='phead')
         price = column.find('span', class_='starting-price')
         info = column.find('ul').findAll('li')
+        try:
+            url=column.find('a')['onclick'].split("'")[3]
+        except KeyError:
+            url=column.find('a')['href']
         return VpsOption(
             name=header.find('h2').contents[0],
             price=float(price.contents[0]),
@@ -154,5 +187,6 @@ class CCIHosting(SolusvmHoster):
             storage=float(info[3].find('strong').contents[0]),
             bandwidth=sys.maxsize,
             connection=0.01,  # See FAQ at https://www.ccihosting.com/offshore-vps.html
-            purchase_url=column.find('a')['href']
+            # purchase_url=column.find('a')['onclick']
+            purchase_url=url
         )

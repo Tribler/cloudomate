@@ -22,6 +22,7 @@ from cloudomate import wallet as wallet_util
 from cloudomate.hoster.vpn.azirevpn import AzireVpn
 from cloudomate.hoster.vpn.mullvad import MullVad
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
+from cloudomate.hoster.vps.ccihosting import CCIHosting
 from cloudomate.hoster.vps.hostsailor import HostSailor
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.routerhosting import RouterHosting
@@ -49,7 +50,7 @@ manually checks orders and do not accept multiple variations of the same email.
 providers = CaseInsensitiveDict({
     "vps": _map_providers_to_dict([
         BlueAngelHost,
-        # CCIHosting,
+        CCIHosting,
         # CrownCloud,
         LineVast,
         RouterHosting,
