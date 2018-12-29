@@ -14,7 +14,7 @@ Cloudomate
 Overview
 ========
 
-Cloudomate is an unpermissioned open compute API which provides an automated way to buy VPS instances and VPN servers from multiple providers. The easiest way to use Cloudomate is via the command-line interface. 
+Cloudomate is an unpermissioned open compute API which provides an automated way to buy VPS instances and VPN servers from multiple providers. The easiest way to use Cloudomate is via the command-line interface.
 
 Requirements
 ============
@@ -42,6 +42,8 @@ Currently the following VPS providers are implemented: ::
    linevast              https://linevast.de/
    twosync               https://ua.2sync.org/
    undergroundprivate    https://undergroundprivate.com/
+   RouterHosting         https://www.routerhosting.com/
+   HostSailor            http://hostsailor.com/vps-hosting/
    proxhost              Proxmox provider emulation
 
 This same list can be accessed through the list command: ::
@@ -75,21 +77,25 @@ Cloudomate.
 +====================+======+============+===============+============+===============+==============+==========+==============================+
 | BlueAngelHost      | vps  | yes        |               | extended   | yes           | from email   |          | >12h purchase processing     |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| TwoSync            | vps  | yes        |               | extended   | yes           | from email   | TUN/TAP  | TUN/TAP on by default        |
-+--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| UndergroundPrivate | vps  | yes        |               | default    |               | registration |          |                              |
+| CCIHosting         | vps  | no         |               | default    |               |              |          | Gateway broken               |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | LineVast           | vps  | yes        | yes           | extended   | yes           | registration | TUN/TAP  | TUN/TAP enabling implemented |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| AzireVPN           | vpn  | yes        |               | none       |               | registration |          |                              |
+| RouterHosting      | vps  | yes        |               |            |               |              |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| CCIHosting         | vps  | no         |               | default    |               |              |          | Gateway broken               |
+| UndergroundPrivate | vps  | yes        |               | default    |               | registration |          |                              |
++--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
+| TwoSync            | vps  | yes        |               | extended   | yes           | from email   | TUN/TAP  | TUN/TAP on by default        |
++--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
+| HostSailor         | vps  | yes        |               |            |               |              |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | CrownCloud         | vps  | no         |               | default    |               |              |          | Manual order reviews         |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | PulseServers       | vps  | no         |               | default    |               |              |          | Gateway broken               |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | ProxHost (TBTC)    | vps  | yes        |               | none       |               | registration | TUN/TAP  | Emulated (ProxMox)           |
++--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
+| AzireVPN           | vpn  | yes        |               | none       |               | registration |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 
 
@@ -158,16 +164,16 @@ Basic usage
 
    positional arguments:
      {vps,vpn}
-       
+
    optional arguments:
      -h, --help            show this help message and exit
-     
+
 VPS
 ~~~~~~~~~~~
 
 ::
 
-   usage: cloudomate vps [-h] 
+   usage: cloudomate vps [-h]
                          {list,options,purchase,status,setrootpw,getip,ssh,info}
                          ...
 
@@ -181,7 +187,7 @@ VPS
        getip               Get the IP address of the specified service
        ssh                 SSH into an active service
        info                Get information of the specified VPS service
-       
+
    optional arguments:
      -h, --help            show this help message and exit
 
@@ -199,7 +205,7 @@ VPN
        purchase            Purchase VPN
        status              Get the status of the VPN services
        info                Get information of the specified VPN service
-       
+
    optional arguments:
      -h, --help            show this help message and exit
 
@@ -208,12 +214,12 @@ options
 -------
 
 List the options for Linevast_ ::
-    
-    
+
+
    $ cloudomate vps options linevast
 
 ::
-    
+
    Options for linevast:
 
       #    Name              CPU (cores)       RAM (GB)          Storage (GB)      Bandwidth (TB)    Connection (Mbps) Est. Price (mBTC) Price
@@ -232,9 +238,9 @@ Purchase
 
 Use the purchase command to purchase a VPS instance. An account is created
 and the instance is paid through an Electrum wallet. ::
-   
+
    $ cloudomate vps purchase linevast 0
-  
+
 ::
 
    Selected configuration:
