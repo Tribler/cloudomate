@@ -43,7 +43,8 @@ Currently the following VPS providers are implemented: ::
    twosync               https://ua.2sync.org/
    undergroundprivate    https://undergroundprivate.com/
    RouterHosting         https://www.routerhosting.com/
-   HostSailor            http://hostsailor.com/vps-hosting/
+   HostSailor            http://hostsailor.com/
+   CCIHosting            https://www.ccihosting.com/
    proxhost              Proxmox provider emulation
 
 This same list can be accessed through the list command: ::
@@ -77,7 +78,7 @@ Cloudomate.
 +====================+======+============+===============+============+===============+==============+==========+==============================+
 | BlueAngelHost      | vps  | yes        |               | extended   | yes           | from email   |          | >12h purchase processing     |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| CCIHosting         | vps  | no         |               | default    |               |              |          | Gateway broken               |
+| CCIHosting         | vps  | yes        |               | default    |               |              |          | Gateway broken               |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | LineVast           | vps  | yes        | yes           | extended   | yes           | registration | TUN/TAP  | TUN/TAP enabling implemented |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
