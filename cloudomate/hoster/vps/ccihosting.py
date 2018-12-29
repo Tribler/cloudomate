@@ -60,27 +60,6 @@ class CCIHosting(SolusvmHoster):
         browser.open(cls.OPTIONS_URL)
         return list(cls._parse_options(browser.get_current_page()))
 
-    def get_status(self):
-        status = super().get_status()
-
-        # Usage
-        page = self._browser.open(status.clientarea.url)
-        matches = re.findall(r'([\d.]+) (KB|MB|GB|TB) of ([\d.]+) (KB|MB|GB|TB) Used', page.text)
-        usage = (
-            self._convert_gigabyte(matches[1][0], matches[1][1]),  # Memory used
-            self._convert_gigabyte(matches[1][2], matches[1][3]),  # Memory total
-            self._convert_gigabyte(matches[0][0], matches[0][1]),  # Storage used
-            self._convert_gigabyte(matches[0][2], matches[0][3]),  # Storage total
-            self._convert_gigabyte(matches[2][0], matches[2][1]),  # Bandwidth used
-            self._convert_gigabyte(matches[2][2], matches[2][3])  # Bandwidth total
-        )
-
-        memory = VpsStatusResource(usage[0], usage[1])
-        storage = VpsStatusResource(usage[2], usage[3])
-        bandwidth = VpsStatusResource(usage[4], usage[5])
-
-        # return status
-        return VpsStatus(memory, storage, bandwidth, status.online, status.expiration, status.clientarea)
 
     def purchase(self, wallet, option):
         self._browser.open(option.purchase_url)
