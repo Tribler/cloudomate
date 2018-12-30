@@ -16,7 +16,7 @@ standard_library.install_aliases()
 
 
 class LibertyVPS(SolusvmHoster):
-    CART_URL = 'https://support.routerhosting.com/cart.php?a=view'
+    CART_URL = 'https://libertyvps.net/clients/cart.php?a=view'
 
     # true if you can enable tuntap in the control panel
     TUN_TAP_SETTINGS = True
@@ -33,7 +33,7 @@ class LibertyVPS(SolusvmHoster):
 
     @staticmethod
     def get_clientarea_url():
-        return 'https://support.routerhosting.com/clientarea.php'
+        return 'https://libertyvps.net/clients/clientarea.php'
 
     @staticmethod
     def get_gateway():
@@ -71,10 +71,15 @@ class LibertyVPS(SolusvmHoster):
     def purchase(self, wallet, option):
         self._browser.open(option.purchase_url)
         self._server_form()
+
         self._browser.open(self.CART_URL)
 
-        summary = self._browser.get_current_page().find('div', class_='summary-container')
-        self._browser.follow_link(summary.find('a', class_='btn-checkout'))
+        print(self._browser.get_url())
+        # print(self._browser.get_current_page())
+
+        forms = self._browser.get_current_page().find_all('form')
+        form = self._browser.select_form(forms[2])
+        self._browser.submit_selected()
 
         try:
             self._browser.select_form(selector='form#frmCheckout')
@@ -98,10 +103,10 @@ class LibertyVPS(SolusvmHoster):
         Fills in the form containing server configuration.
         :return:
         """
-        form = self._browser.select_form('form#frmConfigureProduct')
+        form = self._browser.select_form('form')
 
         self._fill_server_form()
-        form['configoption[46]'] = '365'  # Ubuntu 16.04
+        form['configoption[1]'] = '4'  # Ubuntu 16.04
         self._browser.submit_selected()
 
     @classmethod
@@ -116,13 +121,6 @@ class LibertyVPS(SolusvmHoster):
             list_elements = table.find_all('td', {'class': 'column-' + str(idx)})
             link_element = tfoot.find('th', {'class': 'column-' + str(idx)})
 
-            print(header_elements)
-            print(list_elements)
-            print(link_element)
-            # price_eur = float(option.find('div', {'class', 'price'}).span.text[1:])
-            # c = CurrencyConverter()
-            # price_usd = float(option.find('', {'class', 'price'}).span.text[1:])
-            # list_elements[2].text.strip().split(' ')[0],
             yield VpsOption(
                 name=header_elements[0].text,
                 storage=list_elements[2].text.strip().split('GB')[0],
