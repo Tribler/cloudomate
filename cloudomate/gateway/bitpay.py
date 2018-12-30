@@ -35,8 +35,8 @@ class BitPay(Gateway):
         print(base_url)
         invoice_id = uspl.query.split("=")[1]
 
-        # On the browser, users have to select between Bitcoin and Bitcoin cash 
-        # trigger bitcoin selection for successful transaction 
+        # On the browser, users have to select between Bitcoin and Bitcoin cash
+        # trigger bitcoin selection for successful transaction
         trigger_url = "{}/invoice-noscript?id={}&buyerSelectedTransactionCurrency=BTC".format(base_url, invoice_id)
         print(trigger_url)
         request.urlopen(trigger_url)

@@ -3,12 +3,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
+import sys
 from builtins import open
 from builtins import str
 from configparser import ConfigParser
 from configparser import NoOptionError
 
-from appdirs import *
+from appdirs import user_config_dir
 from future import standard_library
 
 standard_library.install_aliases()

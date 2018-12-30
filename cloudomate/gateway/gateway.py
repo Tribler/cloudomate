@@ -15,6 +15,12 @@ PaymentInfo = namedtuple('PaymentInfo', ['amount', 'address'])
 
 
 class Gateway(with_metaclass(ABCMeta)):
+
+    @staticmethod
+    @abstractmethod
+    def use_session():
+        return False
+
     @staticmethod
     @abstractmethod
     def get_name():

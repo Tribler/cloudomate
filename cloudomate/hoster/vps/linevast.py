@@ -136,7 +136,7 @@ class LineVast(SolusvmHoster):
             price_usd = round(c.convert(price_eur, 'EUR', 'USD'), 2)
             yield VpsOption(
                 name=option.find('div', {'class': 'top-area'}).text.strip(),
-                storage=list_elements[2].text.strip().split(' ')[0],
+                storage=list_elements[2].text.strip().split(' ')[0].split('GB')[0],
                 cores=list_elements[0].text.strip().split(' ')[0],
                 memory=list_elements[1].text.strip().split(' ')[0],
                 bandwidth='unmetered',
@@ -197,13 +197,7 @@ class LineVastClientArea(ClientArea):
         """
         Returns the parsed server information from email
         """
-        email_id = None
-        for email in self.get_emails():
-            e_id = email['id']
-            title = email['title']
-            if title == 'New Server Information':
-                email_id = e_id
-                break
+        email_id = self._get_email_id()
         self._browser.open(self.email_url + '?id=' + email_id)
         soup = self._browser.get_current_page()
 
@@ -236,6 +230,13 @@ class LineVastClientArea(ClientArea):
                 break
 
         return server_info
+
+    def _get_email_id(self):
+        for email in self.get_emails():
+            e_id = email['id']
+            title = email['title']
+            if title == 'New Server Information':
+                return e_id
 
     @staticmethod
     def _extract_emails(soup):
