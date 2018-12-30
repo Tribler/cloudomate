@@ -73,10 +73,6 @@ class LibertyVPS(SolusvmHoster):
         self._server_form()
 
         self._browser.open(self.CART_URL)
-
-        print(self._browser.get_url())
-        # print(self._browser.get_current_page())
-
         forms = self._browser.get_current_page().find_all('form')
         form = self._browser.select_form(forms[2])
         self._browser.submit_selected()
