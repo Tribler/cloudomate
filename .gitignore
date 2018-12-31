@@ -4,6 +4,7 @@ env/
 dist/
 *.egg-info/
 *.egg
+*.swp
 *.py[cod]
 __pycache__/
 *.so
