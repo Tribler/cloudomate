@@ -23,6 +23,11 @@ class Gateway(with_metaclass(ABCMeta)):
 
     @staticmethod
     @abstractmethod
+    def reuse_session():
+        return False
+
+    @staticmethod
+    @abstractmethod
     def get_name():
         return ""
 
