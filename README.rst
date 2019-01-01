@@ -39,12 +39,13 @@ VPS
 Currently the following VPS providers are implemented: ::
 
    blueangelhost         https://www.blueangelhost.com/
+   ccihosting            https://www.ccihosting.com/
+   hostsailor            http://hostsailor.com/
+   libertyvps            https://libertyvps.net/
    linevast              https://linevast.de/
-   twosync               https://ua.2sync.org/
+   routerhosting         https://www.routerhosting.com/
    undergroundprivate    https://undergroundprivate.com/
-   RouterHosting         https://www.routerhosting.com/
-   HostSailor            http://hostsailor.com/
-   CCIHosting            https://www.ccihosting.com/
+   twosync               https://ua.2sync.org/
    proxhost              Proxmox provider emulation
 
 This same list can be accessed through the list command: ::
@@ -78,7 +79,11 @@ Cloudomate.
 +====================+======+============+===============+============+===============+==============+==========+==============================+
 | BlueAngelHost      | vps  | yes        |               | extended   | yes           | from email   |          | >12h purchase processing     |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| CCIHosting         | vps  | yes        |               | default    |               |              |          | Gateway broken               |
+| CCIHosting         | vps  | yes        |               | default    |               |              |          |                              |
++--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
+| HostSailor         | vps  | yes        |               |            |               |              |          |                              |
++--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
+| LibertyVPS         | vps  | no         |               |            |               |              |          | Root password by email       |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | LineVast           | vps  | yes        | yes           | extended   | yes           | registration | TUN/TAP  | TUN/TAP enabling implemented |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
@@ -87,8 +92,6 @@ Cloudomate.
 | UndergroundPrivate | vps  | yes        |               | default    |               | registration |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | TwoSync            | vps  | yes        |               | extended   | yes           | from email   | TUN/TAP  | TUN/TAP on by default        |
-+--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| HostSailor         | vps  | yes        |               |            |               |              |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | CrownCloud         | vps  | no         |               | default    |               |              |          | Manual order reviews         |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
