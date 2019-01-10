@@ -160,7 +160,7 @@ class BlueAngelHost(SolusvmHoster):
             cores=int(cpu.split('C')[0].strip()),
             memory=float(ram.split('G')[0].strip()),
             storage=float(storage.split('G')[0].strip()),
-            connection=int(connection.split('G')[0].strip()) * 1000,
+            connection=int(connection.split('G')[0].strip()),
             bandwidth=float(bandwidth.split('T')[0].strip()),
             purchase_url=column.find('a')['href']
         )
