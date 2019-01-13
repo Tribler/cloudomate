@@ -73,6 +73,10 @@ class UndergroundPrivate(SolusvmHoster):
     def purchase(self, wallet, option):
         self._browser.open(option.purchase_url)
         self._submit_server_form()
+        response_text = self._browser.get_current_page().text.strip()
+        if response_text:
+            print(response_text)
+            return
         self._browser.open(self.CART_URL)
         self._submit_user_form()
 
