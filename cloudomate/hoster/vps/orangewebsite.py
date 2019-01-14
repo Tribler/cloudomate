@@ -126,10 +126,7 @@ class OrangeWebsite(SolusvmHoster):
         clientarea = self._create_clientarea()
 
         ip = clientarea.get_ip()
-        password = self._settings.get('server', 'root_password')
-
-        if(password == ""):
-            password = clientarea.get_server_information_from_email()['server_password']
+        password = clientarea.get_server_information_from_email()['server_password']
 
         return VpsConfiguration(ip, password)
 
