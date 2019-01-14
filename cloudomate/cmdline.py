@@ -25,6 +25,7 @@ from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
 from cloudomate.hoster.vps.ccihosting import CCIHosting
 from cloudomate.hoster.vps.hostsailor import HostSailor
 from cloudomate.hoster.vps.linevast import LineVast
+from cloudomate.hoster.vps.libertyvps import LibertyVPS
 from cloudomate.hoster.vps.orangewebsite import OrangeWebsite
 from cloudomate.hoster.vps.routerhosting import RouterHosting
 from cloudomate.hoster.vps.proxhost import ProxHost
@@ -53,14 +54,15 @@ providers = CaseInsensitiveDict({
         BlueAngelHost,
         CCIHosting,
         # CrownCloud,
+        HostSailor,
+        LibertyVPS,
         LineVast,
         OrangeWebsite,
-        RouterHosting,
         # Pulseservers,
+        RouterHosting,
         UndergroundPrivate,
         TwoSync,
-        ProxHost,
-        HostSailor
+        ProxHost
     ]),
     "vpn": _map_providers_to_dict([
         AzireVpn,
