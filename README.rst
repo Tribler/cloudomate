@@ -4,8 +4,8 @@ Cloudomate
 
 
 
-.. image:: https://jenkins.tribler.org/buildStatus/icon?job=pers/Cloudomate
-   :target: https://jenkins.tribler.org/job/pers/job/Cloudomate/
+.. image:: https://jenkins-ci.tribler.org/buildStatus/icon?job=pers/Cloudomate
+   :target: https://jenkins-ci.tribler.org/job/pers/job/Cloudomate/
    :alt: Build Status
 
 .. image:: https://files.slack.com/files-pri/T546HRL3H-F5KQ13400/cloudomate-logo.png?pub_secret=1234824941
@@ -56,7 +56,8 @@ VPN
 
 Currently the following VPN providers are implemented: ::
 
-   azirevpn       https://www.azirevpn.com
+   azirevpn       https://www.azirevpn.com/
+   mullvad        https://www.mullvad.net/
 
 This same list can be accessed through the list command: ::
 
@@ -98,7 +99,8 @@ Cloudomate.
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | AzireVPN           | vpn  | yes        |               | none       |               | registration |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-
+| MullVad            | vpn  | yes        |               | none       |               | registration |          |                              |
++--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 
 **Incompatible** providers need to be fixed in order for them to work.
 The providers were not removed as there is a possibility that they could
