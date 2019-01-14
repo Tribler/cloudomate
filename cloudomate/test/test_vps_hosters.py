@@ -14,6 +14,7 @@ from parameterized import parameterized
 from cloudomate.exceptions.vps_out_of_stock import VPSOutOfStockException
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
 from cloudomate.hoster.vps.hostsailor import HostSailor
+from cloudomate.hoster.vps.libertyvps import LibertyVPS
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.pulseservers import Pulseservers
 from cloudomate.hoster.vps.twosync import TwoSync
@@ -24,6 +25,7 @@ standard_library.install_aliases()
 
 providers = [
     (LineVast,),
+    (LibertyVPS,),
     (TwoSync,),
     (BlueAngelHost,),
     # (CCIHosting,), CCIHosting doesn't use coinbase anymore instead it uses coinpayments the code needs to be updated
