@@ -16,6 +16,7 @@ from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
 from cloudomate.hoster.vps.hostsailor import HostSailor
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.pulseservers import Pulseservers
+from cloudomate.hoster.vps.qhoster import QHoster
 from cloudomate.hoster.vps.twosync import TwoSync
 from cloudomate.util.fakeuserscraper import UserScraper
 from cloudomate.util.settings import Settings
@@ -31,6 +32,7 @@ providers = [
     (Pulseservers,),
     (HostSailor,),
     # (UndergroundPrivate,),# find a way to combine the url and the invoice to be able to go to the payment page
+    (QHoster,),
 ]
 
 
