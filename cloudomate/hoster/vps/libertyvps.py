@@ -113,9 +113,7 @@ class LibertyVPS(SolusvmHoster):
 
     @classmethod
     def _parse_openvz_hosting(cls, page):
-        table = page.find('div', {'class': 'uds-pricing-table default'})
-        if table is None:
-            return
+        table = page.find('div', {'class': 'uds-pricing-table'})
         thead = page.find('thead')
         tfoot = page.find('tfoot')
         number_of_entries = len(table.find('tr', {'class': 'even'}).find_all('td'))
