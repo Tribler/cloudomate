@@ -128,7 +128,7 @@ class LibertyVPS(SolusvmHoster):
                 storage=list_elements[2].text.strip().split('GB')[0],
                 cores=list_elements[0].text.strip().split(' ')[0].split('\xa0')[0],
                 memory=list_elements[1].text.strip().split(' ')[0],
-                bandwidth=list_elements[3].text.strip(),
+                bandwidth=list_elements[3].text.replace('TB', '').strip(),
                 connection=list_elements[4].text.strip().split('Gbps')[0],
                 price=float(header_elements[1].text[1:]),
                 purchase_url=link_element.find('a')['href'],

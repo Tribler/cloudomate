@@ -121,7 +121,7 @@ class RouterHosting(SolusvmHoster):
                 storage=list_elements[2].text.strip().split('GB')[0],
                 cores=list_elements[1].text.strip().split(' ')[0].split('\xa0')[0],
                 memory=list_elements[0].text.strip().split('\xa0')[0],
-                bandwidth=list_elements[4].text.strip().split(' ')[0],
+                bandwidth=list_elements[4].text.strip().split(' ')[0].replace('TB', ''),
                 connection=list_elements[3].text.strip().split('Gbps')[0],
                 price=float(list_elements[6].text.split("\"")[0].split("/")[0][1:]),
                 purchase_url=list_elements[7].find('a', {'class': 'w-btn'})['href'],

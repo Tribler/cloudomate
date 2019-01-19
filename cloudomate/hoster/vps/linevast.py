@@ -139,7 +139,7 @@ class LineVast(SolusvmHoster):
                 storage=list_elements[2].text.strip().split(' ')[0].split('GB')[0],
                 cores=list_elements[0].text.strip().split(' ')[0],
                 memory=list_elements[1].text.strip().split(' ')[0],
-                bandwidth='unmetered',
+                bandwidth=sys.maxsize,
                 connection=1,
                 price=price_usd,
                 purchase_url='https://panel.linevast.de' + option.find('a', {'class': 'order-button'})['href'],
