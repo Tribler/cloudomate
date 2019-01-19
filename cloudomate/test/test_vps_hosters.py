@@ -19,6 +19,8 @@ from cloudomate.hoster.vps.hostsailor import HostSailor
 from cloudomate.hoster.vps.libertyvps import LibertyVPS
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.orangewebsite import OrangeWebsite
+# from cloudomate.hoster.vps.pulseservers import Pulseservers
+from cloudomate.hoster.vps.qhoster import QHoster
 from cloudomate.hoster.vps.routerhosting import RouterHosting
 from cloudomate.hoster.vps.twosync import TwoSync
 from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
@@ -34,11 +36,13 @@ providers = [
     (LibertyVPS,),
     (LineVast,),
     (OrangeWebsite,),
+    # (Pulseservers,),
+    (QHoster,),
     (RouterHosting,),
     (TwoSync,),
     (UndergroundPrivate,),
     # (CrownCloud,), Manually checking orders results in being banned after running tests
-    # (Pulseservers,),
+    # (UndergroundPrivate,),# find a way to combine the url and the invoice to be able to go to the payment page
 ]
 
 

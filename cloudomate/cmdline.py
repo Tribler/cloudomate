@@ -27,6 +27,7 @@ from cloudomate.hoster.vps.hostsailor import HostSailor
 from cloudomate.hoster.vps.linevast import LineVast
 from cloudomate.hoster.vps.libertyvps import LibertyVPS
 from cloudomate.hoster.vps.orangewebsite import OrangeWebsite
+from cloudomate.hoster.vps.qhoster import QHoster
 from cloudomate.hoster.vps.routerhosting import RouterHosting
 from cloudomate.hoster.vps.proxhost import ProxHost
 from cloudomate.hoster.vps.twosync import TwoSync
@@ -59,6 +60,7 @@ providers = CaseInsensitiveDict({
         LineVast,
         OrangeWebsite,
         # Pulseservers,
+        QHoster,
         RouterHosting,
         UndergroundPrivate,
         TwoSync,
