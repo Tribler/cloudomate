@@ -85,7 +85,7 @@ class CoinGate(Gateway):
         debug_log.append('> ' + data3)
         ws.send(data3)
 
-        for i in range(0, 6):
+        for i in range(0, 20):
             result = ws.recv()
             debug_log.append('< ' + result)
             result_json = json.loads(result)
