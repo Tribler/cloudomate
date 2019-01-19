@@ -8,6 +8,8 @@ import time
 from builtins import int
 from builtins import super
 
+from sys import maxsize
+
 from future import standard_library
 from mechanicalsoup.utils import LinkNotFoundError
 
@@ -179,7 +181,7 @@ class TwoSync(SolusvmHoster):
             storage=option['Space'].split('GB')[0],
             cores=option['CPU'],
             memory=option['RAM'].split('GB')[0],
-            bandwidth=option['Bandwidth'].lower(),
+            bandwidth=maxsize,
             connection=int(option['Port'].split('Gbit')[0]),
             price=float(option['price']),
             purchase_url=option['purchase_url'],
