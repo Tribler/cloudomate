@@ -13,24 +13,30 @@ from parameterized import parameterized
 
 from cloudomate.exceptions.vps_out_of_stock import VPSOutOfStockException
 from cloudomate.hoster.vps.blueangelhost import BlueAngelHost
+from cloudomate.hoster.vps.ccihosting import CCIHosting
 from cloudomate.hoster.vps.hostsailor import HostSailor
+# from cloudomate.hoster.vps.libertyvps import LibertyVPS
+from cloudomate.hoster.vps.libertyvps import LibertyVPS
 from cloudomate.hoster.vps.linevast import LineVast
-from cloudomate.hoster.vps.pulseservers import Pulseservers
+from cloudomate.hoster.vps.routerhosting import RouterHosting
 from cloudomate.hoster.vps.twosync import TwoSync
+from cloudomate.hoster.vps.undergroundprivate import UndergroundPrivate
 from cloudomate.util.fakeuserscraper import UserScraper
 from cloudomate.util.settings import Settings
 
 standard_library.install_aliases()
 
 providers = [
-    (LineVast,),
-    (TwoSync,),
     (BlueAngelHost,),
-    # (CCIHosting,), CCIHosting doesn't use coinbase anymore instead it uses coinpayments the code needs to be updated
-    # (CrownCloud,), Manually checking orders results in being banned after running tests
-    (Pulseservers,),
+    (CCIHosting,),
     (HostSailor,),
-    # (UndergroundPrivate,),# find a way to combine the url and the invoice to be able to go to the payment page
+    (LibertyVPS,),
+    (LineVast,),
+    (RouterHosting,),
+    (TwoSync,),
+    (UndergroundPrivate,),  # find a way to combine the url and the invoice to be able to go to the payment page
+    # (CrownCloud,), Manually checking orders results in being banned after running tests
+    # (Pulseservers,),
 ]
 
 
