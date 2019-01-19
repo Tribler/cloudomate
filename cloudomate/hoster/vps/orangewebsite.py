@@ -143,11 +143,19 @@ class OrangeWebsite(SolusvmHoster):
                 storage=list_elements[1].text.strip().split(' ')[0][:-2],
                 cores=list_elements[2].text.strip().split(' ')[0],
                 memory=float(list_elements[0].text.strip().split(' ')[0][:-2]) / 1024,
-                bandwidth=list_elements[3].text.strip().split(' ')[0][:-2],
+                bandwidth=cls.parse_bandwidth(list_elements[3]),
                 connection=1,
                 price=price_usd,
                 purchase_url=option.find_all('a', {'class': 'action_button'})[1]['href'],
             )
+
+    @staticmethod
+    def parse_bandwidth(bandwidth):
+        amount = bandwidth.text
+        if amount.endswith('GB'):
+            return int(amount.replace('GB', '')) / 1000
+        else:
+            return int(amount.replace('TB', ''))
 
     def change_root_password(self, new_password):
         self._create_controlpanel()
