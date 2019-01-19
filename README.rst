@@ -38,15 +38,17 @@ VPS
 
 Currently the following VPS providers are implemented: ::
 
-   blueangelhost         https://www.blueangelhost.com/
-   ccihosting            https://www.ccihosting.com/
-   hostsailor            http://hostsailor.com/
-   libertyvps            https://libertyvps.net/
-   linevast              https://linevast.de/
-   routerhosting         https://www.routerhosting.com/
-   undergroundprivate    https://undergroundprivate.com/
-   twosync               https://ua.2sync.org/
-   proxhost              Proxmox provider emulation
+    BlueAngelHost       https://www.blueangelhost.com/
+    linevast            https://linevast.de/
+    hostsailor          https://hostsailor.com
+    twosync             https://www.2sync.co/vps/ukraine/
+    qhoster             https://www.qhoster.com/
+    orangewebsite       https://www.orangewebsite.com/
+    UndergroundPrivate  https://undergroundprivate.com
+    routerhosting       https://routerhosting.com/
+    CCIHosting          https://www.ccihosting.com/
+    libertyvps          https://libertyvps.net/
+    proxhost            Proxmox provider emulation
 
 This same list can be accessed through the list command: ::
 
@@ -84,21 +86,23 @@ Cloudomate.
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | HostSailor         | vps  | yes        |               |            |               |              |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| LibertyVPS         | vps  | no         |               |            |               |              |          | Root password by email       |
+| LibertyVPS         | vps  | yes        | yes           | default    | yes           | from email   |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | LineVast           | vps  | yes        | yes           | extended   | yes           | registration | TUN/TAP  | TUN/TAP enabling implemented |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| RouterHosting      | vps  | yes        |               |            |               |              |          |                              |
+| Orange Website     | vps  | yes        | yes           | default    | yes           | from email   | TUN/TAP  | TUN/TAP enabling implemented |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| UndergroundPrivate | vps  | yes        |               | default    |               | registration |          |                              |
+| QHoster            | vps  | yes        |               | default    |               | registration |          |                              |
++--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
+| RouterHosting      | vps  | yes        |               | default    |               | registration |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | TwoSync            | vps  | yes        |               | extended   | yes           | from email   | TUN/TAP  | TUN/TAP on by default        |
++--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
+| UndergroundPrivate | vps  | yes        |               | default    |               | registration |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | CrownCloud         | vps  | no         |               | default    |               |              |          | Manual order reviews         |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | PulseServers       | vps  | no         |               | default    |               |              |          | Gateway broken               |
-+--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
-| QHoster            | vps  | yes        |               | default    |               | registration |          |                              |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
 | ProxHost (TBTC)    | vps  | yes        |               | none       |               | registration | TUN/TAP  | Emulated (ProxMox)           |
 +--------------------+------+------------+---------------+------------+---------------+--------------+----------+------------------------------+
