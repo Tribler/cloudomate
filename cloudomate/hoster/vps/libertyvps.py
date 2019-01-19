@@ -139,7 +139,7 @@ class LibertyVPS(SolusvmHoster):
     def get_configuration(self):
         clientarea = self._create_clientarea()
 
-        ip = clientarea.get_ip()
+        ip = clientarea.get_server_information_from_email()['ip_address']
         password = clientarea.get_server_information_from_email()['server_password']
 
         return VpsConfiguration(ip, password)
