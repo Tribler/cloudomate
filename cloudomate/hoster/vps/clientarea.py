@@ -39,9 +39,10 @@ class ClientArea(object):
             for row in rows:
                 divs = row.findAll('div')
                 if 'IP' in divs[0].strong.text:
-                    return divs[1].text.strip()
-        else:
-            return re.search(r'\b((?:\d{1,3}\.){3}\d{1,3})\b', soup.text).group(0)
+                    ip = divs[1].text.strip()
+        if len(ip) < 7:
+            ip = re.search(r'\b((?:\d{1,3}\.){3}\d{1,3})\b', soup.text).group(0)
+        return ip
 
     def get_services(self):
         if self._services is None:
