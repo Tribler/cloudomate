@@ -67,7 +67,9 @@ setup(
         'CaseInsensitiveDict',
         'ConfigParser',
         'future',
-        'requests[security]'
+        'requests[security]',
+        'python-dateutil',
+        'websocket-client'
     ],
 
     extras_require={

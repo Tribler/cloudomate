@@ -3,20 +3,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import os
 from math import pow
 
+import electrum.bitcoin as bitcoin
+from electrum import paymentrequest as pr
 from future import standard_library
 from future.moves.urllib import request
 from future.moves.urllib.parse import urlsplit, parse_qs
 
 from cloudomate.gateway.gateway import Gateway, PaymentInfo
-from cloudomate.util.settings import Settings
-from cloudomate import globals
-
-import electrum.bitcoin as bitcoin
-from electrum import paymentrequest as pr
 
 standard_library.install_aliases()
 
@@ -39,8 +35,8 @@ class BitPay(Gateway):
         print(base_url)
         invoice_id = uspl.query.split("=")[1]
 
-        # On the browser, users have to select between Bitcoin and Bitcoin cash 
-        # trigger bitcoin selection for successful transaction 
+        # On the browser, users have to select between Bitcoin and Bitcoin cash
+        # trigger bitcoin selection for successful transaction
         trigger_url = "{}/invoice-noscript?id={}&buyerSelectedTransactionCurrency=BTC".format(base_url, invoice_id)
         print(trigger_url)
         request.urlopen(trigger_url)

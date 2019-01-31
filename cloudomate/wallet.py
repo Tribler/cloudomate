@@ -45,7 +45,7 @@ def determine_currency(text):
 def get_rate(currency='USD'):
     """
     Return price of 1 currency in BTC
-    Supported currencies available at 
+    Supported currencies available at
     http://forex-python.readthedocs.io/en/latest/currencysource.html#list-of-supported-currency-codes
     :param currency: currency to convert to
     :return: conversion rate from currency to BTC
@@ -140,21 +140,21 @@ class Wallet(object):
     def get_balance_confirmed(self):
         """
         Return confirmed balance of default electrum wallet
-        :return: 
+        :return:
         """
         return self.get_balance(confirmed=True, unconfirmed=False)
 
     def get_balance_unconfirmed(self):
         """
         Return unconfirmed balance of default electrum wallet
-        :return: 
+        :return:
         """
         return self.get_balance(confirmed=False, unconfirmed=True)
 
     def get_addresses(self):
         """
         Return the list of addresses of the default electrum wallet
-        :return: 
+        :return:
         """
         address_output = self.wallet_handler.get_addresses()
         return address_output
@@ -219,7 +219,7 @@ class ElectrumWalletHandler(object):
         if fee is None:
             transaction = self._command(['payto', str(address), str(amount)])
         else:
-            transaction = self._command( ['payto', str(address), str(amount), '-f', str(fee)])
+            transaction = self._command(['payto', str(address), str(amount), '-f', str(fee)])
         jtrs = json.loads(transaction)
         return jtrs['hex']
 
@@ -246,7 +246,7 @@ class ElectrumWalletHandler(object):
     def get_addresses(self):
         """
         Return the list of addresses of default wallet
-        :return: 
+        :return:
         """
         address = self._command(['listaddresses'])
         addr = json.loads(address)

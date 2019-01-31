@@ -1,9 +1,17 @@
-import unittest
-import time
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
+import unittest
+
+from future import standard_library
+from mock.mock import patch, MagicMock
+
+standard_library.install_aliases()
 
 from cloudomate.util.captchasolver import CaptchaSolver, ReCaptchaSolver
-from mock import patch, MagicMock
 
 
 class TestCaptchaSolver(unittest.TestCase):
@@ -13,17 +21,17 @@ class TestCaptchaSolver(unittest.TestCase):
         self.recaptcha_solver = ReCaptchaSolver("213389asd8u912824")
 
     def test_get_current_key(self):
-        self.assertEqual(self.captcha_solver.get_current_key(),"213389asd8u912823")
-        self.assertEqual(self.recaptcha_solver.get_current_key(),"213389asd8u912824")
+        self.assertEqual(self.captcha_solver.get_current_key(), "213389asd8u912823")
+        self.assertEqual(self.recaptcha_solver.get_current_key(), "213389asd8u912824")
 
     @patch("time.sleep")
     def test_solve_captcha_text_case_sensitive(self, mock_time):
         self.captcha_solver._create_task_captcha_text_case_sensitive = MagicMock()
         self.captcha_solver._get_task_status = MagicMock()
         self.captcha_solver._get_task_result = MagicMock()
-         
-        
-        self.captcha_solver.solve_captcha_text_case_sensitive(os.path.join(os.path.dirname(__file__),"resources/captcha.png"))
+
+        self.captcha_solver.solve_captcha_text_case_sensitive(
+            os.path.join(os.path.dirname(__file__), "resources/captcha.png"))
 
         self.assertTrue(self.captcha_solver._create_task_captcha_text_case_sensitive.called)
         self.assertTrue(self.captcha_solver._get_task_status.called)
@@ -34,8 +42,8 @@ class TestCaptchaSolver(unittest.TestCase):
         self.recaptcha_solver._create_task_google_recaptcha = MagicMock()
         self.recaptcha_solver._get_task_status = MagicMock()
         self.recaptcha_solver._get_task_result = MagicMock()
-         
-        self.recaptcha_solver.solve_google_recaptcha("test1","test2")
+
+        self.recaptcha_solver.solve_google_recaptcha("test1", "test2")
 
         self.assertTrue(self.recaptcha_solver._create_task_google_recaptcha.called)
         self.assertTrue(self.recaptcha_solver._get_task_status.called)
