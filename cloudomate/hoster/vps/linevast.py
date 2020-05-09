@@ -13,7 +13,7 @@ from currency_converter import CurrencyConverter
 from future import standard_library
 from mechanicalsoup.utils import LinkNotFoundError
 
-from cloudomate.gateway.bitpay import BitPay
+from cloudomate.gateway.coinbase import Coinbase
 from cloudomate.hoster.vps.clientarea import ClientArea
 from cloudomate.hoster.vps.solusvm_hoster import SolusvmHoster
 from cloudomate.hoster.vps.vps_hoster import VpsOption
@@ -47,7 +47,7 @@ class LineVast(SolusvmHoster):
 
     @staticmethod
     def get_gateway():
-        return BitPay
+        return Coinbase
 
     @staticmethod
     def get_metadata():
@@ -86,7 +86,7 @@ class LineVast(SolusvmHoster):
         :return: possible configurations.
         """
         browser = cls._create_browser()
-        browser.open("https://panel.linevast.de/cart.php")
+        browser.open("https://panel.linevast.de/cart.php?gid=1")
         options = cls._parse_openvz_hosting(browser.get_current_page())
         lst = list(options)
 
