@@ -30,17 +30,17 @@ from cloudomate.util.settings import Settings
 standard_library.install_aliases()
 
 providers = [
-    (BlueAngelHost,),
-    (CCIHosting,),
-    (HostSailor,),
-    (LibertyVPS,),
+    #(BlueAngelHost,),
+    #(CCIHosting,),
+    #(HostSailor,),
+    #(LibertyVPS,),
     (LineVast,),
-    (OrangeWebsite,),
+    #(OrangeWebsite,),
     # (Pulseservers,),
-    (QHoster,),
-    (RouterHosting,),
-    (TwoSync,),
-    (UndergroundPrivate,),
+    (QHoster,)
+    #(RouterHosting,),
+    #(TwoSync,),
+    #(UndergroundPrivate,),
     # (CrownCloud,), Manually checking orders results in being banned after running tests
     # (UndergroundPrivate,),# find a way to combine the url and the invoice to be able to go to the payment page
 ]

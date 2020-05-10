@@ -86,7 +86,7 @@ class LineVast(SolusvmHoster):
         :return: possible configurations.
         """
         browser = cls._create_browser()
-        browser.open("https://panel.linevast.de/cart.php?gid=1")
+        browser.open("https://panel.linevast.de/cart.php?gid=1&language=english")
         options = cls._parse_openvz_hosting(browser.get_current_page())
         lst = list(options)
 
@@ -131,7 +131,7 @@ class LineVast(SolusvmHoster):
         options = page.find_all('div', {'class': 'price-table'})
         for idx, option in enumerate(options, start=1):
             list_elements = option.find_all('li')
-            price_eur = float(option.find('div', {'class', 'price'}).span.text[1:])
+            price_eur = float(option.find('div', {'class', 'price'}).span.text[:].replace(',', '.'))
             c = CurrencyConverter()
             price_usd = round(c.convert(price_eur, 'EUR', 'USD'), 2)
             yield VpsOption(

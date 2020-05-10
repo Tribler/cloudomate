@@ -69,7 +69,9 @@ setup(
         'future',
         'requests[security]',
         'python-dateutil',
-        'websocket-client'
+        'websocket-client',
+        'selenium',
+        'geckodriver-autoinstaller'
     ],
 
     extras_require={
