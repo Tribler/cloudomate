@@ -29,6 +29,7 @@ from cloudomate.util.settings import Settings
 
 standard_library.install_aliases()
 
+# Only the ones that currently work are uncommented
 providers = [
     #(BlueAngelHost,),
     #(CCIHosting,),
