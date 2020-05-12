@@ -87,7 +87,7 @@ def get_price(amount, currency='USD'):
 
 def _get_network_cost(speed):
     br = StatefulBrowser(user_agent='Firefox')
-    page = br.open('https://bitcoinfees.21.co/api/v1/fees/recommended')
+    page = br.open('https://bitcoinfees.earn.com/api/v1/fees/recommended')
     response = page.json()
     satoshirate = float(response[speed])
     return satoshirate
@@ -96,7 +96,7 @@ def _get_network_cost(speed):
 def get_network_fee(speed='halfHourFee'):
     """
     Give an estimate of network fee for the average bitcoin transaction for given speed.
-    Supported speeds are available at https://bitcoinfees.21.co/api/v1/fees/recommended
+    Supported speeds are available at https://bitcoinfees.earn.com/api/v1/fees/recommended
     :return: network cost
     """
     network_fee = _get_network_cost(speed) * SATOSHI_TO_BTC

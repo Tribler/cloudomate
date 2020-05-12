@@ -10,11 +10,11 @@ from future import standard_library
 
 from cloudomate.gateway.gateway import Gateway, PaymentInfo
 
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+import geckodriver_autoinstaller
+
 standard_library.install_aliases()
-if sys.version_info > (3, 0):
-    from urllib.request import urlopen
-else:
-    from urllib2 import urlopen
 
 
 class Coinbase(Gateway):
@@ -26,16 +26,20 @@ class Coinbase(Gateway):
     def extract_info(cls, url):
         """
         Extracts amount and BitCoin address from a Coinbase URL.
-        :param url: the Coinbase URL like "https://www.coinbase.com/checkouts/2b30a03995ec62f15bdc54e8428caa87"
+        :param url: the Coinbase URL like "https://commerce.coinbase.com/charges/K62GMV5Y"
         :return: a tuple of the amount in BitCoin along with the address
         """
-        response = urlopen(url)
-        site = BeautifulSoup(response, 'lxml')
-        details = site.find('div', {'class': 'details'})
-        bitcoin_url = details.p.a['href']
-        # bitcoin:1HhFxARoW7Pfzgzm2ar9xL1PHUu4L3RbaR?amount=0.00045748&amp;r=https://www.coinbase.com/r/59240ff201bc8b1054a037e5
-        address = cls._extract_address(bitcoin_url)
-        amount = cls._extract_amount(bitcoin_url)
+        geckodriver_autoinstaller.install() # Install the geckodriver of firefox if needed for selenium to work
+        options = Options()
+        options.headless = True # don't show firefox window
+        driver = webdriver.Firefox(options = options)
+
+        driver.get(url)
+        driver.implicitly_wait(20) # wait for the payment page to completely load
+        driver.find_element_by_xpath('//img[@alt="Bitcoin"]').click() # click on the bitcoin option
+        address = cls._extract_address(driver)
+        amount = cls._extract_amount(driver)
+        driver.quit()
 
         return PaymentInfo(amount, address)
 
@@ -47,27 +51,23 @@ class Coinbase(Gateway):
 
         :return: The coinbase gateway fee
         """
+        # I don't think there is any fee anymore
         return 0.01
 
     @staticmethod
-    def _extract_amount(bitcoin_url):
+    def _extract_amount(driver):
         """
-        Extract amount from bitcoin url
-        :param bitcoin_url: bitcoin url
+        Extract amount from driver
+        :param driver: webpage where the amount and address are stored
         :return: Amount to be transferred
         """
-        _, amount_section = bitcoin_url.split('?')
-        amount_text = amount_section.split('=')[1]
-        amount = float(amount_text)
-        return amount
+        return float(driver.find_elements_by_xpath('//div[contains(text(), "BTC")]')[1].text.split(' ')[0])
 
     @staticmethod
-    def _extract_address(bitcoin_url):
+    def _extract_address(driver):
         """
-        Extract address from bitcoin url
-        :param bitcoin_url: bitcoin url
+        Extract address from driver
+        :param driver: webpage where the amount and address are stored
         :return: Bitcoin address
         """
-        address_text, _ = bitcoin_url.split('?')
-        address = address_text.split(':')[1]
-        return address
+        return driver.find_element_by_id('payment-address').get_attribute('title')

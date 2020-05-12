@@ -52,18 +52,18 @@ manually checks orders and do not accept multiple variations of the same email.
 """
 providers = CaseInsensitiveDict({
     "vps": _map_providers_to_dict([
-        BlueAngelHost,
-        CCIHosting,
+        # BlueAngelHost,
+        # CCIHosting,
         # CrownCloud,
-        HostSailor,
-        LibertyVPS,
+        # HostSailor,
+        # LibertyVPS,
         LineVast,
-        OrangeWebsite,
+        # OrangeWebsite,
         # Pulseservers,
         QHoster,
-        RouterHosting,
-        UndergroundPrivate,
-        TwoSync,
+        # RouterHosting,
+        # UndergroundPrivate,
+        # TwoSync,
         ProxHost
     ]),
     "vpn": _map_providers_to_dict([
