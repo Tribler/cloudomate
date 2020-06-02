@@ -166,13 +166,13 @@ class Wallet(object):
             return
 
         transaction_hex = self.wallet_handler.create_transaction(amount, address)
-        success, transaction_hash = self.wallet_handler.broadcast(transaction_hex)
-        if not success:
+        transaction_hash = self.wallet_handler.broadcast(transaction_hex)
+        # no/empty transaction hash means the broadcast was not successful
+        if not transaction_hash:
             print(('Transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash)))
         else:
             print('Transaction successful')
         print(transaction_hex)
-        print(success)
         print(transaction_hash)
         return transaction_hash
 
@@ -225,13 +225,13 @@ class ElectrumWalletHandler(object):
 
     def broadcast(self, transaction):
         """
-        Broadcast a transaction
+        Broadcast a transaction.
+        If successful it returns a transaction_id, otherwise it doesn't
         :param transaction: hex of transaction
-        :return: if successful returns success and
+        :return: transaction_id (or also called transaction hash)
         """
-        broadcast = self._command(['broadcast', transaction])
-        jbr = json.loads(broadcast)
-        return tuple(jbr)
+        transaction_id = self._command(['broadcast', transaction])
+        return transaction_id
 
     def get_balance(self):
         """

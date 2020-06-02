@@ -29,14 +29,14 @@ class Coinbase(Gateway):
         :param url: the Coinbase URL like "https://commerce.coinbase.com/charges/K62GMV5Y"
         :return: a tuple of the amount in BitCoin along with the address
         """
-        geckodriver_autoinstaller.install() # Install the geckodriver of firefox if needed for selenium to work
+        geckodriver_autoinstaller.install()  # Install the geckodriver of firefox if needed for selenium to work
         options = Options()
-        options.headless = True # don't show firefox window
-        driver = webdriver.Firefox(options = options)
+        options.headless = True  # don't show firefox window
+        driver = webdriver.Firefox(options=options)
 
         driver.get(url)
         driver.implicitly_wait(20) # wait for the payment page to completely load
-        driver.find_element_by_xpath('//img[@alt="Bitcoin"]').click() # click on the bitcoin option
+        driver.find_element_by_xpath('//img[@alt="Bitcoin"]').click()  # click on the bitcoin option
         address = cls._extract_address(driver)
         amount = cls._extract_amount(driver)
         driver.quit()
