@@ -57,10 +57,10 @@ providers = CaseInsensitiveDict({
         # CrownCloud,
         # HostSailor,
         # LibertyVPS,
-        LineVast,
+        # LineVast,  # Code works, but the provider blocks account after purchasing
         # OrangeWebsite,
         # Pulseservers,
-        QHoster,
+        QHoster,  # Ubuntu 18.04 not supported and Ubuntu 16.04 has a really old kernal, which doesn't work with tribler
         # RouterHosting,
         # UndergroundPrivate,
         # TwoSync,
