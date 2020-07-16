@@ -87,7 +87,7 @@ def get_price(amount, currency='USD'):
 
 def _get_network_cost(speed):
     br = StatefulBrowser(user_agent='Firefox')
-    page = br.open('https://bitcoinfees.21.co/api/v1/fees/recommended')
+    page = br.open('https://bitcoinfees.earn.com/api/v1/fees/recommended')
     response = page.json()
     satoshirate = float(response[speed])
     return satoshirate
@@ -96,7 +96,7 @@ def _get_network_cost(speed):
 def get_network_fee(speed='halfHourFee'):
     """
     Give an estimate of network fee for the average bitcoin transaction for given speed.
-    Supported speeds are available at https://bitcoinfees.21.co/api/v1/fees/recommended
+    Supported speeds are available at https://bitcoinfees.earn.com/api/v1/fees/recommended
     :return: network cost
     """
     network_fee = _get_network_cost(speed) * SATOSHI_TO_BTC
@@ -166,13 +166,13 @@ class Wallet(object):
             return
 
         transaction_hex = self.wallet_handler.create_transaction(amount, address)
-        success, transaction_hash = self.wallet_handler.broadcast(transaction_hex)
-        if not success:
+        transaction_hash = self.wallet_handler.broadcast(transaction_hex)
+        # no/empty transaction hash means the broadcast was not successful
+        if not transaction_hash:
             print(('Transaction not successfully broadcast, do error handling: {0}'.format(transaction_hash)))
         else:
             print('Transaction successful')
         print(transaction_hex)
-        print(success)
         print(transaction_hash)
         return transaction_hash
 
@@ -225,13 +225,13 @@ class ElectrumWalletHandler(object):
 
     def broadcast(self, transaction):
         """
-        Broadcast a transaction
+        Broadcast a transaction.
+        If successful it returns a transaction_id, otherwise it doesn't
         :param transaction: hex of transaction
-        :return: if successful returns success and
+        :return: transaction_id (or also called transaction hash)
         """
-        broadcast = self._command(['broadcast', transaction])
-        jbr = json.loads(broadcast)
-        return tuple(jbr)
+        transaction_id = self._command(['broadcast', transaction])
+        return transaction_id
 
     def get_balance(self):
         """

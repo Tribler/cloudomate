@@ -52,18 +52,18 @@ manually checks orders and do not accept multiple variations of the same email.
 """
 providers = CaseInsensitiveDict({
     "vps": _map_providers_to_dict([
-        BlueAngelHost,
-        CCIHosting,
+        # BlueAngelHost,
+        # CCIHosting,
         # CrownCloud,
-        HostSailor,
-        LibertyVPS,
-        LineVast,
-        OrangeWebsite,
+        # HostSailor,
+        # LibertyVPS,
+        # LineVast,  # Code works, but the provider blocks account after purchasing
+        # OrangeWebsite,
         # Pulseservers,
-        QHoster,
-        RouterHosting,
-        UndergroundPrivate,
-        TwoSync,
+        QHoster,  # Ubuntu 18.04 not supported and Ubuntu 16.04 has a really old kernal, which doesn't work with tribler
+        # RouterHosting,
+        # UndergroundPrivate,
+        # TwoSync,
         ProxHost
     ]),
     "vpn": _map_providers_to_dict([
